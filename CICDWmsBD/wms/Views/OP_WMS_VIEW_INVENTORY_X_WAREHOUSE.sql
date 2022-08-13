@@ -1,0 +1,74 @@
+﻿
+
+-- =============================================
+-- Modificacion:	        hector.gonzalez
+-- Fecha de Creacion: 	2017-04-18 @ Team ERGON - Sprint ERGON 
+-- Description:	        se modifico ya que no agrupaba por bodega 
+
+-- Autor:	        hector.gonzalez
+-- Fecha de Creacion: 	2017-09-05 @ Team REBORN - Sprint Collin
+-- Description:	   Se agrega inner join a [OP_WMS_STATUS_OF_MATERIAL_BY_LICENSE]
+
+-- Autor:	        hector.gonzalez
+-- Fecha de Creacion: 	2017-09-15 @ Team REBORN - Sprint Collin
+-- Description:	   Se agrega TONE y CALIBER
+
+/*
+-- Ejemplo de Ejecucion:
+			SELECT COUNT(*) FROM [wms].OP_WMS_VIEW_INVENTORY_X_WAREHOUSE
+*/
+-- =============================================
+
+CREATE VIEW [wms].[OP_WMS_VIEW_INVENTORY_X_WAREHOUSE]
+AS
+SELECT
+  MAX(B.CURRENT_WAREHOUSE) AS CURRENT_WAREHOUSE
+ ,MAX(B.CLIENT_OWNER) AS CLIENT_OWNER
+ ,(SELECT
+      CLIENT_NAME
+    FROM [wms].OP_WMS_VIEW_CLIENTS
+    WHERE (CLIENT_CODE = MAX(B.CLIENT_OWNER) COLLATE database_default))
+  AS CLIENT_NAME
+ ,MAX(A.TERMS_OF_TRADE) + '-' + MAX(D.ACUERDO_COMERCIAL_NOMBRE) AS TERMS_OF_TRADE
+ ,MAX(C.MATERIAL_ID) AS MATERIAL_ID
+ ,MAX(C.BARCODE_ID) AS BARCODE_ID
+ ,MAX(A.BARCODE_ID) AS ALTERNATE_BARCODE
+ ,MAX(A.MATERIAL_NAME) AS MATERIAL_NAME
+ ,SUM(A.QTY) AS QTY
+ ,ISNULL(MAX(C.VOLUME_FACTOR), 0) AS VOLUMEN
+ ,ISNULL(MAX(C.VOLUME_FACTOR), 0) * SUM(A.QTY) AS TOTAL_VOLUMEN
+ ,MAX([A].[HANDLE_SERIAL]) AS HANDLE_SERIAL
+ ,[S].[STATUS_NAME]
+ ,CASE MAX([S].[BLOCKS_INVENTORY])
+    WHEN 1 THEN 'Si'
+    WHEN 0 THEN 'No'
+    ELSE 'No'
+  END [BLOCKS_INVENTORY]
+ ,MAX([S].[COLOR]) [COLOR]
+ ,[TC].[TONE]
+ ,[TC].[CALIBER]
+FROM [wms].OP_WMS_INV_X_LICENSE AS A
+INNER JOIN [wms].OP_WMS_LICENSES AS B
+  ON (A.LICENSE_ID = B.LICENSE_ID
+  AND [B].[LICENSE_ID] > 0)
+INNER JOIN [wms].OP_WMS_MATERIALS AS C
+  ON (A.MATERIAL_ID = C.MATERIAL_ID
+  AND [C].[MATERIAL_ID] > '')
+INNER JOIN [wms].[OP_WMS_TARIFICADOR_HEADER] AS D
+  ON (A.TERMS_OF_TRADE = D.ACUERDO_COMERCIAL_ID
+  AND [D].[ACUERDO_COMERCIAL_ID] > 0)
+INNER JOIN [wms].[OP_WMS_STATUS_OF_MATERIAL_BY_LICENSE] [S]
+  ON ([A].[STATUS_ID] = [S].[STATUS_ID]
+  AND [S].[STATUS_ID] > 0)
+LEFT JOIN [wms].[OP_WMS_TONE_AND_CALIBER_BY_MATERIAL] [TC]
+  ON (
+  [A].[TONE_AND_CALIBER_ID] = [TC].[TONE_AND_CALIBER_ID]
+  AND [TC].[TONE_AND_CALIBER_ID] > 0
+  )
+WHERE (B.CURRENT_WAREHOUSE IS NOT NULL)
+AND (A.QTY > 0)
+GROUP BY [B].[CURRENT_WAREHOUSE]
+        ,[A].[MATERIAL_ID]
+        ,[S].[STATUS_NAME]
+        ,[TC].[TONE]
+        ,[TC].[CALIBER]

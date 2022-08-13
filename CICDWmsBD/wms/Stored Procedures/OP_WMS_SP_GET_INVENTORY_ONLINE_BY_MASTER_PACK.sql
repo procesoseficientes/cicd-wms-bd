@@ -1,0 +1,92 @@
+﻿
+-- =============================================
+-- Autor:	              hector.gonzalez
+-- Fecha de Creacion: 	2017-01-26 @ Team ERGON - Sprint ERGON II
+-- Description:	        Sp que regresa la data como un MAESTRO DETALLE de la tabla OP_WMS_MASTER_PACK_HEADER y OP_WMS_MASTER_PACK_DETAIL
+
+-- Modificación: pablo.aguilar
+-- Fecha de Creacion: 	2017-03-10 Team ERGON - Sprint ERGON V
+-- Description:	 Se agrega validación de cantidad mayor a 0
+
+-- Descripcion:	        hector.gonzalez
+-- Fecha de Creacion: 	27-03-2017 Team Ergon SPRINT Hyper
+-- Description:			    Se agrego bodegas de usuario logueado
+
+-- Autor:	        hector.gonzalez
+-- Fecha de Creacion: 	2017-09-05 @ Team REBORN - Sprint 
+-- Description:	   Se agregaron STATUS_NAME, [BLOCKS_INVENTORY] y COLOR
+
+/*
+-- Ejemplo de Ejecucion:
+			EXEC [wms].[OP_WMS_SP_GET_INVENTORY_ONLINE_BY_MASTER_PACK ] @LOGIN = 'ADMIN'
+*/
+-- =============================================
+CREATE PROCEDURE [wms].[OP_WMS_SP_GET_INVENTORY_ONLINE_BY_MASTER_PACK] (@LOGIN VARCHAR(25))
+AS
+BEGIN
+  SET NOCOUNT ON;
+  --
+  -- SE OBTIENEN BODEGAS DE USUARIO LOGUEADO
+
+  CREATE TABLE #WAREHOUSES (
+    WAREHOUSE_ID VARCHAR(25)
+   ,NAME VARCHAR(50)
+   ,COMMENTS VARCHAR(150)
+   ,ERP_WAREHOUSE VARCHAR(50)
+   ,ALLOW_PICKING NUMERIC
+   ,DEFAULT_RECEPTION_LOCATION VARCHAR(25)
+   ,SHUNT_NAME VARCHAR(25)
+   ,WAREHOUSE_WEATHER VARCHAR(50)
+   ,WAREHOUSE_STATUS INT
+   ,IS_3PL_WAREHUESE INT
+   ,WAHREHOUSE_ADDRESS VARCHAR(250)
+   ,GPS_URL VARCHAR(100)
+   ,WAREHOUSE_BY_USER_ID INT
+    UNIQUE ([WAREHOUSE_ID])
+  )
+
+  INSERT INTO #WAREHOUSES
+  EXEC [wms].[OP_WMS_SP_GET_WAREHOUSE_ASSOCIATED_WITH_USER] @LOGIN_ID = @LOGIN
+
+  --SE MUESTRA LA CONSULTA
+
+  SELECT
+    [L].[CURRENT_WAREHOUSE]
+   ,[L].[LICENSE_ID]
+   ,[L].[CURRENT_LOCATION]
+   ,[MPH].[MATERIAL_ID] [MASTER_PACK_MATERIAL_ID]
+   ,[MH].[MATERIAL_NAME] AS MASTER_PACK_DESCRIPTION
+   ,[MD].[MATERIAL_ID]
+   ,[MD].[MATERIAL_NAME]
+   ,[MPD].[QTY] [QTY_COMPONENT]
+   ,[MPH].[LAST_UPDATED]
+   ,[MPD].[DATE_EXPIRATION]
+   ,[MPD].[BATCH]
+   ,[MPH].[QTY] [QTY]
+   ,[S].[STATUS_NAME]
+   ,CASE [S].[BLOCKS_INVENTORY]
+      WHEN 1 THEN 'Si'
+      WHEN 0 THEN 'No'
+      ELSE 'No'
+    END [BLOCKS_INVENTORY]
+   ,[S].[COLOR]
+  FROM [wms].[OP_WMS_MASTER_PACK_HEADER] MPH
+  INNER JOIN [wms].[OP_WMS_MASTER_PACK_DETAIL] MPD
+    ON ([MPH].[MASTER_PACK_HEADER_ID] = [MPD].[MASTER_PACK_HEADER_ID])
+  INNER JOIN [wms].[OP_WMS_LICENSES] L
+    ON [MPH].[LICENSE_ID] = L.[LICENSE_ID]
+  INNER JOIN [wms].[OP_WMS_MATERIALS] MD
+    ON [MPD].[MATERIAL_ID] = MD.[MATERIAL_ID]
+  INNER JOIN [wms].[OP_WMS_MATERIALS] MH
+    ON [MPH].[MATERIAL_ID] = MH.[MATERIAL_ID]
+  INNER JOIN [#WAREHOUSES] [W]
+    ON [W].[WAREHOUSE_ID]  COLLATE DATABASE_DEFAULT = [L].[CURRENT_WAREHOUSE]
+  INNER JOIN [wms].[OP_WMS_INV_X_LICENSE] [IXL]
+    ON ([MPH].[LICENSE_ID] = [IXL].[LICENSE_ID]
+        AND [MPH].[MATERIAL_ID] = [IXL].[MATERIAL_ID])
+  INNER JOIN [wms].[OP_WMS_STATUS_OF_MATERIAL_BY_LICENSE] [S]
+    ON [IXL].[STATUS_ID] = [S].[STATUS_ID]
+  WHERE [MPH].[EXPLODED] = 0
+  AND [MPH].[QTY] > 0
+
+END

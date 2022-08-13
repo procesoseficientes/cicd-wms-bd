@@ -1,0 +1,68 @@
+﻿-- =============================================
+-- Autor:				        rudi.garcia
+-- Fecha de Creacion: 	07-07-2016 Sprint ζ
+-- Description:			    Inserta un nuevo registro al log de deposito de certificado
+
+-- =============================================
+
+CREATE PROCEDURE [wms].[OP_WMS_INSERT_CERTIFICATE_DEPOSIT_LOG]
+	@CERTIFICATE_DEPOSIT_ID_HEADER AS INT
+	,@LOIGN VARCHAR(25)
+	,@COMMET VARCHAR(250)
+AS
+BEGIN
+	DECLARE	@LONGIN_NAME AS VARCHAR(50);
+  
+	SELECT TOP 1
+		@LONGIN_NAME = [L].[LOGIN_NAME]
+	FROM
+		[wms].[OP_WMS_LOGINS] [L]
+	WHERE
+		[L].[LOGIN_ID] = @LOIGN;
+  
+  
+	INSERT	INTO [wms].[OP_WMS_CERTIFICATE_DEPOSIT_LOG]
+			(
+				[CERTIFICATE_DEPOSIT_ID_HEADER]
+				,[STATUS]
+				,[VALID_FROM]
+				,[VALID_TO]
+				,[CLIENT_CODE]
+				,[CLIENT_NAME]
+				,[MATERIAL_CODE]
+				,[SKU_DESCRIPTION]
+				,[LOCATIONS]
+				,[BULTOS]
+				,[QTY]
+				,[CUSTOMS_AMOUNT]
+				,[DATE_TRANS]
+				,[LOGIN]
+				,[LOGIN_NAME]
+				,[COMMET]
+			)
+	SELECT
+		[CH].[CERTIFICATE_DEPOSIT_ID_HEADER]
+		,[CH].[STATUS]
+		,[CH].[VALID_FROM]
+		,[CH].[VALID_TO]
+		,[CH].[CLIENT_CODE]
+		,[VC].[CLIENT_NAME]
+		,[CD].[MATERIAL_CODE]
+		,[CD].[SKU_DESCRIPTION]
+		,[CD].[LOCATIONS]
+		,[CD].[BULTOS]
+		,[CD].[QTY]
+		,[CD].[CUSTOMS_AMOUNT]
+		,GETDATE()
+		,@LOIGN
+		,@LONGIN_NAME
+		,@COMMET
+	FROM
+		[wms].[OP_WMS_CERTIFICATE_DEPOSIT_DETAIL] [CD]
+	INNER JOIN [wms].[OP_WMS_CERTIFICATE_DEPOSIT_HEADER] [CH] ON ([CD].[CERTIFICATE_DEPOSIT_ID_HEADER] = [CH].[CERTIFICATE_DEPOSIT_ID_HEADER])
+	INNER JOIN [wms].[OP_WMS_VIEW_CLIENTS] [VC] ON ([CH].[CLIENT_CODE] = [VC].[CLIENT_CODE])
+	WHERE
+		[CH].[CERTIFICATE_DEPOSIT_ID_HEADER] = @CERTIFICATE_DEPOSIT_ID_HEADER;
+
+
+END;

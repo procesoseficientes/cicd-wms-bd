@@ -1,0 +1,48 @@
+﻿-- =============================================
+-- Autor:				rodrigo.gomez
+-- Fecha de Creacion: 	11/24/2017 @ NEXUS-Team Sprint GTA 
+-- Description:			Obtiene lsa recepciones generales listas para enviar a ERP
+
+/*
+-- Ejemplo de Ejecucion:
+				EXEC [wms].[OP_WMS_SP_GET_TOP5_INVENTORY_GENERAL_ENTRY]
+					@OWNER = 'me_llega'
+*/
+-- =============================================
+CREATE PROCEDURE [wms].[OP_WMS_SP_GET_TOP5_INVENTORY_GENERAL_ENTRY](
+	@OWNER VARCHAR(50)
+)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	--
+	DECLARE	@MAX_ATTEMPTS INT = 5
+			,@SERIE VARCHAR(50);
+	--
+	SELECT
+		@MAX_ATTEMPTS = [OWC].[NUMERIC_VALUE]
+	FROM
+		[wms].[OP_WMS_CONFIGURATIONS] [OWC]
+	WHERE
+		[OWC].[PARAM_TYPE] = 'SISTEMA'
+		AND [OWC].[PARAM_GROUP] = 'MAX_NUMBER_OF_ATTEMPTS'
+		AND [OWC].[PARAM_NAME] = 'MAX_NUMBER_OF_SENDING_ATTEMPTS_TO_ERP';
+	--
+	SELECT @SERIE = [TEXT_VALUE] 
+	FROM [wms].[OP_WMS_CONFIGURATIONS]
+	WHERE [PARAM_TYPE] = 'SISTEMA'
+		AND [PARAM_GROUP] = 'RECEPCIONES_GENERALES_ERP'
+	--
+	SELECT DISTINCT
+		[RED].[ERP_RECEPTION_DOCUMENT_HEADER_ID] [DocNum]
+		,[RED].[ERP_DATE] [DocDate]
+		,[RED].[ERP_DATE] [TaxDate]
+		,@SERIE [SeriesSalida]
+	FROM [wms].[OP_WMS_ERP_RECEPTION_DOCUMENT_HEADER] [RED]
+	WHERE 
+		[RED].[IS_POSTED_ERP] <> 1
+		AND [RED].[IS_AUTHORIZED] = 1
+		AND [RED].[ATTEMPTED_WITH_ERROR] < @MAX_ATTEMPTS
+		AND [RED].[OWNER] = @OWNER
+		AND [RED].[SOURCE] = 'RECEPCION_GENERAL'
+END

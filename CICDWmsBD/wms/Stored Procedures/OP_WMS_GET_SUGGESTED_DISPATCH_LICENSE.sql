@@ -1,0 +1,391 @@
+﻿-- =============================================
+-- Autor:				rudi.garcia
+-- Fecha de Creacion: 	12-Dec-2018 @ G-Force-Team Sprint Ornitorinco
+-- Historia: Product Backlog Item 26248: Sugerencia de Picking
+-- Description:			SP que obtiene las licencias disponibles del picking
+
+-- Autor:				marvin.solares
+-- Fecha de Creacion: 	19-Jul-2019 @ G-Force-Team Sprint Dublin
+-- Description:			agrego las licencias amarradas a un proyecto mas las que estan sin proyecto
+
+/*
+-- Ejemplo de Ejecucion:			
+  EXEC [wms].OP_WMS_GET_SUGGESTED_DISPATCH_LICENSE
+*/
+-- =============================================
+CREATE PROCEDURE [wms].[OP_WMS_GET_SUGGESTED_DISPATCH_LICENSE] (
+		@LOGIN VARCHAR(50)
+		,@MATERIAL_ID VARCHAR(50)
+		,@WAVE_PICKING_ID INT
+		,@PROJECT_ID UNIQUEIDENTIFIER = NULL
+	)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	DECLARE
+		@DISPATCH_BY_STATUS INT = 0
+		,@STATUS_CODE VARCHAR(50)
+		,@TONE VARCHAR(20) = NULL
+		,@CALIBER VARCHAR(20) = NULL
+		,@IS_DEMAND_DISPATCH INT = 0;
+
+  --
+	DECLARE	@WAREHOUSES TABLE (
+			[WAREHOUSE_ID] VARCHAR(25)
+			,[NAME] VARCHAR(50)
+			,[COMMENTS] VARCHAR(150)
+			,[ERP_WAREHOUSE] VARCHAR(50)
+			,[ALLOW_PICKING] NUMERIC
+			,[DEFAULT_RECEPTION_LOCATION] VARCHAR(25)
+			,[SHUNT_NAME] VARCHAR(25)
+			,[WAREHOUSE_WEATHER] VARCHAR(50)
+			,[WAREHOUSE_STATUS] INT
+			,[IS_3PL_WAREHUESE] INT
+			,[WAHREHOUSE_ADDRESS] VARCHAR(250)
+			,[GPS_URL] VARCHAR(100)
+			,[WAREHOUSE_BY_USER_ID] INT
+				UNIQUE ([WAREHOUSE_ID])
+		);
+
+	DECLARE	@LICENCES_TEMP TABLE (
+			[MATERIAL_ID] VARCHAR(50)
+			,[LICENCE] INT
+			,[QTY] NUMERIC(18, 4)
+			,[CURRENT_WAREHOUSE] VARCHAR(25)
+			,[CLIENT_OWNER] VARCHAR(25)
+			,[CURRENT_LOCATION] VARCHAR(50)
+			,[TONE] VARCHAR(20)
+			,[CALIBER] VARCHAR(20)
+			,[STATUS_CODE] VARCHAR(50)
+			,[STATUS_NAME] VARCHAR(100)
+		);
+
+	DECLARE	@LICENCES_RESULT TABLE (
+			[MATERIAL_ID] VARCHAR(50)
+			,[LICENCE] INT
+			,[QTY] NUMERIC(18, 4)
+			,[CURRENT_WAREHOUSE] VARCHAR(25)
+			,[CLIENT_OWNER] VARCHAR(25)
+			,[CURRENT_LOCATION] VARCHAR(50)
+			,[TONE] VARCHAR(20)
+			,[CALIBER] VARCHAR(20)
+			,[STATUS_CODE] VARCHAR(50)
+			,[STATUS_NAME] VARCHAR(100)
+		);
+  --
+	INSERT	INTO @WAREHOUSES
+			EXEC [wms].[OP_WMS_SP_GET_WAREHOUSE_ASSOCIATED_WITH_USER] @LOGIN_ID = @LOGIN;
+
+	SELECT
+		@DISPATCH_BY_STATUS = CONVERT(INT, [P].[VALUE])
+	FROM
+		[wms].[OP_WMS_PARAMETER] [P]
+	WHERE
+		[P].[GROUP_ID] = 'PICKING_DEMAND'
+		AND [P].[PARAMETER_ID] = 'DISPATCH_BY_STATUS';
+
+	SELECT TOP 1
+		@STATUS_CODE = [TL].[STATUS_CODE]
+		,@TONE = [TL].[TONE]
+		,@CALIBER = [TL].[CALIBER]
+	FROM
+		[wms].[OP_WMS_TASK_LIST] [TL]
+	WHERE
+		[TL].[WAVE_PICKING_ID] = @WAVE_PICKING_ID
+		AND [TL].[MATERIAL_ID] = @MATERIAL_ID;
+
+	SELECT TOP 1
+		@IS_DEMAND_DISPATCH = 1
+	FROM
+		[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [NPDH]
+	WHERE
+		[NPDH].[WAVE_PICKING_ID] = @WAVE_PICKING_ID;
+
+
+	IF @IS_DEMAND_DISPATCH = 0
+		OR @DISPATCH_BY_STATUS = 0
+	BEGIN
+		INSERT	INTO @LICENCES_RESULT
+				(
+					[MATERIAL_ID]
+					,[LICENCE]
+					,[QTY]
+					,[CURRENT_WAREHOUSE]
+					,[CLIENT_OWNER]
+					,[CURRENT_LOCATION]
+					,[TONE]
+					,[CALIBER]
+					,[STATUS_CODE]
+					,[STATUS_NAME]
+				)
+		SELECT
+			[PAG].[MATERIAL_ID]
+			,[PAG].[LICENSE_ID] [LICENCE_ID]
+			,[PAG].[QTY]
+			,[PAG].[CURRENT_WAREHOUSE] [CODE_WAREHOUSE]
+			,[PAG].[CLIENT_OWNER]
+			,[PAG].[CURRENT_LOCATION] AS [LOCATION]
+			,[TCM].[TONE]
+			,[TCM].[CALIBER]
+			,[SML].[STATUS_CODE]
+			,[SML].[STATUS_NAME]
+		FROM
+			[wms].[OP_WMS_VIEW_PICKING_AVAILABLE_GENERAL] [PAG]
+		INNER JOIN @WAREHOUSES [W] ON ([PAG].[CURRENT_WAREHOUSE] = [W].[WAREHOUSE_ID])
+		INNER JOIN [wms].[OP_WMS_INV_X_LICENSE] [IL] ON (
+											[PAG].[LICENSE_ID] = [IL].[LICENSE_ID]
+											AND [PAG].[MATERIAL_ID] = [IL].[MATERIAL_ID]
+											)
+		INNER JOIN [wms].[OP_WMS_LICENSES] [L] ON ([IL].[LICENSE_ID] = [L].[LICENSE_ID])
+		INNER JOIN [wms].[OP_WMS_STATUS_OF_MATERIAL_BY_LICENSE] [SML] ON ([IL].[STATUS_ID] = [SML].[STATUS_ID])
+		LEFT JOIN [wms].[OP_WMS_TONE_AND_CALIBER_BY_MATERIAL] [TCM] ON ([IL].[TONE_AND_CALIBER_ID] = [TCM].[TONE_AND_CALIBER_ID])
+		WHERE
+			[PAG].[MATERIAL_ID] = @MATERIAL_ID
+			AND [PAG].[QTY] > 0
+			AND (
+					@TONE IS NULL
+					OR [TCM].[TONE] = @TONE
+				)
+			AND (
+					@CALIBER IS NULL
+					OR [TCM].[CALIBER] = @CALIBER
+				);
+		
+		-- ------------------------------------------------------------------------------------
+		-- agrego las licencias amarradas al proyecto
+		-- ------------------------------------------------------------------------------------
+		IF @PROJECT_ID IS NOT NULL
+		BEGIN
+
+			INSERT	INTO @LICENCES_RESULT
+					(
+						[MATERIAL_ID]
+						,[LICENCE]
+						,[QTY]
+						,[CURRENT_WAREHOUSE]
+						,[CLIENT_OWNER]
+						,[CURRENT_LOCATION]
+						,[TONE]
+						,[CALIBER]
+						,[STATUS_CODE]
+						,[STATUS_NAME]
+					)
+			SELECT
+				[AL].[MATERIAL_ID]
+				,[AL].[LICENSE_ID]
+				,[AL].[QTY_RESERVED]
+				,[W].[WAREHOUSE_ID]
+				,[M].[CLIENT_OWNER]
+				,[L].[CURRENT_LOCATION]
+				,[AL].[TONE]
+				,[AL].[CALIBER]
+				,[AL].[STATUS_CODE]
+				,[AL].[STATUS_CODE]
+			FROM
+				[wms].[OP_WMS_INVENTORY_RESERVED_BY_PROJECT] [AL]
+			INNER JOIN [wms].[OP_WMS_MATERIALS] [M] ON [AL].[MATERIAL_ID] = [M].[MATERIAL_ID]
+			INNER JOIN [wms].[OP_WMS_LICENSES] [L] ON [AL].[LICENSE_ID] = [L].[LICENSE_ID]
+			INNER JOIN @WAREHOUSES [W] ON ([L].[CURRENT_WAREHOUSE] = [W].[WAREHOUSE_ID])
+			WHERE
+				[AL].[MATERIAL_ID] = @MATERIAL_ID
+				AND (
+						@TONE IS NULL
+						OR [AL].[TONE] = @TONE
+					)
+				AND (
+						@CALIBER IS NULL
+						OR [AL].[CALIBER] = @CALIBER
+					)
+				AND [AL].[PROJECT_ID] = @PROJECT_ID;
+		END;
+
+	END;
+	ELSE
+	BEGIN
+		INSERT	INTO @LICENCES_RESULT
+				(
+					[MATERIAL_ID]
+					,[LICENCE]
+					,[QTY]
+					,[CURRENT_WAREHOUSE]
+					,[CLIENT_OWNER]
+					,[CURRENT_LOCATION]
+					,[TONE]
+					,[CALIBER]
+					,[STATUS_CODE]
+					,[STATUS_NAME]
+				)
+		SELECT
+			[PAG].[MATERIAL_ID]
+			,[PAG].[LICENSE_ID] [LICENCE_ID]
+			,[PAG].[QTY]
+			,[PAG].[CURRENT_WAREHOUSE] [CODE_WAREHOUSE]
+			,[PAG].[CLIENT_OWNER]
+			,[PAG].[CURRENT_LOCATION] AS [LOCATION]
+			,[TCM].[TONE]
+			,[TCM].[CALIBER]
+			,[SML].[STATUS_CODE]
+			,[SML].[STATUS_NAME]
+		FROM
+			[wms].[OP_WMS_VIEW_PICKING_AVAILABLE_GENERAL] [PAG]
+		INNER JOIN @WAREHOUSES [W] ON ([PAG].[CURRENT_WAREHOUSE] = [W].[WAREHOUSE_ID])
+		INNER JOIN [wms].[OP_WMS_INV_X_LICENSE] [IL] ON (
+											[PAG].[LICENSE_ID] = [IL].[LICENSE_ID]
+											AND [PAG].[MATERIAL_ID] = [IL].[MATERIAL_ID]
+											)
+		INNER JOIN [wms].[OP_WMS_LICENSES] [L] ON ([IL].[LICENSE_ID] = [L].[LICENSE_ID])
+		INNER JOIN [wms].[OP_WMS_STATUS_OF_MATERIAL_BY_LICENSE] [SML] ON ([IL].[STATUS_ID] = [SML].[STATUS_ID])
+		LEFT JOIN [wms].[OP_WMS_TONE_AND_CALIBER_BY_MATERIAL] [TCM] ON ([IL].[TONE_AND_CALIBER_ID] = [TCM].[TONE_AND_CALIBER_ID])
+		WHERE
+			[PAG].[MATERIAL_ID] = @MATERIAL_ID
+			--AND [SML].[STATUS_CODE] = @STATUS_CODE
+			AND [PAG].[QTY] > 0
+			AND (
+					@TONE IS NULL
+					OR [TCM].[TONE] = @TONE
+				)
+			AND (
+					@CALIBER IS NULL
+					OR [TCM].[CALIBER] = @CALIBER
+				);
+
+		-- ------------------------------------------------------------------------------------
+		-- agrego las licencias amarradas al proyecto con el filtro de estado
+		-- ------------------------------------------------------------------------------------
+		IF @PROJECT_ID IS NOT NULL
+		BEGIN
+			INSERT	INTO @LICENCES_RESULT
+					(
+						[MATERIAL_ID]
+						,[LICENCE]
+						,[QTY]
+						,[CURRENT_WAREHOUSE]
+						,[CLIENT_OWNER]
+						,[CURRENT_LOCATION]
+						,[TONE]
+						,[CALIBER]
+						,[STATUS_CODE]
+						,[STATUS_NAME]
+					)
+			SELECT
+				[AL].[MATERIAL_ID]
+				,[AL].[LICENSE_ID]
+				,[AL].[QTY_RESERVED]
+				,[W].[WAREHOUSE_ID]
+				,[M].[CLIENT_OWNER]
+				,[L].[CURRENT_LOCATION]
+				,[AL].[TONE]
+				,[AL].[CALIBER]
+				,[AL].[STATUS_CODE]
+				,[AL].[STATUS_CODE]
+			FROM
+				[wms].[OP_WMS_INVENTORY_RESERVED_BY_PROJECT] [AL]
+			INNER JOIN [wms].[OP_WMS_MATERIALS] [M] ON [AL].[MATERIAL_ID] = [M].[MATERIAL_ID]
+			INNER JOIN [wms].[OP_WMS_LICENSES] [L] ON [AL].[LICENSE_ID] = [L].[LICENSE_ID]
+			INNER JOIN @WAREHOUSES [W] ON ([L].[CURRENT_WAREHOUSE] = [W].[WAREHOUSE_ID])
+			WHERE
+				[AL].[MATERIAL_ID] = @MATERIAL_ID
+				AND [AL].[STATUS_CODE] = @STATUS_CODE
+				AND (
+						@TONE IS NULL
+						OR [AL].[TONE] = @TONE
+					)
+				AND (
+						@CALIBER IS NULL
+						OR [AL].[CALIBER] = @CALIBER
+					)
+				AND [AL].[PROJECT_ID] = @PROJECT_ID;
+		END;	
+
+	END;
+
+	INSERT	INTO @LICENCES_TEMP
+			(
+				[MATERIAL_ID]
+				,[LICENCE]
+				,[QTY]
+				,[CURRENT_WAREHOUSE]
+				,[CLIENT_OWNER]
+				,[CURRENT_LOCATION]
+				,[TONE]
+				,[CALIBER]
+				,[STATUS_CODE]
+				,[STATUS_NAME]
+			)
+	SELECT
+		[TL].[MATERIAL_ID]
+		,[TL].[LICENSE_ID_SOURCE]
+		,[TL].[QUANTITY_PENDING]
+		,[TL].[WAREHOUSE_SOURCE]
+		,[TL].[CLIENT_OWNER]
+		,[TL].[LOCATION_SPOT_SOURCE]
+		,[TCM].[TONE]
+		,[TCM].[CALIBER]
+		,[SML].[STATUS_CODE]
+		,[SML].[STATUS_NAME]
+	FROM
+		[wms].[OP_WMS_TASK_LIST] [TL]
+	INNER JOIN [wms].[OP_WMS_INV_X_LICENSE] [IL] ON (
+											[TL].[LICENSE_ID_SOURCE] = [IL].[LICENSE_ID]
+											AND [TL].[MATERIAL_ID] = [IL].[MATERIAL_ID]
+											)
+	INNER JOIN [wms].[OP_WMS_STATUS_OF_MATERIAL_BY_LICENSE] [SML] ON ([IL].[STATUS_ID] = [SML].[STATUS_ID])
+	LEFT JOIN [wms].[OP_WMS_TONE_AND_CALIBER_BY_MATERIAL] [TCM] ON ([IL].[TONE_AND_CALIBER_ID] = [TCM].[TONE_AND_CALIBER_ID])
+	WHERE
+		[TL].[WAVE_PICKING_ID] = @WAVE_PICKING_ID
+		AND [TL].[MATERIAL_ID] = @MATERIAL_ID;
+
+	MERGE @LICENCES_RESULT AS [LR]
+	USING @LICENCES_TEMP AS [LT]
+	ON (
+		[LR].[LICENCE] = [LT].[LICENCE]
+		AND [LR].[MATERIAL_ID] = [LT].[MATERIAL_ID]
+		)
+	WHEN MATCHED THEN
+		UPDATE SET
+				[LR].[QTY] = [LR].[QTY] + [LT].[QTY]
+	WHEN NOT MATCHED BY TARGET THEN
+		INSERT
+				(
+					[MATERIAL_ID]
+					,[LICENCE]
+					,[QTY]
+					,[CURRENT_WAREHOUSE]
+					,[CLIENT_OWNER]
+					,[CURRENT_LOCATION]
+					,[TONE]
+					,[CALIBER]
+					,[STATUS_CODE]
+					,[STATUS_NAME]
+				)
+		VALUES	(
+					[LT].[MATERIAL_ID]
+					,[LT].[LICENCE]
+					,[LT].[QTY]
+					,[LT].[CURRENT_WAREHOUSE]
+					,[LT].[CLIENT_OWNER]
+					,[LT].[CURRENT_LOCATION]
+					,[LT].[TONE]
+					,[LT].[CALIBER]
+					,[LT].[STATUS_CODE]
+					,[LT].[STATUS_NAME]
+				);
+
+	SELECT
+		[MATERIAL_ID]
+		,[LICENCE] AS [LICENCE_ID]
+		,[QTY]
+		,[CURRENT_WAREHOUSE] AS [CODE_WAREHOUSE]
+		,[CLIENT_OWNER]
+		,[CURRENT_LOCATION] AS [LOCATION]
+		,[TONE]
+		,[CALIBER]
+		,[STATUS_CODE]
+		,[STATUS_NAME]
+	FROM
+		@LICENCES_RESULT
+	WHERE
+		[QTY] > 0
+		ORDER BY STATUS_CODE;
+
+END;

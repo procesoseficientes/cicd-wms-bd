@@ -1,0 +1,36 @@
+﻿
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+CREATE FUNCTION [wms].[OP_WMS_FUNC_GET_AUDIT_BY_POLIZA]
+(	
+	@pPOLIZA	VARCHAR(50)
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+
+SELECT 
+	A.CODIGO_POLIZA,			
+	A.AUDIT_ID,				
+	A.COUNTING_METHOD,		
+	A.NUMERO_ORDEN,
+	A.STATUS, 
+	B.MATERIAL_ID,
+	B.BARCODE_ID, 
+	B.MATERIAL_NAME,
+	(CASE B.SCANNED_COUNT WHEN 0 THEN B.INPUTED_COUNT ELSE B.SCANNED_COUNT END) AS COUNTED,
+	A.LAST_UPDATED_BY, 
+	A.COMMENTS, 
+	CONVERT(VARCHAR(25),A.LAST_UPDATED) AS LAST_UPDATED
+ FROM 
+	[wms].OP_WMS_AUDIT_RECEPTION_CONTROL A,  
+	[wms].OP_WMS_AUDIT_RECEPTION_SKUS B
+ WHERE 
+	A.CODIGO_POLIZA = @pPOLIZA AND
+	B.AUDIT_ID = A.AUDIT_ID  
+
+)

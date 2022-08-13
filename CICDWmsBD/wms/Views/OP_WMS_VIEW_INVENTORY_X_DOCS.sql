@@ -1,0 +1,70 @@
+﻿
+-- Modificacion 7/19/2017 @ NEXUS-Team Sprint AgeOfEmpires
+-- rodrigo.gomez
+-- Se filtra el inventario bloqueado
+
+/*
+-- Ejemplo de Ejecucion:
+        SELECT * FROM [wms].[OP_WMS_VIEW_INVENTORY_X_DOCS]
+*/
+-- =============================================
+CREATE VIEW [wms].[OP_WMS_VIEW_INVENTORY_X_DOCS]
+AS
+SELECT
+	[PH].[NUMERO_ORDEN]
+	,[PH].[WAREHOUSE_REGIMEN]
+	,[PH].[CODIGO_POLIZA]
+	,[PH].[NUMERO_DUA]
+	,[PH].[CLIENT_CODE]
+	,[PD].[CLIENT_CODE] AS [CONSIGNATARIO_CODIGO]
+	,[VC].[CLIENT_NAME] AS [CONSIGNATARIO_NAME]
+	,SUM(ISNULL([FN].[BULTOS], 0)) AS [BULTOS]
+	,SUM(ISNULL([FN].[QTY], 0)) AS [QTY]
+	,SUM(ISNULL([FN].[CUSTOMS_AMOUNT], 0)) AS [CUSTOMS_AMOUNT]
+	,SUM(ISNULL([FN].[DAI], 0)) AS [DAI]
+	,SUM(ISNULL([FN].[IVA], 0)) AS [IVA]
+	,SUM(ISNULL([FN].[CUSTOMS_AMOUNT], 0)) + SUM(ISNULL([FN].[DAI],
+											0))
+	+ SUM(ISNULL([FN].[IVA], 0)) AS [TOTAL]
+	,[PD].[SAC_CODE]
+	,[PD].[SKU_DESCRIPTION]
+	,SUM(ISNULL([PD].[NET_WEIGTH], 0)) AS [NET_WEIGTH]
+	,[PD].[WEIGTH_UNIT]
+	,SUM(ISNULL([PD].[VOLUME], 0)) AS [VOLUME]
+	,[PD].[VOLUME_UNIT]
+	,[PD].[QTY_UNIT]
+	,[PH].[FECHA_DOCUMENTO]
+	,[PD].[LINE_NUMBER]
+	,[PH].[DOC_ID]
+	,[PD].[TAX]
+FROM
+	[wms].[OP_WMS_POLIZA_HEADER] AS [PH]
+	LEFT JOIN [wms].[OP_WMS_POLIZA_DETAIL] AS [PD] ON ([PH].[DOC_ID] = [PD].[DOC_ID])
+	LEFT JOIN [wms].[fn_saldo_linea_poliza]() AS [FN] ON (
+												[FN].[DOC_ID] = [PD].[DOC_ID]
+												AND [FN].[LINE_NUMBER] = [PD].[LINE_NUMBER]
+												)
+	LEFT JOIN [wms].[OP_WMS_VIEW_CLIENTS] AS [VC] ON ([VC].[CLIENT_CODE] = [PD].[CLIENT_CODE])
+	INNER JOIN [wms].[OP_WMS_TARIFICADOR_HEADER] [owth] ON [PH].[ACUERDO_COMERCIAL] = [owth].[ACUERDO_COMERCIAL_ID]
+WHERE
+	([PH].[TIPO] = 'INGRESO')
+	AND [PH].[IS_BLOCKED] = 0
+	AND GETDATE() BETWEEN [owth].[VALID_FROM]
+					AND		[owth].[VALID_TO]
+GROUP BY
+	[PH].[NUMERO_ORDEN]
+	,[PH].[WAREHOUSE_REGIMEN]
+	,[PH].[CODIGO_POLIZA]
+	,[PH].[NUMERO_DUA]
+	,[PH].[CLIENT_CODE]
+	,[PD].[CLIENT_CODE]
+	,[PD].[SAC_CODE]
+	,[PD].[SKU_DESCRIPTION]
+	,[PD].[WEIGTH_UNIT]
+	,[PD].[VOLUME_UNIT]
+	,[PD].[QTY_UNIT]
+	,[PH].[FECHA_DOCUMENTO]
+	,[PD].[LINE_NUMBER]
+	,[PH].[DOC_ID]
+	,[VC].[CLIENT_NAME]
+	,[PD].[TAX];

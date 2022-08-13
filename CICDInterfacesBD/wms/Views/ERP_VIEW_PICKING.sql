@@ -1,0 +1,8 @@
+﻿
+CREATE VIEW [wms].[ERP_VIEW_PICKING]
+AS
+SELECT
+  *
+FROM [wms].[SWIFT_ERP_PICKING]
+
+

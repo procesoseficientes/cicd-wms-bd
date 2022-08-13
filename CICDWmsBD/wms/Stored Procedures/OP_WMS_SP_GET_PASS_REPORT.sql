@@ -1,0 +1,131 @@
+﻿-- =============================================
+-- Autor:				diego.as
+-- Fecha de Creacion: 	11/27/2017 @ Reborn - TEAM Sprint Nach
+-- Description:			SP que obtiene los registros para Reporte De Pases De Salida
+
+-- Autor:				marvin.solares
+-- Fecha de Creacion: 	20181122 GForce@Rinoceronte
+-- Description:			Se resuelve inconveniente de filas duplicadas en consulta
+
+/*
+-- Ejemplo de Ejecucion:
+
+		EXEC [wms].[OP_WMS_SP_GET_PASS_REPORT]
+		@START_DATE = '2017-11-27 07:02:37.290'
+		,@END_DATE = '2017-11-27 16:07:42.117'
+		,@LOGIN = 'ADMIN'
+				
+		--
+
+		SELECT * FROM [wms].[OP_WMS3PL_PASSES] [owpp]
+		SELECT * FROM [wms].[OP_WMS_PASS_DETAIL] [owpd]
+
+*/
+-- =============================================
+CREATE PROCEDURE [wms].[OP_WMS_SP_GET_PASS_REPORT] (
+		@START_DATE DATETIME
+		,@END_DATE DATETIME
+		,@DISTRIBUTION_CENTER_ID VARCHAR(250)
+	)
+AS
+BEGIN
+  --
+	SET NOCOUNT ON;
+
+  --
+	DECLARE	@COMPANY_NAME VARCHAR(150);
+
+	SELECT TOP 1
+		@COMPANY_NAME = [SC].[COMPANY_NAME]
+	FROM
+		[wms].[OP_SETUP_COMPANY] [SC];
+
+
+	DECLARE	@LOGINS TABLE ([LOGIN_ID] VARCHAR(25));
+
+	INSERT	INTO @LOGINS
+			(
+				[LOGIN_ID]
+			)
+	SELECT DISTINCT
+		[WU].[LOGIN_ID]
+	FROM
+		[wms].[OP_WMS_WAREHOUSES] [W]
+	INNER JOIN [wms].[OP_WMS_WAREHOUSE_BY_USER] [WU] ON ([W].[WAREHOUSE_ID] = [WU].[WAREHOUSE_ID])
+	WHERE
+		[W].[DISTRIBUTION_CENTER_ID] = @DISTRIBUTION_CENTER_ID;
+	
+  --
+	SELECT
+		[P].[PASS_ID]
+		,[P].[VEHICLE_PLATE]
+		,[P].[VEHICLE_ID]
+		,[P].[DRIVER_ID]
+		,([PIL].[NAME] + ' ' + [PIL].[LAST_NAME]) [NAME_PILOT]
+		,[PD].[CODE_WAREHOUSE]
+		,[P].[CREATED_DATE]
+		,(CASE	WHEN [P].[STATUS] = 'CREATED' THEN 'CREADO'
+				WHEN [P].[STATUS] = 'FINALIZED'
+				THEN 'FINALIZADO'
+				WHEN [P].[STATUS] = 'CANCELED'
+				THEN 'CANCELADO'
+			END) [STATUS]
+		,(CASE	WHEN [P].[TYPE] = 'SALES_ORDER' THEN 'VENTA'
+				WHEN [P].[TYPE] = 'TRANSFER_REQUEST'
+				THEN 'TRANSFERENCIA'
+				WHEN [P].[TYPE] = 'GENERAL_DISPATCH'
+				THEN 'DESPACHO GENERAL'
+			END) [TYPE]
+		,[PD].[CLIENT_CODE]
+		,[PD].[CLIENT_NAME]
+		,[PD].[WAVE_PICKING_ID]
+		,[PD].[DOC_NUM]
+		,[PD].[MATERIAL_ID]
+		,[PD].[MATERIAL_NAME]
+		,[PD].[QTY]
+		,[PDH].[ERP_REFERENCE]
+	FROM
+		[wms].[OP_WMS3PL_PASSES] AS [P]
+	INNER JOIN @LOGINS [L] ON (
+								[L].[LOGIN_ID] = [P].[CREATED_BY]
+								OR [L].[LOGIN_ID] = [P].[LAST_UPDATED_BY]
+								)
+	INNER JOIN [wms].[OP_WMS_PILOT] AS [PIL] ON ([P].[DRIVER_ID] = [PIL].[PILOT_CODE])
+	LEFT JOIN [wms].[OP_WMS_PASS_DETAIL] AS [PD] ON ([PD].[PASS_HEADER_ID] = [P].[PASS_ID])
+	LEFT JOIN [wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [PDH] ON ([PDH].[PICKING_DEMAND_HEADER_ID] = [PD].[PICKING_DEMAND_HEADER_ID])
+	WHERE
+		[P].[CREATED_DATE] BETWEEN @START_DATE
+							AND		@END_DATE
+	GROUP BY
+		[P].[PASS_ID]
+		,[P].[VEHICLE_PLATE]
+		,[P].[VEHICLE_ID]
+		,[P].[DRIVER_ID]
+		,([PIL].[NAME] + ' ' + [PIL].[LAST_NAME])
+		,[PD].[CODE_WAREHOUSE]
+		,[P].[CREATED_DATE]
+		,(CASE	WHEN [P].[STATUS] = 'CREATED' THEN 'CREADO'
+				WHEN [P].[STATUS] = 'FINALIZED'
+				THEN 'FINALIZADO'
+				WHEN [P].[STATUS] = 'CANCELED'
+				THEN 'CANCELADO'
+			END)
+		,(CASE	WHEN [P].[TYPE] = 'SALES_ORDER' THEN 'VENTA'
+				WHEN [P].[TYPE] = 'TRANSFER_REQUEST'
+				THEN 'TRANSFERENCIA'
+				WHEN [P].[TYPE] = 'GENERAL_DISPATCH'
+				THEN 'DESPACHO GENERAL'
+			END)
+		,[PD].[CLIENT_CODE]
+		,[PD].[CLIENT_NAME]
+		,[PD].[WAVE_PICKING_ID]
+		,[PD].[DOC_NUM]
+		,[PD].[MATERIAL_ID]
+		,[PD].[MATERIAL_NAME]
+		,[PD].[QTY]
+		,[PDH].[ERP_REFERENCE]
+	ORDER BY
+		[P].[PASS_ID]
+		,[P].[CREATED_DATE];
+--
+END;

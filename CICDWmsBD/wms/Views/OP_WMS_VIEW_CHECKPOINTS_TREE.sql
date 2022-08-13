@@ -1,0 +1,8 @@
+﻿CREATE VIEW [wms].OP_WMS_VIEW_CHECKPOINTS_TREE
+AS
+SELECT     B.ROLE_ID, B.ROLE_NAME, A.CHECK_ID, A.DESCRIPTION, A.ACCESS, A.PARENT,
+                          (SELECT     1 AS Expr1
+                            FROM          [wms].OP_WMS_FUNC_IS_CHECKPOINT_IN_ROLE(B.ROLE_ID, A.CHECK_ID) AS OP_WMS_FUNC_IS_CHECKPOINT_IN_ROLE_1) 
+                      AS IS_GRANTED
+FROM         [wms].OP_WMS_CHECKPOINTS AS A CROSS JOIN
+                      [wms].OP_WMS_ROLES AS B

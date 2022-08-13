@@ -1,0 +1,190 @@
+﻿-- =============================================
+-- Autor:	        hector.gonzalez
+-- Fecha de Creacion: 	2017-10-13 @ Team REBORN - Sprint Drache
+-- Description:	        sp que actualiza la cantidad de una etiqueta
+
+-- Autor:	        rudi.garcia
+-- Fecha de Creacion: 	10-Jan-2018 @ Team REBORN - Sprint Ramsey
+-- Description:	        Se agrego que siempre se actualize el location_target para las etiquetas que no tienen de esa ola de picking
+
+/*
+-- Ejemplo de Ejecucion:
+			EXEC [wms].OP_WMS_SP_UPDATE_PICKING_LABEL
+
+
+*/
+-- =============================================
+CREATE PROCEDURE [wms].[OP_WMS_SP_UPDATE_PICKING_LABEL] (
+		@LABEL_ID INT
+		,@CLIENT_CODE VARCHAR(50)
+		,@LICENSE_ID DECIMAL
+		,@BARCODE VARCHAR(25)
+		,@QTY DECIMAL(18, 4)
+		,@CODIGO_POLIZA VARCHAR(25)
+		,@SOURCE_LOCATION VARCHAR(25)
+		,@TARGET_LOCATION VARCHAR(25)
+		,@TRANSIT_LOCATION VARCHAR(25)
+		,@SERIAL_NUMBER VARCHAR(50)
+		,@WAVE_PICKING_ID INT
+	)
+AS
+BEGIN
+	SET NOCOUNT ON;
+  --
+
+	BEGIN TRY
+
+		DECLARE
+			@MATERIAL_NAME VARCHAR(150)
+			,@WEIGHT NUMERIC(18, 2)
+			,@WAREHOUSE_TARGET VARCHAR(25)
+			,@TRANSFER_REQUEST_ID INT
+			,@TONE VARCHAR(20)
+			,@CALIBER VARCHAR(20)
+			,@STATUS VARCHAR(25)
+			,@MATERIAL_ID VARCHAR(50)
+			,@VIN VARCHAR(40)
+			,@BATCH VARCHAR(50)
+			,@TASK_SUB_TYPE VARCHAR(25)
+			,@HANDLE_SERIAL INT
+			,@LOGIN_ID VARCHAR(25);
+
+
+		SELECT
+			@MATERIAL_NAME = [M].[MATERIAL_NAME]
+			,@WEIGHT = ISNULL([M].[WEIGTH], 0) * @QTY
+			,@MATERIAL_ID = [M].[MATERIAL_ID]
+			,@HANDLE_SERIAL = ISNULL([M].[SERIAL_NUMBER_REQUESTS],
+										0)
+		FROM
+			[wms].[OP_WMS_MATERIALS] [M]
+		WHERE
+			[M].[CLIENT_OWNER] = @CLIENT_CODE
+			AND (
+					[M].[BARCODE_ID] = @BARCODE
+					OR [M].[ALTERNATE_BARCODE] = @BARCODE
+					OR [M].[MATERIAL_ID] = @BARCODE
+				);
+
+
+		SELECT TOP 1
+			@WAREHOUSE_TARGET = ISNULL('WT-DESTINO '
+										+ [TR].[WAREHOUSE_TO],
+										'BODEGA '
+										+ [TL].[WAREHOUSE_SOURCE])
+			,@TRANSFER_REQUEST_ID = [TL].[TRANSFER_REQUEST_ID]
+			,@STATUS = [TR].[STATUS]
+			,@TONE = [TL].[TONE]
+			,@CALIBER = [TL].[CALIBER]
+			,@TASK_SUB_TYPE = [TL].[TASK_SUBTYPE]
+			,@LOGIN_ID = [TL].[TASK_ASSIGNEDTO]
+		FROM
+			[wms].[OP_WMS_TASK_LIST] [TL]
+		LEFT JOIN [wms].[OP_WMS_TRANSFER_REQUEST_HEADER] [TR] ON [TL].[TRANSFER_REQUEST_ID] = [TR].[TRANSFER_REQUEST_ID]
+		WHERE
+			[TL].[WAVE_PICKING_ID] = @WAVE_PICKING_ID
+			AND [TL].[MATERIAL_ID] = @MATERIAL_ID;
+
+		SELECT
+			@VIN = [IXL].[VIN]
+			,@BATCH = [IXL].[BATCH]
+		FROM
+			[wms].[OP_WMS_INV_X_LICENSE] [IXL]
+		WHERE
+			[IXL].[LICENSE_ID] = @LICENSE_ID
+			AND [IXL].[MATERIAL_ID] = @MATERIAL_ID;
+
+		UPDATE
+			[wms].[OP_WMS_PICKING_LABELS]
+		SET	
+			[LICENSE_ID] = @LICENSE_ID
+			,[MATERIAL_ID] = @MATERIAL_ID
+			,[MATERIAL_NAME] = @MATERIAL_NAME
+			,[QTY] = @QTY
+			,[CODIGO_POLIZA] = @CODIGO_POLIZA
+			,[SOURCE_LOCATION] = @SOURCE_LOCATION
+			,[TARGET_LOCATION] = @TARGET_LOCATION
+			,[TRANSIT_LOCATION] = @TRANSIT_LOCATION
+			,[BATCH] = @BATCH
+			,[VIN] = @VIN
+			,[TONE] = @TONE
+			,[CALIBER] = @CALIBER
+			,[SERIAL_NUMBER] = @SERIAL_NUMBER
+			,[STATUS] = @STATUS
+			,[WEIGHT] = @WEIGHT
+			,[WAVE_PICKING_ID] = @WAVE_PICKING_ID
+			,[TASK_SUBT_YPE] = @TASK_SUB_TYPE
+			,[WAREHOUSE_TARGET] = @WAREHOUSE_TARGET
+			,[TRANSFER_REQUEST_ID] = @TRANSFER_REQUEST_ID
+		WHERE
+			[LABEL_ID] = @LABEL_ID;
+
+
+		UPDATE
+			[wms].[OP_WMS_PICKING_LABELS]
+		SET	
+			[TARGET_LOCATION] = @TARGET_LOCATION
+		WHERE
+			[WAVE_PICKING_ID] = @WAVE_PICKING_ID;
+
+		IF @HANDLE_SERIAL = 1
+		BEGIN
+
+			INSERT	INTO [wms].[OP_WMS_PICKING_LABELS_BY_SERIAL_NUMBER]
+					(
+						[LABEL_ID]
+						,[SERIAL_NUMBER]
+						,[BATCH]
+						,[DATE_EXPIRATION]
+					)
+			SELECT
+				@LABEL_ID
+				,[S].[SERIAL]
+				,[S].[BATCH]
+				,[S].[DATE_EXPIRATION]
+			FROM
+				[wms].[OP_WMS_MATERIAL_X_SERIAL_NUMBER] [S]
+			INNER JOIN [wms].[OP_WMS_TASK_LIST] [T] ON [T].[WAVE_PICKING_ID] = [S].[WAVE_PICKING_ID]
+											AND [S].[LICENSE_ID] = [T].[LICENSE_ID_SOURCE]
+											AND [S].[MATERIAL_ID] = [T].[MATERIAL_ID]
+											AND [T].[TASK_ASSIGNEDTO] = [S].[ASSIGNED_TO]
+			WHERE
+				[S].[WAVE_PICKING_ID] = @WAVE_PICKING_ID
+				AND [T].[TASK_ASSIGNEDTO] = @LOGIN_ID
+				AND [S].[STATUS] = 2;
+
+			UPDATE
+				[S]
+			SET	
+				[S].[STATUS] = -1
+			FROM
+				[wms].[OP_WMS_MATERIAL_X_SERIAL_NUMBER] [S]
+			INNER JOIN [wms].[OP_WMS_TASK_LIST] [T] ON [T].[WAVE_PICKING_ID] = [S].[WAVE_PICKING_ID]
+											AND [S].[LICENSE_ID] = [T].[LICENSE_ID_SOURCE]
+											AND [S].[MATERIAL_ID] = [T].[MATERIAL_ID]
+											AND [T].[TASK_ASSIGNEDTO] = [S].[ASSIGNED_TO]
+			WHERE
+				[S].[WAVE_PICKING_ID] = @WAVE_PICKING_ID
+				AND [T].[TASK_ASSIGNEDTO] = @LOGIN_ID
+				AND [S].[STATUS] = 2;
+		END;
+
+		EXEC [wms].[OP_WMS_SP_PICKING_HAS_BEEN_COMPLETED] @WAVE_PICKING_ID = @WAVE_PICKING_ID, -- int
+			@LOGIN = @LOGIN_ID; -- varchar(50)
+
+		SELECT
+			1 AS [Resultado]
+			,'Proceso Exitoso' [Mensaje]
+			,0 [Codigo]
+			,CAST(@LABEL_ID AS VARCHAR) [DbData];
+
+
+	END TRY
+	BEGIN CATCH
+		SELECT
+			-1 AS [Resultado]
+			,ERROR_MESSAGE() [Mensaje]
+			,@@ERROR [Codigo];
+	END CATCH;
+
+END;

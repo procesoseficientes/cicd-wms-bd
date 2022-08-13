@@ -1,0 +1,265 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>CICDSaeBD</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{2648a545-d441-4af9-b19d-b841ed2d8a90}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>CICDSaeBD</RootNamespace>
+    <AssemblyName>CICDSaeBD</AssemblyName>
+    <ModelCollation>1033,CS</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <DefaultCollation>Latin1_General_BIN</DefaultCollation>
+    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="dbo\" />
+    <Folder Include="dbo\Tables\" />
+    <Folder Include="dbo\Views\" />
+    <Folder Include="Security\" />
+    <Folder Include="dbo\Functions\" />
+    <Folder Include="dbo\Stored Procedures\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\Tables\FOLIOSCXP01.sql" />
+    <Build Include="dbo\Tables\RESULT01.sql" />
+    <Build Include="dbo\Tables\FACTA01.sql" />
+    <Build Include="dbo\Tables\ACTCAM01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTA01.sql" />
+    <Build Include="dbo\Tables\RESACT01.sql" />
+    <Build Include="dbo\Tables\FACTA_CLIB01.sql" />
+    <Build Include="dbo\Tables\GUICAM01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTA_CLIB01.sql" />
+    <Build Include="dbo\Tables\DESACT01.sql" />
+    <Build Include="dbo\Tables\FACTV01.sql" />
+    <Build Include="dbo\Tables\LNKOLKC01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTV01.sql" />
+    <Build Include="dbo\Tables\LNKOLKP01.sql" />
+    <Build Include="dbo\Tables\FACTV_CLIB01.sql" />
+    <Build Include="dbo\Tables\ZONA01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTV_CLIB01.sql" />
+    <Build Include="dbo\Tables\CLIN01.sql" />
+    <Build Include="dbo\Tables\PARAM_DATOSEMP01.sql" />
+    <Build Include="dbo\Tables\CFGLIN01.sql" />
+    <Build Include="dbo\Tables\PARAM_DATOSBD01.sql" />
+    <Build Include="dbo\Tables\TALLA01.sql" />
+    <Build Include="dbo\Tables\PARAM_DOMFISCAL01.sql" />
+    <Build Include="dbo\Tables\COLOR01.sql" />
+    <Build Include="dbo\Tables\PARAM_DOMEXPED01.sql" />
+    <Build Include="dbo\Tables\CTAESQ01.sql" />
+    <Build Include="dbo\Tables\PARAM_DATOSGRALES01.sql" />
+    <Build Include="dbo\Tables\IMPU01.sql" />
+    <Build Include="dbo\Tables\MONED01.sql" />
+    <Build Include="dbo\Tables\PARAM_CTACONTABLE01.sql" />
+    <Build Include="dbo\Tables\ALMACENES01.sql" />
+    <Build Include="dbo\Tables\PARAM_CLIENTES01.sql" />
+    <Build Include="dbo\Tables\OINVE01.sql" />
+    <Build Include="dbo\Tables\PARAM_PROVEEDORES01.sql" />
+    <Build Include="dbo\Tables\INVE01.sql" />
+    <Build Include="dbo\Tables\PARAM_INVENTARIO01.sql" />
+    <Build Include="dbo\Tables\PARAM_APLICASOC01.sql" />
+    <Build Include="dbo\Tables\PARAM_GRAFICAS01.sql" />
+    <Build Include="dbo\Tables\PARAM_FACTURA01.sql" />
+    <Build Include="dbo\Tables\PARAM_PARTIDASFACT01.sql" />
+    <Build Include="dbo\Tables\CVES_ALTER01.sql" />
+    <Build Include="dbo\Tables\PARAM_FACTURAELECTRONICA01.sql" />
+    <Build Include="dbo\Tables\INVE_CLIB01.sql" />
+    <Build Include="dbo\Tables\PARAM_COMPRAS01.sql" />
+    <Build Include="dbo\Tables\NUMSER01.sql" />
+    <Build Include="dbo\Tables\PARAM_PARTIDASCOMP01.sql" />
+    <Build Include="dbo\Tables\HNUMSER01.sql" />
+    <Build Include="dbo\Tables\PARAM_TIPODOCTOSF01.sql" />
+    <Build Include="dbo\Tables\KITS01.sql" />
+    <Build Include="dbo\Tables\PARAM_TIPODOCTOSC01.sql" />
+    <Build Include="dbo\Tables\OLTPD01.sql" />
+    <Build Include="dbo\Tables\PARAM_FOLIOSF01.sql" />
+    <Build Include="dbo\Tables\LTPD01.sql" />
+    <Build Include="dbo\Tables\PARAM_FOLIOSC01.sql" />
+    <Build Include="dbo\Tables\MULT01.sql" />
+    <Build Include="dbo\Tables\PARAM_CAMPOSLIBRES01.sql" />
+    <Build Include="dbo\Tables\CONM01.sql" />
+    <Build Include="dbo\Tables\CFDIC01.sql" />
+    <Build Include="dbo\Tables\OMINVE01.sql" />
+    <Build Include="dbo\Tables\COMPACTACION01.sql" />
+    <Build Include="dbo\Tables\MINVE01.sql" />
+    <Build Include="dbo\Tables\CTRL_ELIMINA01.sql" />
+    <Build Include="dbo\Tables\ENLACE_LTPD01.sql" />
+    <Build Include="dbo\Tables\CAPAS_X_MOV01.sql" />
+    <Build Include="dbo\Tables\VEND01.sql" />
+    <Build Include="dbo\Tables\CONC01.sql" />
+    <Build Include="dbo\Tables\CONP01.sql" />
+    <Build Include="dbo\Tables\OCLI01.sql" />
+    <Build Include="dbo\Tables\CLIE01.sql" />
+    <Build Include="dbo\Tables\PAGOLINEA01.sql" />
+    <Build Include="dbo\Tables\PARAM_DATOSBANCARIOS01.sql" />
+    <Build Include="dbo\Tables\CONTAC01.sql" />
+    <Build Include="dbo\Tables\FOTO_INVE01.sql" />
+    <Build Include="dbo\Tables\CITAS01.sql" />
+    <Build Include="dbo\Tables\PreciosNuevos.sql" />
+    <Build Include="dbo\Tables\CUENTA_ORD01.sql" />
+    <Build Include="dbo\Tables\CLICAM01.sql" />
+    <Build Include="dbo\Tables\CUENTA_BENEF01.sql" />
+    <Build Include="dbo\Tables\BITA01.sql" />
+    <Build Include="dbo\Tables\FACTG01.sql" />
+    <Build Include="dbo\Tables\INFCLI01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTG01.sql" />
+    <Build Include="dbo\Tables\OPROV01.sql" />
+    <Build Include="dbo\Tables\FACTG_CLIB01.sql" />
+    <Build Include="dbo\Tables\PROV01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTG_CLIB01.sql" />
+    <Build Include="dbo\Tables\PROV_CLIB01.sql" />
+    <Build Include="dbo\Tables\CFDI_REL01.sql" />
+    <Build Include="dbo\Tables\CONTAP01.sql" />
+    <Build Include="dbo\Tables\OBS_DOCC01.sql" />
+    <Build Include="dbo\Tables\OBS_DOCF01.sql" />
+    <Build Include="dbo\Tables\FOLIOSC01.sql" />
+    <Build Include="dbo\Tables\COMPO01.sql" />
+    <Build Include="dbo\Tables\PAR_COMPO01.sql" />
+    <Build Include="dbo\Tables\COMPR01.sql" />
+    <Build Include="dbo\Tables\PAR_COMPR01.sql" />
+    <Build Include="dbo\Tables\FACTE01.sql" />
+    <Build Include="dbo\Tables\COMPC01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTE01.sql" />
+    <Build Include="dbo\Tables\PAR_COMPC01.sql" />
+    <Build Include="dbo\Tables\FACTE_CLIB01.sql" />
+    <Build Include="dbo\Tables\COMPD01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTE_CLIB01.sql" />
+    <Build Include="dbo\Tables\PAR_COMPD01.sql" />
+    <Build Include="dbo\Tables\COMPQ01.sql" />
+    <Build Include="dbo\Tables\PAR_COMPQ01.sql" />
+    <Build Include="dbo\Tables\FOLIOSF01.sql" />
+    <Build Include="dbo\Tables\FACTF01.sql" />
+    <Build Include="dbo\Tables\ALERTA01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTF01.sql" />
+    <Build Include="dbo\Tables\FACTR01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTR01.sql" />
+    <Build Include="dbo\Tables\FACTP01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTP01.sql" />
+    <Build Include="dbo\Tables\MINVE01x.sql" />
+    <Build Include="dbo\Tables\FACTC01.sql" />
+    <Build Include="dbo\Tables\ALERTA_USUARIO01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTC01.sql" />
+    <Build Include="dbo\Tables\Clientess.sql" />
+    <Build Include="dbo\Tables\FACTD01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTD01.sql" />
+    <Build Include="dbo\Tables\INFENVIO01.sql" />
+    <Build Include="dbo\Tables\FOLCXC01.sql" />
+    <Build Include="dbo\Tables\FOLCXP01.sql" />
+    <Build Include="dbo\Tables\DOCTOSIGF01.sql" />
+    <Build Include="dbo\Tables\DOCTOSIGC01.sql" />
+    <Build Include="dbo\Tables\POLI01.sql" />
+    <Build Include="dbo\Tables\OCUEN01.sql" />
+    <Build Include="dbo\Tables\CUEN_M01.sql" />
+    <Build Include="dbo\Tables\CUEN_DET01.sql" />
+    <Build Include="dbo\Tables\OPAGA01.sql" />
+    <Build Include="dbo\Tables\PAGA_M01.sql" />
+    <Build Include="dbo\Tables\PAGA_DET01.sql" />
+    <Build Include="dbo\Tables\AFACT01.sql" />
+    <Build Include="dbo\Tables\ACOMP01.sql" />
+    <Build Include="dbo\Tables\INTCOI01.sql" />
+    <Build Include="dbo\Tables\PRECIOS01.sql" />
+    <Build Include="dbo\Tables\PRECIO_X_PROD01.sql" />
+    <Build Include="dbo\Tables\PRVPROD01.sql" />
+    <Build Include="dbo\Tables\TIPO_TERCEROS01.sql" />
+    <Build Include="dbo\Tables\OPER_TERCEROS01.sql" />
+    <Build Include="dbo\Tables\OPER_X_TIPO_TERCERO01.sql" />
+    <Build Include="dbo\Tables\PAIS01.sql" />
+    <Build Include="dbo\Tables\CNSEST01.sql" />
+    <Build Include="dbo\Tables\PERIODOS01.sql" />
+    <Build Include="dbo\Tables\INVFIS01.sql" />
+    <Build Include="dbo\Tables\AUTORIZAC01.sql" />
+    <Build Include="dbo\Tables\AUTORIZAP01.sql" />
+    <Build Include="dbo\Tables\FOLIOSWMS.sql" />
+    <Build Include="dbo\Tables\LISTPRODSUST01.sql" />
+    <Build Include="dbo\Tables\PRODSUST01.sql" />
+    <Build Include="dbo\Tables\FACTF_CLIB01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTF_CLIB01.sql" />
+    <Build Include="dbo\Tables\FACTR_CLIB01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTR_CLIB01.sql" />
+    <Build Include="dbo\Tables\FACTP_CLIB01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTP_CLIB01.sql" />
+    <Build Include="dbo\Tables\FACTC_CLIB01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTC_CLIB01.sql" />
+    <Build Include="dbo\Tables\FACTD_CLIB01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTD_CLIB01.sql" />
+    <Build Include="dbo\Tables\COMPC_CLIB01.sql" />
+    <Build Include="dbo\Tables\PAR_COMPC_CLIB01.sql" />
+    <Build Include="dbo\Tables\CLIE_CLIB01.sql" />
+    <Build Include="dbo\Tables\COMPO_CLIB01.sql" />
+    <Build Include="dbo\Tables\PAR_COMPO_CLIB01.sql" />
+    <Build Include="dbo\Tables\COMPD_CLIB01.sql" />
+    <Build Include="dbo\Tables\PAR_COMPD_CLIB01.sql" />
+    <Build Include="dbo\Tables\COMPQ_CLIB01.sql" />
+    <Build Include="dbo\Tables\PAR_COMPQ_CLIB01.sql" />
+    <Build Include="dbo\Tables\COMPR_CLIB01.sql" />
+    <Build Include="dbo\Tables\PAR_COMPR_CLIB01.sql" />
+    <Build Include="dbo\Tables\CONS_PER01.sql" />
+    <Build Include="dbo\Tables\TBLCONTROL01.sql" />
+    <Build Include="dbo\Tables\CTRLBLOQUEO01.sql" />
+    <Build Include="dbo\Tables\ACTIVI01.sql" />
+    <Build Include="dbo\Tables\CFDI01.sql" />
+    <Build Include="dbo\Tables\CAMP01.sql" />
+    <Build Include="dbo\Tables\FOLIOSCXC01.sql" />
+    <Build Include="dbo\Tables\CAMPFIL01.sql" />
+    <Build Include="dbo\Views\vConsumoPromedio.sql" />
+    <Build Include="dbo\Functions\FxConsumoPromedio.sql" />
+    <Build Include="dbo\Stored Procedures\Proc_FIN_ProductosPrecioCero.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\msdb.dacpac">
+      <HintPath>$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\msdb.dacpac</HintPath>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseVariableLiteralValue>msdb</DatabaseVariableLiteralValue>
+    </ArtifactReference>
+    <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\master.dacpac">
+      <HintPath>$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\master.dacpac</HintPath>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
+    </ArtifactReference>
+  </ItemGroup>
+</Project>

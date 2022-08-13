@@ -1,0 +1,7 @@
+﻿CREATE TABLE [wms].[OP_WMS_MATERIAL_CLASSES] (
+    [CLASS_ID]        VARCHAR (25)  NOT NULL,
+    [CLASS_ID_PARENT] VARCHAR (25)  NULL,
+    [CLASS_NAME]      VARCHAR (150) NULL,
+    [IS_PARENT]       INT           NULL
+);
+

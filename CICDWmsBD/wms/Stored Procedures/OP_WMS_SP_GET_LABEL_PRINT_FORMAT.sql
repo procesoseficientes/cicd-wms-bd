@@ -1,0 +1,60 @@
+﻿-- =============================================
+-- Autor:				rodrigo.gomez
+-- Fecha de Creacion: 	4/27/2018 @ GForce-Team Sprint Capibara 
+-- Description:			Obtiene el formato de impresion de etiqueta
+
+/*
+-- Ejemplo de Ejecucion:
+				EXEC [wms].[OP_WMS_SP_GET_LABEL_PRINT_FORMAT]
+					@LABEL_ID = 3
+					,@LOGIN = 'ACAMACHO'
+*/
+-- =============================================
+CREATE PROCEDURE [wms].[OP_WMS_SP_GET_LABEL_PRINT_FORMAT](
+	@LABEL_ID INT
+	,@LOGIN VARCHAR(25)
+)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	--
+	DECLARE 
+		@CLIENT_NAME VARCHAR(150)
+		,@CLIENT_CODE VARCHAR(50)
+		,@REGIMEN VARCHAR(50)
+		,@WAVE_PICKING_ID INT
+		,@STATE_CODE INT
+
+	SELECT TOP 1 
+		@CLIENT_NAME = [CLIENT_NAME],
+		@CLIENT_CODE = [CLIENT_CODE],
+		@REGIMEN = [REGIMEN],
+		@WAVE_PICKING_ID = [WAVE_PICKING_ID],
+		@STATE_CODE = [STATE_CODE]
+	FROM [wms].[OP_WMS_PICKING_LABELS]
+	WHERE [LABEL_ID] = @LABEL_ID
+
+
+	SELECT N'! 0 50 50 635 1 
+! U1 LMARGIN 10
+! U1 PAGE-WIDTH 1400
+CENTER 570 T 0 5 3 10 '+@CLIENT_NAME+'
+CENTER 570 T 0 5 3 60 '+@CLIENT_CODE+'
+LINE 0 100 570 100 2
+CENTER 570 T 0 5 0 115 '+@REGIMEN+'
+BARCODE 128 1 1 160 20 160 '+CAST(@LABEL_ID AS VARCHAR)+'
+CENTER 570 T 0 3 0 340 Codigo Etiqueta: '+CAST(@LABEL_ID AS VARCHAR)+'
+'+
+CASE WHEN ISNULL(@WAVE_PICKING_ID,0) > 0 THEN 'CENTER 570 T 0 5 0 370 T: '+CAST(@WAVE_PICKING_ID AS VARCHAR)+'' ELSE '' END
++'
+'+
+CASE WHEN ISNULL(@STATE_CODE,0) > 0 THEN 'CENTER 570 T 0 5 0 410 Departamento: '+CAST(@STATE_CODE AS VARCHAR)+'' ELSE '' END
++'
+LINE 0 500 570 500 2
+CENTER 570 T 0 2 0 510 '+@LOGIN+' / '+CONVERT(VARCHAR(50), GETDATE())+'
+CENTER 570 T 0 1 0 550 www.mobilityscm.com
+L 5 T 0 2 0 130 
+PRINT
+! U1 getvar "device.host_status"
+' AS [FORMAT]
+END

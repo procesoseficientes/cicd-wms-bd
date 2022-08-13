@@ -1,0 +1,97 @@
+﻿
+-- =============================================
+-- Autor:				        ----
+-- Fecha de Creacion: 	----
+-- Description:			    ----
+
+-- Modificacion:        hector.gonzalez
+-- Fecha de Creacion: 	27-03-2017 Team Ergon SPRINT Hyper
+-- Description:			    Se agrego Warehouse
+
+-- Autor:	        hector.gonzalez
+-- Fecha de Creacion: 	2017-09-05 @ Team REBORN - Sprint 
+-- Description:	   Se agrego INNER JOIN a [OP_WMS_STATUS_OF_MATERIAL_BY_LICENSE]
+
+-- Autor:	        hector.gonzalez
+-- Fecha de Creacion: 	2017-09-16 @ Team REBORN - Sprint 
+-- Description:	   Se agrega tono y calibre
+
+/*
+-- Ejemplo de Ejecucion:
+			SELECT COUNT(*) FROM [wms].OP_WMS_VIEW_INVENTORY_DETAIL_FISCAL
+*/
+-- =============================================
+
+
+/*A.TERMS_OF_TRADE=	D.ACUERDO_COMERCIAL*/
+CREATE VIEW [wms].[OP_WMS_VIEW_INVENTORY_DETAIL_FISCAL]
+AS
+SELECT
+  (SELECT
+      CLIENT_NAME
+    FROM [wms].OP_WMS_VIEW_CLIENTS
+    WHERE (CLIENT_CODE = B.CLIENT_OWNER COLLATE database_default))
+  AS CLIENT_NAME
+ ,ISNULL
+  ((SELECT TOP (1)
+      NUMERO_ORDEN
+    FROM [wms].OP_WMS_POLIZA_HEADER AS C
+    WHERE (CODIGO_POLIZA = B.CODIGO_POLIZA))
+  , '0') AS NUMERO_ORDEN
+ ,ISNULL
+  ((SELECT TOP (1)
+      NUMERO_DUA
+    FROM [wms].OP_WMS_POLIZA_HEADER AS C
+    WHERE (CODIGO_POLIZA = B.CODIGO_POLIZA))
+  , '0') AS NUMERO_DUA
+ ,ISNULL
+  ((SELECT TOP (1)
+      CONVERT(VARCHAR(20), FECHA_LLEGADA) AS Expr1
+    FROM [wms].OP_WMS_POLIZA_HEADER AS C
+    WHERE (CODIGO_POLIZA = B.CODIGO_POLIZA))
+  , '0') AS FECHA_LLEGADA
+ ,A.LICENSE_ID
+ ,A.TERMS_OF_TRADE
+ ,A.DATE_EXPIRATION
+ ,A.BATCH
+ ,A.VIN
+ ,C.MATERIAL_ID
+ ,C.BARCODE_ID
+ ,A.BARCODE_ID AS ALTERNATE_BARCODE
+ ,A.MATERIAL_NAME
+ ,A.QTY
+ ,C.MATERIAL_CLASS
+ ,B.CLIENT_OWNER
+ ,B.REGIMEN
+ ,B.CODIGO_POLIZA
+ ,B.CURRENT_LOCATION
+ ,ISNULL(C.VOLUME_FACTOR, 0.1) AS VOLUMEN
+ ,ISNULL(C.VOLUME_FACTOR, 0.1) * A.QTY AS TOTAL_VOLUMEN
+ ,ISNULL(C.WEIGTH, 0) AS WEIGTH
+ ,ISNULL(C.WEIGTH, 0) * A.QTY AS TOTAL_WEIGTH
+ ,B.LAST_UPDATED_BY
+ ,[B].[CURRENT_WAREHOUSE]
+ ,[S].[STATUS_NAME]
+ ,CASE [S].[BLOCKS_INVENTORY]
+    WHEN 1 THEN 'Si'
+    WHEN 0 THEN 'No'
+    ELSE 'No'
+  END [BLOCKS_INVENTORY]
+ ,[S].[COLOR]
+ ,[TC].[TONE]
+ ,[TC].[CALIBER]
+FROM [wms].OP_WMS_INV_X_LICENSE AS A
+INNER JOIN [wms].OP_WMS_LICENSES AS B
+  ON A.LICENSE_ID = B.LICENSE_ID
+INNER JOIN [wms].OP_WMS_MATERIALS AS C
+  ON A.MATERIAL_ID = C.MATERIAL_ID
+INNER JOIN [wms].[OP_WMS_STATUS_OF_MATERIAL_BY_LICENSE] [S]
+  ON ([A].[STATUS_ID] = [S].[STATUS_ID]
+  AND [S].[STATUS_ID] > 0)
+LEFT JOIN [wms].[OP_WMS_TONE_AND_CALIBER_BY_MATERIAL] [TC]
+  ON (
+  [A].[TONE_AND_CALIBER_ID] = [TC].[TONE_AND_CALIBER_ID]
+  AND [TC].[TONE_AND_CALIBER_ID] > 0
+  )
+WHERE (B.REGIMEN = 'FISCAL')
+AND (A.QTY > 0)

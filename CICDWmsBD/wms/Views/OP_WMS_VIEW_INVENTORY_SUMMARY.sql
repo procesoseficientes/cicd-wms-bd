@@ -1,0 +1,76 @@
+﻿-- =============================================
+-- Autor:				rudi.garcia
+-- Fecha de Creacion: 22-08-2016 Sprint @Ergon BreathOfTheWeild
+-- Description:			Se agrego un inner join con la tabla de "[OP_WMS_LICENSES]" y se agrego al group by el campo "[REGIMEN]"
+
+/*
+  -- Ejemplo de Ejecucion:
+				-- 
+				SELECT * FROM [wms].OP_WMS_VIEW_INVENTORY_SUMMARY
+        
+*/
+-- =============================================
+
+CREATE VIEW [wms].OP_WMS_VIEW_INVENTORY_SUMMARY
+AS
+SELECT
+  ISNULL
+  ((SELECT
+      CLIENT_OWNER + '-' + ISNULL
+      ((SELECT
+          CLIENT_NAME COLLATE database_default
+        FROM [wms].OP_WMS_VIEW_CLIENTS
+        WHERE (CLIENT_CODE = Z.CLIENT_OWNER COLLATE database_default))
+      , 'N/A') AS Expr1
+    FROM [wms].OP_WMS_LICENSES AS Z
+    WHERE (LICENSE_ID = MAX(A.LICENSE_ID)))
+  , 'N/A') AS CLIENT_OWNER
+ ,ISNULL((SELECT
+      Z.CLIENT_OWNER AS Expr1
+    FROM [wms].OP_WMS_LICENSES AS Z
+    WHERE Z.LICENSE_ID = MAX(A.LICENSE_ID))
+  , 'N-A') AS CLIENT_CODE
+ ,MAX(ISNULL(B.MATERIAL_CLASS, 'SC')) AS MATERIAL_CLASS
+ ,A.MATERIAL_ID
+ ,B.BARCODE_ID
+ ,A.MATERIAL_NAME
+ ,SUM(A.QTY) AS QTY
+ ,B.VOLUME_FACTOR
+ ,SUM(A.QTY) * MAX(ISNULL(B.VOLUME_FACTOR, 0))
+  AS TOTAL_VOLUME_FACTOR
+ ,SUM(A.QTY) - ISNULL(MAX(its.QTY), 0) AS AVAILABLE
+ ,SUM(A.QTY) - (SUM(A.QTY) - ISNULL(MAX(its.QTY), 0)) AS RESERVED
+ ,ISNULL((SELECT
+      P.WAREHOUSE_REGIMEN AS Expr1
+    FROM [wms].OP_WMS_LICENSES AS Z
+    INNER JOIN [wms].OP_WMS_POLIZA_HEADER P
+      ON Z.CODIGO_POLIZA = P.CODIGO_POLIZA
+    WHERE Z.LICENSE_ID = MAX(A.LICENSE_ID))
+  , 'N-A') AS REGIMEN
+FROM [wms].OP_WMS_INV_X_LICENSE AS A
+INNER JOIN [wms].OP_WMS_MATERIALS AS B
+  ON A.MATERIAL_ID = B.MATERIAL_ID
+INNER JOIN [wms].[OP_WMS_LICENSES] [L]
+  ON ([L].[LICENSE_ID] = A.[LICENSE_ID])
+LEFT OUTER JOIN (SELECT
+    Cantidades.MATERIAL_ID AS MATERIAL_ID
+   ,SUM(Cantidades.QUANTITY_PENDING) AS QTY
+  FROM (SELECT
+      WAVE_PICKING_ID
+     ,QUANTITY_PENDING
+     ,MATERIAL_ID
+    FROM [wms].OP_WMS_TASK_LIST
+    WHERE (IS_COMPLETED <> 1)
+    AND (IS_PAUSED <> 3)
+    AND (CANCELED_DATETIME IS NULL)
+    GROUP BY WAVE_PICKING_ID
+            ,QUANTITY_PENDING
+            ,MATERIAL_ID) AS Cantidades
+  GROUP BY Cantidades.MATERIAL_ID) AS its
+  ON A.MATERIAL_ID = its.MATERIAL_ID
+GROUP BY A.MATERIAL_ID
+        ,[L].[REGIMEN]
+        ,B.BARCODE_ID
+        ,A.MATERIAL_NAME
+        ,B.VOLUME_FACTOR        
+HAVING (SUM(A.QTY) > 0)

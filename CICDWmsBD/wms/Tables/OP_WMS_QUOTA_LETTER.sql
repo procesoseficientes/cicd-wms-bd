@@ -1,0 +1,27 @@
+﻿CREATE TABLE [wms].[OP_WMS_QUOTA_LETTER] (
+    [DOC_ID]                         NUMERIC (18)    IDENTITY (1, 1) NOT NULL,
+    [POLIZAS]                        VARCHAR (MAX)   NULL,
+    [CLAVE_ADUANA]                   VARCHAR (20)    NULL,
+    [NOMBRE_ADUANA]                  VARCHAR (100)   NULL,
+    [NO_FACTURA]                     VARCHAR (20)    NULL,
+    [MERCHANDISE_DESCRIPTION]        VARCHAR (200)   NULL,
+    [MERCHANDISE_QTY]                NUMERIC (18)    NULL,
+    [MERCHANDISE_VALUE]              NUMERIC (18, 2) NULL,
+    [BL_NUMBER]                      VARCHAR (20)    NULL,
+    [CONTAINER_NUMBER]               VARCHAR (20)    NULL,
+    [CLAVE_AGENTE_ADUANERO]          VARCHAR (20)    NULL,
+    [NOMBRE_AGENTE_ADUANERO]         VARCHAR (100)   NULL,
+    [NOMBRE_CONSIGNATARIO]           VARCHAR (100)   NULL,
+    [NIT_CONSIGNATARIO]              VARCHAR (100)   NULL,
+    [DOMICILIO_FISCAL_CONSIGNATARIO] VARCHAR (100)   NULL,
+    [STATUS]                         VARCHAR (20)    NULL,
+    [RELATED_CLIENT_CODE]            VARCHAR (20)    NULL,
+    [LAST_UPDATED]                   DATETIME        NULL,
+    [LAST_UPDATED_BY]                VARCHAR (20)    NULL,
+    [Regimen]                        VARCHAR (10)    DEFAULT (NULL) NULL,
+    [Unidad_Medida]                  VARCHAR (10)    DEFAULT (NULL) NULL,
+    [Firma]                          VARCHAR (50)    DEFAULT (NULL) NULL,
+    [clave_aduana_wms]               VARCHAR (10)    DEFAULT (NULL) NULL,
+    [POSITION_PERSON]                VARCHAR (50)    NULL
+);
+

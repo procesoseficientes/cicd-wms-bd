@@ -1,0 +1,70 @@
+﻿-- =============================================
+-- Autor:	pablo.aguilar
+-- Fecha de Creacion: 	2017-05-30 @ Team ERGON - Sheik
+-- Description:	 Obtiene el estado de las ubicaciones del WMS 
+
+
+
+
+/*
+-- Ejemplo de Ejecucion:
+			EXEC [wms].OP_WMS_SP_GET_LOCATION_STATUS @WAREHOUSE = 'BODEGA_04'--, @ZONE = 'Z_BODEGA_04_PASILLO', @SPOT_TYPE = 'RACK'
+*/
+-- =============================================
+CREATE PROCEDURE [wms].OP_WMS_SP_GET_LOCATION_STATUS (@WAREHOUSE VARCHAR(25) = NULL,
+@ZONE VARCHAR(25) = NULL,
+@SPOT_TYPE VARCHAR(25) = NULL)
+AS
+BEGIN
+  SET NOCOUNT ON;
+  --
+
+  SELECT
+    [L].[CURRENT_LOCATION]
+   ,SUM([L].[USED_MT2]) [USED_MT2]
+   ,MAX([OWIXL].[QTY]) [QTY] INTO #MT2_LOCATION
+  FROM [wms].[OP_WMS_LICENSES] [L]
+  INNER JOIN [wms].[OP_WMS_INV_X_LICENSE] [OWIXL]
+    ON [OWIXL].[LICENSE_ID] = [L].[LICENSE_ID]
+  GROUP BY [L].[CURRENT_LOCATION]
+  HAVING MAX([OWIXL].[QTY]) > 0
+  AND SUM([L].[USED_MT2]) > 0
+
+
+  SELECT
+    [S].[WAREHOUSE_PARENT]
+   ,[S].[ZONE]
+   ,[S].[LOCATION_SPOT]
+   ,[S].[SPOT_TYPE]
+   ,CASE [W].[IS_3PL_WAREHUESE]
+      WHEN 0 THEN 'No'
+      WHEN 1 THEN 'Si'
+    END [AVAILABLE]
+   ,[W].[DISTRIBUTION_CENTER_ID]
+   ,[S].[MAX_MT2_OCCUPANCY]
+   ,[S].[MAX_WEIGHT]
+   ,[WW].[WEIGHT_IN_TONS] [REAL_WEIGHT]
+   ,CASE [WW].[IS_OVERWEIGHT]
+      WHEN 1 THEN 'Si'
+      ELSE 'No'
+    END [IS_OVERWEIGHT]
+   ,[WW].WEIGHT_PERCENT WEIGHT_PERCENT
+   ,[MT2].[USED_MT2] MT2_OCCUPANCY
+  FROM [wms].[OP_WMS_SHELF_SPOTS] [S]
+  INNER JOIN [wms].[OP_WMS_WAREHOUSES] [W]
+    ON [W].[WAREHOUSE_ID] = [S].[WAREHOUSE_PARENT]
+  LEFT JOIN [wms].[OP_WMS_VW_GET_LOCATIONS_WITH_WEIGHT] [WW]
+    ON [S].[LOCATION_SPOT] = [WW].[LOCATION_SPOT]
+  LEFT JOIN #MT2_LOCATION [MT2]
+    ON [MT2].[CURRENT_LOCATION] = [S].[LOCATION_SPOT]
+  WHERE (@WAREHOUSE IS NULL
+  OR @WAREHOUSE = [S].[WAREHOUSE_PARENT])
+  AND (@ZONE IS NULL
+  OR @ZONE = [S].[ZONE])
+  AND (@SPOT_TYPE IS NULL
+  OR @SPOT_TYPE = [S].[SPOT_TYPE])
+
+
+
+
+END

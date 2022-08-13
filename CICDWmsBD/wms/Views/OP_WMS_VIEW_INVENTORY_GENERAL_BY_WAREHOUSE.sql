@@ -1,0 +1,52 @@
+﻿-- =============================================
+-- Modificacion:        hector.gonzalez
+-- Fecha de Creacion: 	2017-04-18 @ Team ERGON - Sprint EPONA 
+-- Description:	        
+
+/*
+-- Ejemplo de Ejecucion:
+			SELECT * FROM [wms].[OP_WMS_VIEW_INVENTORY_GENERAL_BY_WAREHOUSE] 
+*/
+-- =============================================
+
+CREATE VIEW [wms].OP_WMS_VIEW_INVENTORY_GENERAL_BY_WAREHOUSE
+AS
+SELECT
+  [inv].[MATERIAL_ID]
+ ,inv.[MATERIAL_NAME]
+ ,mt.[CLIENT_OWNER]
+ ,mt.[ALTERNATE_BARCODE]
+ ,mt.[BARCODE_ID]
+ ,cl.[CLIENT_NAME]
+ ,SUM(inv.[QTY]) AS QTY
+ ,MAX(ISNULL([IR].[QTY_RESERVED], 0)) AS ON_PICKING
+ ,(SUM(inv.[QTY]) - MAX(ISNULL([IR].[QTY_RESERVED], 0))) AS AVAILABLE
+ ,mt.[BATCH_REQUESTED]
+ ,mt.[IS_CAR]
+ ,li.[CURRENT_WAREHOUSE]
+FROM [wms].OP_WMS_INV_X_LICENSE AS inv
+INNER JOIN [wms].OP_WMS_MATERIALS AS mt
+  ON inv.MATERIAL_ID = mt.MATERIAL_ID
+INNER JOIN [wms].OP_WMS_LICENSES AS li
+  ON inv.LICENSE_ID = li.LICENSE_ID
+INNER JOIN [wms].OP_WMS_VIEW_CLIENTS AS cl
+  ON li.CLIENT_OWNER = cl.CLIENT_CODE COLLATE database_default
+
+INNER JOIN [wms].OP_WMS_POLIZA_HEADER owph
+  ON li.CODIGO_POLIZA = owph.CODIGO_POLIZA
+INNER JOIN [wms].OP_WMS_TARIFICADOR_HEADER owth
+  ON owph.ACUERDO_COMERCIAL = owth.ACUERDO_COMERCIAL_ID
+LEFT JOIN [wms].[OP_WMS_FUNC_GET_INVENTORY_RESERVED]() [IR]
+  ON [IR].[CODE_WAREHOUSE] = [li].[CURRENT_WAREHOUSE]
+  AND [IR].[CODE_MATERIAL] = [inv].[MATERIAL_ID]
+WHERE (li.REGIMEN = 'GENERAL')
+AND GETDATE() BETWEEN owth.VALID_FROM AND owth.VALID_TO
+GROUP BY inv.MATERIAL_ID
+        ,inv.MATERIAL_NAME
+        ,mt.CLIENT_OWNER
+        ,mt.ALTERNATE_BARCODE
+        ,mt.BARCODE_ID
+        ,cl.CLIENT_NAME
+        ,mt.BATCH_REQUESTED
+        ,mt.IS_CAR
+        ,li.[CURRENT_WAREHOUSE]

@@ -1,0 +1,45 @@
+﻿-- =============================================
+-- Autor:	        marvin.solares
+-- Fecha de Creacion: 	20181024 GForce@Mamba
+-- Description:	        sp que devuelve las olas pendientes de ubicar para el operador
+
+/*EJEMPLO DE EJECUCION
+
+EXEC [wms].[OP_WMS_SP_GET_WAVE_PICKING_PENDING_TO_LOCATE] @LOGIN_ID = 'MARVIN'
+*/
+
+-- =============================================
+CREATE PROCEDURE [wms].[OP_WMS_SP_GET_WAVE_PICKING_PENDING_TO_LOCATE] (@LOGIN_ID VARCHAR(50))
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT
+		[L].[WAVE_PICKING_ID]
+		,[T].[TASK_SUBTYPE]
+		,[T].[TASK_TYPE]
+		,CASE	WHEN ISNULL([NPH].[IS_CONSOLIDATED], 0) = 1
+				THEN 'CONSOLIDADO'
+				ELSE ISNULL(CAST([NPH].[DOC_NUM] AS VARCHAR(30)),
+							'-1')
+			END [DOC_NUM]
+	FROM
+		[wms].[OP_WMS_LICENSES] [L]
+	INNER JOIN [wms].[OP_WMS_INV_X_LICENSE] [IL] ON ([L].[LICENSE_ID] = [IL].[LICENSE_ID])
+	INNER JOIN [wms].[OP_WMS_TASK_LIST] [T] ON [T].[WAVE_PICKING_ID] = [L].[WAVE_PICKING_ID]
+	LEFT JOIN [wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [NPH] ON [NPH].[WAVE_PICKING_ID] = [L].[WAVE_PICKING_ID]
+	WHERE
+		[L].[CURRENT_LOCATION] = NULL
+		OR [L].[CURRENT_LOCATION] = @LOGIN_ID
+		AND [L].[WAVE_PICKING_ID] IS NOT NULL
+	GROUP BY
+		[L].[WAVE_PICKING_ID]
+		,[T].[TASK_SUBTYPE]
+		,[T].[TASK_TYPE]
+		,CASE	WHEN ISNULL([NPH].[IS_CONSOLIDATED], 0) = 1
+				THEN 'CONSOLIDADO'
+				ELSE ISNULL(CAST([NPH].[DOC_NUM] AS VARCHAR(30)),
+							'-1')
+			END;
+
+END;

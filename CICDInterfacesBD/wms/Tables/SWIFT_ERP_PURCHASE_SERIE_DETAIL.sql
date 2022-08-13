@@ -1,0 +1,6 @@
+﻿CREATE TABLE [wms].[SWIFT_ERP_PURCHASE_SERIE_DETAIL] (
+    [Line_Num]  INT           NOT NULL,
+    [ITEM_CODE] NVARCHAR (20) NULL,
+    [DOC_ENTRY] INT           NOT NULL
+);
+

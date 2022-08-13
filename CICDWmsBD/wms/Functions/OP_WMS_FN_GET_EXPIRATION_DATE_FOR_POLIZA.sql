@@ -1,0 +1,39 @@
+﻿-- =============================================
+-- Autor:					alberto.ruiz
+-- Fecha de Creacion: 		18-Jul-17 @ Nexus Team Sprint AgeOfEmpires
+-- Description:			    Funcion que obtiene la fecha de expiracion de una poliza fiscal
+
+/*
+-- Ejemplo de Ejecucion:
+        SELECT [wms].[OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA]('347201720621')
+*/
+-- =============================================
+CREATE FUNCTION [wms].[OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA]
+(
+	@CODIGO_POLIZA VARCHAR(15)
+)
+RETURNS DATETIME
+AS
+BEGIN
+	DECLARE 
+		@DAYS_TO_BE_EXPIRED INT = 0
+		,@REGIMEN VARCHAR(15)
+		,@FECHA_DOCUMENTO DATETIME
+		,@EXPIRATION_DATETIME DATETIME
+	--
+	SELECT
+		@REGIMEN = [H].[REGIMEN]
+		,@FECHA_DOCUMENTO = ISNULL([H].[FECHA_DESBLOQUEO],[H].[FECHA_DOCUMENTO])
+	FROM [wms].[OP_WMS_POLIZA_HEADER] [H]
+	WHERE [H].[CODIGO_POLIZA] = @CODIGO_POLIZA
+	--
+	SELECT @DAYS_TO_BE_EXPIRED = CONVERT(INT,[C].[NUMERIC_VALUE])
+	FROM [wms].[OP_WMS_CONFIGURATIONS] [C]
+	WHERE [C].[PARAM_TYPE] = 'WMS3PL'
+		AND [C].[PARAM_GROUP] = 'REGIMEN'
+		AND [C].[PARAM_NAME] = @REGIMEN
+	--
+	SET @EXPIRATION_DATETIME = DATEADD(DAY,@DAYS_TO_BE_EXPIRED,@FECHA_DOCUMENTO)
+	--
+	RETURN @EXPIRATION_DATETIME
+END

@@ -1,0 +1,83 @@
+﻿/****** 
+  DECLARE @POLIZAHEADER AS int
+   
+   
+      exec [wms].[OP_WMS_SP_INSERT_OP_WMS_POLIZA_HEADER]
+        @NumeroPoliza= '111111'
+		,@SKU_DESCRIPTION ='111111'
+		,@CUSTOMER = 'C00242'
+		,@CUSTOMER_NAME= 'PIZZA HUT'
+		,@USER ='PRUEBA'
+		,@IDENTITY='' 
+
+		SELECT @POLIZAHEADER AS POLIZA
+
+******/
+CREATE PROCEDURE [wms].[OP_WMS_SP_INSERT_OP_WMS_POLIZA_HEADER]
+        @NumeroPoliza INT
+		,@CUSTOMER varchar(max)
+		,@CUSTOMER_NAME varchar(max)
+		,@USER VARCHAR(50) 
+		,@TIPO VARCHAR(50)=''
+		,@IDENTITY INT OUTPUT
+		,@POLASEGURADORA VARCHAR(50)=''
+		,@ACUERDO_COMERCIAL VARCHAR (25)=''
+	
+	  
+AS
+BEGIN TRY
+
+INSERT INTO [wms].[OP_WMS_POLIZA_HEADER] 
+      ( 
+       [NUMERO_ORDEN]
+      ,[NUMERO_DUA]
+      ,[FECHA_ACEPTACION_DMY]
+      ,[REGIMEN]
+      ,[FECHA_LLEGADA]
+      ,[RAZON_SOCIAL_REPRESENTANTE]
+      ,[CODIGO_POLIZA]
+      ,[LAST_UPDATED_BY]
+      ,[LAST_UPDATED]
+      ,[STATUS]
+      ,[ACUERDO_COMERCIAL]
+      ,[WAREHOUSE_REGIMEN]
+      ,[CLIENT_CODE]
+      ,[FECHA_DOCUMENTO]
+      ,[TIPO]
+	  ,[POLIZA_ASEGURADA]
+      ,[POLIZA_ASSIGNEDTO]
+	  )
+  VALUES 
+  ( @NumeroPoliza
+   ,'N/A'
+   ,GETDATE()
+   ,'GENERAL'
+   ,GETDATE()
+   ,@CUSTOMER_NAME
+   ,@NumeroPoliza
+   ,@USER
+   ,GETDATE()
+   ,'COSTED'
+   ,@ACUERDO_COMERCIAL
+   ,'GENERAL'
+   ,@CUSTOMER
+   ,GETDATE()
+   ,@TIPO
+   ,@POLASEGURADORA
+   ,@USER
+  );
+
+  SELECT @IDENTITY = (SELECT SCOPE_IDENTITY() AS [SCOPE_IDENTITY]);
+		 
+IF @@error = 0 BEGIN		
+		RETURN @IDENTITY --AS Resultado
+	END		
+	ELSE BEGIN
+		
+		SELECT  -1 as Resultado , ERROR_MESSAGE() Mensaje ,  @@ERROR Codigo
+	END
+
+END TRY
+BEGIN CATCH     
+	 SELECT  -1 as Resultado , ERROR_MESSAGE() Mensaje ,  @@ERROR Codigo 
+END CATCH

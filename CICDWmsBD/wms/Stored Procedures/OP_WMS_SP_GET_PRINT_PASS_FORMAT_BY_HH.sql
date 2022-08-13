@@ -1,0 +1,524 @@
+﻿-- =============================================
+-- Autor:				marvin.solares
+-- Fecha de Creacion: 	20190213 GForce@Suricato
+-- Description:			Sp que obtiene el formato de impresión en formato zpl para imprimir desde android
+
+-- Autor:				henry.rodriguez
+-- Fecha:				07-Agosto-2019 G-Force@Estambul
+-- Descripcion:			Se agrega parametro para saber si es la HH la que esta ejecutando el sp.
+
+/*
+-- Ejemplo de Ejecucion:
+				EXEC [wms].[OP_WMS_SP_GET_PRINT_PASS_FORMAT_BY_HH] @PASS_ID = 10,@LOGIN_ID = 'MARVIN', @DOMAIN='l3w'
+*/
+-- =============================================  
+CREATE PROCEDURE [wms].[OP_WMS_SP_GET_PRINT_PASS_FORMAT_BY_HH] (
+		@PASS_ID INT
+		,@LOGIN_ID VARCHAR(100)
+		,@DOMAIN VARCHAR(100)
+	)
+AS
+BEGIN
+	SET NOCOUNT ON;
+  -- ------------------------------------------------------------------------------------
+  -- variables para la impresion
+  -- ------------------------------------------------------------------------------------
+	DECLARE
+		@IS_HANDHELD INT = 1
+		,@START_ZPL VARCHAR(10) = '^XA ^MMA' + CHAR(13)
+		,@HIGH_ZPL VARCHAR(10) = '' + CHAR(13)
+		,@END_ZPL VARCHAR(10) = '^XZ' + CHAR(13)
+		,@FORMAT VARCHAR(MAX) = ''
+		,@FONT_TITLE VARCHAR(200) = '^CF0,60' + CHAR(13)
+		,@TITLE VARCHAR(200) = '^FO100,@@POSY^FD Ferco Guatemala^FS'
+		+ CHAR(13)--+25
+		,@FONT_SUBTITLE VARCHAR(200) = '^CF0,40' + CHAR(13)
+		,@SUBTITLE VARCHAR(200) = '^FO180,@@POSY^FDPase de Salida^FS'
+		+ CHAR(13)--+75
+		,@SUBTITLE_PASS_ID VARCHAR(200) = CONCAT('^FO240,@@POSY^FD#',
+											CAST(@PASS_ID AS VARCHAR),
+											'^FS') + CHAR(13)--+35
+		,@SUBTITLE_DATE_PASS VARCHAR(200) = '^FO180,@@POSY^FD'
+		+ FORMAT(GETDATE(), 'dd/MM/yyyy HH:mm') + ' ^FS'
+		+ CHAR(13)--+40
+		,@END_LINE_TITLE VARCHAR(200) = '^FO0,@@POSY^GB700,1,3^FS'
+		+ CHAR(13)--+35
+		,@FONT_HEADER_PASS VARCHAR(200) = '^CF0,25'
+		+ CHAR(13)
+		,@LINE1_COL1_HEADER_PASS VARCHAR(200) = '^FO20,@@POSY^FDEntrega: @@ENTREGA ^FS'
+		+ CHAR(13)--+10
+		,@LINE1_COL2_HEADER_PASS VARCHAR(200) = '^FO300,@@POSY^FDTipo Salida: @@TIPOEGRESO^FS'
+		+ CHAR(13)--+10
+		,@LINE2_COL1_HEADER_PASS VARCHAR(200) = '^FO20,@@POSY^FDCentro: @@CENTRO ^FS'
+		+ CHAR(13)--+40
+		,@LINE2_COL2_HEADER_PASS VARCHAR(200) = '^FO300,@@POSY^FDBodega: @@BODEGA^FS'
+		+ CHAR(13)--+40
+		,@LINE3_COL1_HEADER_PASS VARCHAR(200) = '^FO20,@@POSY^FDCliente: @@CLIENTE ^FS'
+		+ CHAR(13)--+40
+		,@CLIENT_LINEN VARCHAR(200) = '^FO20,@@POSY^FD@@CLIENTE ^FS'
+		+ CHAR(13)--+40
+		,@LINE4_COL1_HEADER_PASS VARCHAR(200) = '^FO20,@@POSY^FDPiloto: @@PILOTO ^FS'
+		+ CHAR(13)--+40
+		,@LINE4_COL2_HEADER_PASS VARCHAR(200) = '^FO20,@@POSY^FDPlaca: @@PLACA^FS'
+		+ CHAR(13)--+40
+		,@LINE_SEPARATOR VARCHAR(200) = '^FO0,@@POSY^GB700,1,1^FS'
+		+ CHAR(13)--+40
+		,@LINE1_COL1_PICKING VARCHAR(200) = '^FO20,@@POSY^FDOla: @@WAVE_PICKING_ID ^FS'
+		+ CHAR(13)--+40
+		,@LINE1_COL2_PICKING VARCHAR(200) = '^FO300,@@POSY^FDDocumento: @@DOCUMENTO^FS'
+		+ CHAR(13)--+40
+		,@LINE2_COL1_PICKING VARCHAR(200) = '^FO20,@@POSY^FDDireccion: @@DIRECCION ^FS'
+		+ CHAR(13)--+40
+		,@FONT_DETAIL_PASS VARCHAR(200) = '^CF0,20'
+		+ CHAR(13)
+		,@LINE_SEPARATOR_TOTAL_PASS VARCHAR(200) = '^FO20,@@POSY^GB540,1,1^FS'
+		+ CHAR(13)--+30
+		,@DESCRIPTION_LABEL_DETAIL_PASS VARCHAR(200) = '^FO20,@@POSY^FDDescripcion ^FS'
+		+ CHAR(13)--+20
+		,@QTY_LABEL_DETAIL_PASS VARCHAR(200) = '^FO500,@@POSY^FDQty ^FS'--+20
+		,@TOTAL_LABEL_PASS VARCHAR(200) = '^FO20,@@POSY^FDTotal ^FS'
+		+ CHAR(13)
+		,@TOTAL_PASS VARCHAR(200) = '^FO500,@@POSY^FD@@QTY ^FS'
+		+ CHAR(13)
+		,@MATERIAL_LINE VARCHAR(200) = '^FO20,@@POSY^FD@@MATERIAL ^FS'
+		+ CHAR(13)--+40
+		,@QTY_LINE VARCHAR(200) = '^FO500,@@POSY^FD@@QTY ^FS'--+40
+		,@TOTAL_QTY NUMERIC(18, 2) = 0
+		,@POSY INT = 0;
+
+  -- ------------------------------------------------------------------------------------
+  -- variables varias
+  -- ------------------------------------------------------------------------------------
+	DECLARE
+		@DISTRIBUTION_CENTER_ID VARCHAR(100)
+		,@CODE_WAREHOUSE VARCHAR(50);
+
+	SELECT TOP 1
+		@CODE_WAREHOUSE = [PD].[CODE_WAREHOUSE]
+	FROM
+		[wms].[OP_WMS_PASS_DETAIL] [PD]
+	WHERE
+		[PD].[PASS_HEADER_ID] = @PASS_ID;
+
+	SELECT TOP 1
+		@DISTRIBUTION_CENTER_ID = [DISTRIBUTION_CENTER_ID]
+	FROM
+		[wms].[OP_WMS_LOGINS] [L]
+	INNER JOIN [dbo].[OP_WMS_DOMAINS] [D] ON [D].[ID] = [L].[DOMAIN_ID]
+	WHERE
+		[LOGIN_ID] = @LOGIN_ID
+		AND [D].[DOMAIN] = @DOMAIN;
+	PRINT 'centro =>' + @DISTRIBUTION_CENTER_ID;
+
+	CREATE TABLE [#result] (
+		[PASS_ID] INT NOT NULL
+		,[COMPANY_NAME] VARCHAR(200) NULL
+		,[DISTRIBUTION_CENTER_ID] VARCHAR(200) NULL
+		,[HANDLER] VARCHAR(250) NULL
+		,[AUTORIZED_BY] VARCHAR(250) NULL
+		,[LAST_UPDATED] DATETIME NULL
+		,[TYPE] VARCHAR(200) NULL
+		,[CLIENT_CODE] VARCHAR(50) NULL
+		,[CLIENT_NAME] VARCHAR(200) NULL
+		,[WAVE_PICKING_ID] INT NULL
+		,[DOC_NUM] NUMERIC(18, 0) NULL
+		,[ERP_REFERENCE] VARCHAR(100) NULL
+		,[MATERIAL_ID] VARCHAR(200) NULL
+		,[MATERIAL_NAME] VARCHAR(200) NULL
+		,[QTY] NUMERIC(18, 6) NULL
+		,[VEHICLE_PLATE] VARCHAR(25) NOT NULL
+		,[VEHICLE_DRIVER] VARCHAR(200) NULL
+		,[ADDRESS_CUSTOMER] VARCHAR(300) NULL
+		,[SELLER] VARCHAR(155) NULL
+		,[TRNSP_NAME] VARCHAR(40) NULL
+		,[COMMENTS] VARCHAR(254) NULL
+		,[PYMNT_GROUP] VARCHAR(100) NULL
+		,[BRANCH_NAME] VARCHAR(250) NULL
+		,[DEMAND_DELIVERY_DATE] DATETIME NULL
+	);
+
+
+
+	INSERT	INTO [#result]
+			EXEC [wms].[OP_WMS_SP_GET_PASS_FOR_REPORT] @PASS_ID = @PASS_ID, -- int
+				@DISTRIBUTION_CENTER_ID = @DISTRIBUTION_CENTER_ID -- varchar(50)
+				, @IS_HANDHELD = @IS_HANDHELD;
+
+	DECLARE	@DOCUMENTOS_PASE TABLE ([DOCNUM] NUMERIC(18));
+
+
+	INSERT	INTO @DOCUMENTOS_PASE
+			(
+				[DOCNUM]
+			)
+	SELECT DISTINCT
+		[DOC_NUM]
+	FROM
+		[#result];
+
+  --SET @FORMAT = @START_ZPL;
+  -- ------------------------------------------------------------------------------------
+  -- RECORRO LOS DOCUMENTOS PARA CONSTRUIR LA CADENA CON EL CODIGO ZPL
+  -- ------------------------------------------------------------------------------------
+
+	WHILE EXISTS ( SELECT TOP 1
+						1
+					FROM
+						@DOCUMENTOS_PASE )
+	BEGIN
+		DECLARE	@doc_id NUMERIC(18);
+		DECLARE
+			@HANDLER VARCHAR(200)
+			,@TYPE VARCHAR(200)
+			,@WAREHOUSE VARCHAR(200)
+			,@CLIENT VARCHAR(200)
+			,@DRIVER VARCHAR(200)
+			,@PLATE VARCHAR(200)
+			,@WAVE_PICKING_ID INT
+			,@ADDRESS VARCHAR(500);
+
+		SELECT TOP 1
+			@doc_id = [DOCNUM]
+		FROM
+			@DOCUMENTOS_PASE;
+
+		SET @FORMAT = @FORMAT + @FONT_TITLE;
+		SET @POSY = @POSY + 75;
+		SET @FORMAT = @FORMAT + REPLACE(@TITLE, '@@POSY',
+										CAST(@POSY AS VARCHAR));
+		SET @POSY = @POSY + 75;
+		SET @FORMAT = @FORMAT + @FONT_SUBTITLE;
+		SET @FORMAT = @FORMAT + REPLACE(@SUBTITLE, '@@POSY',
+										CAST(@POSY AS VARCHAR));
+		SET @POSY = @POSY + 35;
+		SET @FORMAT = @FORMAT + REPLACE(@SUBTITLE_PASS_ID,
+										'@@POSY',
+										CAST(@POSY AS VARCHAR));
+		SET @POSY = @POSY + 40;
+		SET @FORMAT = @FORMAT + REPLACE(@SUBTITLE_DATE_PASS,
+										'@@POSY',
+										CAST(@POSY AS VARCHAR));
+
+		SET @POSY = @POSY + 35;
+		SET @FORMAT = @FORMAT + REPLACE(@END_LINE_TITLE,
+										'@@POSY',
+										CAST(@POSY AS VARCHAR));
+
+
+		SET @FORMAT = @FORMAT + @FONT_HEADER_PASS;
+
+		SELECT TOP 1
+			@HANDLER = ISNULL([HANDLER], '')
+			,@TYPE = ISNULL([TYPE], '')
+			,@CLIENT = ISNULL([CLIENT_NAME], '')
+			,@DRIVER = ISNULL([VEHICLE_DRIVER], '')
+			,@PLATE = ISNULL([VEHICLE_PLATE], '')
+			,@WAVE_PICKING_ID = ISNULL([WAVE_PICKING_ID], '')
+			,@ADDRESS = ISNULL([ADDRESS_CUSTOMER], '')
+		FROM
+			[#result]
+		WHERE
+			[DOC_NUM] = @doc_id;
+
+		SET @POSY = @POSY + 20;
+		SET @FORMAT = @FORMAT
+			+ REPLACE(REPLACE(@LINE1_COL1_HEADER_PASS,
+								'@@POSY',
+								CAST(@POSY AS VARCHAR)),
+						'@@ENTREGA', @HANDLER);
+		SET @FORMAT = @FORMAT
+			+ REPLACE(REPLACE(@LINE1_COL2_HEADER_PASS,
+								'@@POSY',
+								CAST(@POSY AS VARCHAR)),
+						'@@TIPOEGRESO', @TYPE);
+
+		SET @POSY = @POSY + 40;
+		SET @FORMAT = @FORMAT
+			+ REPLACE(REPLACE(@LINE2_COL1_HEADER_PASS,
+								'@@POSY',
+								CAST(@POSY AS VARCHAR)),
+						'@@CENTRO', @DISTRIBUTION_CENTER_ID);
+		SET @FORMAT = @FORMAT
+			+ REPLACE(REPLACE(@LINE2_COL2_HEADER_PASS,
+								'@@POSY',
+								CAST(@POSY AS VARCHAR)),
+						'@@BODEGA', @CODE_WAREHOUSE);
+
+		SET @POSY = @POSY + 40;
+		IF LEN(@CLIENT) < 37
+		BEGIN
+			SET @FORMAT = @FORMAT
+				+ REPLACE(REPLACE(@LINE3_COL1_HEADER_PASS,
+									'@@POSY',
+									CAST(@POSY AS VARCHAR)),
+							'@@CLIENTE', @CLIENT);
+		END;
+		ELSE
+		BEGIN
+
+			SET @FORMAT = @FORMAT
+				+ REPLACE(REPLACE(@LINE3_COL1_HEADER_PASS,
+									'@@POSY',
+									CAST(@POSY AS VARCHAR)),
+							'@@CLIENTE',
+							SUBSTRING(@CLIENT, 0, 37));
+			SET @CLIENT = SUBSTRING(@CLIENT, 37,
+									LEN(@CLIENT));
+
+			WHILE (LEN(@CLIENT) > 44)
+			BEGIN
+				DECLARE	@LINE_CLIENT VARCHAR(100);
+				SET @POSY = @POSY + 40;
+				SET @LINE_CLIENT = SUBSTRING(@CLIENT, 0, 44);
+				SET @CLIENT = SUBSTRING(@CLIENT, 44,
+										LEN(@CLIENT));
+				PRINT @LINE_CLIENT;
+				SET @FORMAT = @FORMAT
+					+ REPLACE(REPLACE(@CLIENT_LINEN,
+										'@@POSY',
+										CAST(@POSY AS VARCHAR)),
+								'@@CLIENTE',
+								ISNULL(@LINE_CLIENT, ''));
+			END;
+
+			SET @POSY = @POSY + 40;
+			SET @CLIENT = SUBSTRING(@CLIENT, 0, LEN(@CLIENT));
+			SET @FORMAT = @FORMAT
+				+ REPLACE(REPLACE(@CLIENT_LINEN, '@@POSY',
+									CAST(@POSY AS VARCHAR)),
+							'@@CLIENTE', ISNULL(@CLIENT, ''));
+
+		END;
+		SET @POSY = @POSY + 40;
+		SET @FORMAT = @FORMAT
+			+ REPLACE(REPLACE(@LINE4_COL1_HEADER_PASS,
+								'@@POSY',
+								CAST(@POSY AS VARCHAR)),
+						'@@PILOTO', @DRIVER);
+		SET @POSY = @POSY + 40;
+		SET @FORMAT = @FORMAT
+			+ REPLACE(REPLACE(@LINE4_COL2_HEADER_PASS,
+								'@@POSY',
+								CAST(@POSY AS VARCHAR)),
+						'@@PLACA', @PLATE);
+
+		SET @POSY = @POSY + 40;
+		SET @FORMAT = @FORMAT + REPLACE(@LINE_SEPARATOR,
+										'@@POSY',
+										CAST(@POSY AS VARCHAR));
+
+		SET @POSY = @POSY + 20;
+		SET @FORMAT = @FORMAT
+			+ REPLACE(REPLACE(@LINE1_COL1_PICKING, '@@POSY',
+								CAST(@POSY AS VARCHAR)),
+						'@@WAVE_PICKING_ID',
+						@WAVE_PICKING_ID);
+		SET @FORMAT = @FORMAT
+			+ REPLACE(REPLACE(@LINE1_COL2_PICKING, '@@POSY',
+								CAST(@POSY AS VARCHAR)),
+						'@@DOCUMENTO', @doc_id);
+
+		SET @POSY = @POSY + 40;
+
+		IF LEN(@ADDRESS) < 37
+		BEGIN
+			SET @FORMAT = @FORMAT
+				+ REPLACE(REPLACE(@LINE2_COL1_PICKING,
+									'@@POSY',
+									CAST(@POSY AS VARCHAR)),
+							'@@DIRECCION',
+							ISNULL(@ADDRESS, ''));
+		END;
+		ELSE
+		BEGIN
+
+			SET @FORMAT = @FORMAT
+				+ REPLACE(REPLACE(@LINE3_COL1_HEADER_PASS,
+									'@@POSY',
+									CAST(@POSY AS VARCHAR)),
+							'@@DIRECCION',
+							SUBSTRING(@ADDRESS, 0, 37));
+			SET @ADDRESS = SUBSTRING(@ADDRESS, 37,
+										LEN(@ADDRESS));
+
+			WHILE (LEN(@ADDRESS) > 44)
+			BEGIN
+				DECLARE	@LINE_ADDRESS VARCHAR(100);
+				SET @POSY = @POSY + 40;
+				SET @LINE_ADDRESS = SUBSTRING(@ADDRESS, 0,
+											44);
+				SET @ADDRESS = SUBSTRING(@ADDRESS, 44,
+											LEN(@ADDRESS));
+				PRINT @LINE_ADDRESS;
+				SET @FORMAT = @FORMAT
+					+ REPLACE(REPLACE(@CLIENT_LINEN,
+										'@@POSY',
+										CAST(@POSY AS VARCHAR)),
+								'@@DIRECCION',
+								ISNULL(@LINE_ADDRESS, ''));
+			END;
+
+			SET @POSY = @POSY + 40;
+			SET @ADDRESS = SUBSTRING(@ADDRESS, 0,
+										LEN(@ADDRESS));
+			SET @FORMAT = @FORMAT
+				+ REPLACE(REPLACE(@CLIENT_LINEN, '@@POSY',
+									CAST(@POSY AS VARCHAR)),
+							'@@DIRECCION',
+							ISNULL(@ADDRESS, ''));
+
+		END;
+
+
+
+		SET @POSY = @POSY + 40;
+		SET @FORMAT = @FORMAT + REPLACE(@LINE_SEPARATOR,
+										'@@POSY',
+										CAST(@POSY AS VARCHAR));
+
+		SET @POSY = @POSY + 20;
+		SET @FORMAT = @FORMAT
+			+ REPLACE(@DESCRIPTION_LABEL_DETAIL_PASS,
+						'@@POSY', CAST(@POSY AS VARCHAR));
+		SET @FORMAT = @FORMAT
+			+ REPLACE(@QTY_LABEL_DETAIL_PASS, '@@POSY',
+						CAST(@POSY AS VARCHAR));
+
+    -- ------------------------------------------------------------------------------------
+    -- seccion para agregar detalle de los materiales del pase de salida por documento
+    -- ------------------------------------------------------------------------------------
+
+		DECLARE	@MATERIALES_DOCUMENTO TABLE (
+				[MATERIAL_ID] VARCHAR(100)
+				,[MATERIAL_NAME] VARCHAR(1000)
+				,[QTY] NUMERIC(18, 6)
+			);
+
+		INSERT	INTO @MATERIALES_DOCUMENTO
+				(
+					[MATERIAL_ID]
+					,[MATERIAL_NAME]
+					,[QTY]
+				)
+		SELECT
+			[MATERIAL_ID]
+			,[MATERIAL_NAME]
+			,SUM([QTY])
+		FROM
+			[#result]
+		WHERE
+			[DOC_NUM] = @doc_id
+		GROUP BY
+			[MATERIAL_ID]
+			,[MATERIAL_NAME];
+
+		SELECT
+			@TOTAL_QTY = SUM([QTY])
+		FROM
+			@MATERIALES_DOCUMENTO;
+
+		WHILE EXISTS ( SELECT TOP 1
+							1
+						FROM
+							@MATERIALES_DOCUMENTO )
+		BEGIN
+			DECLARE
+				@MATERIAL_ID VARCHAR(100)
+				,@MATERIAL_NAME VARCHAR(1000)
+				,@QTY NUMERIC(18, 2);
+
+			SELECT TOP 1
+				@MATERIAL_ID = [MATERIAL_ID]
+				,@MATERIAL_NAME = [MATERIAL_NAME]
+				,@QTY = [QTY]
+			FROM
+				@MATERIALES_DOCUMENTO;
+
+			WHILE (LEN(@MATERIAL_NAME) > 37)
+			BEGIN
+				DECLARE	@LINE_MATERIAL VARCHAR(100);
+				SET @POSY = @POSY + 40;
+				SET @LINE_MATERIAL = SUBSTRING(@MATERIAL_NAME,
+											0, 37);
+				SET @MATERIAL_NAME = SUBSTRING(@MATERIAL_NAME,
+											37,
+											LEN(@MATERIAL_NAME));
+				PRINT @LINE_MATERIAL;
+				SET @FORMAT = @FORMAT
+					+ REPLACE(REPLACE(@MATERIAL_LINE,
+										'@@POSY',
+										CAST(@POSY AS VARCHAR)),
+								'@@MATERIAL',
+								ISNULL(@LINE_MATERIAL, ''));
+			END;
+
+			SET @POSY = @POSY + 40;
+			SET @MATERIAL_NAME = SUBSTRING(@MATERIAL_NAME, 0,
+											LEN(@MATERIAL_NAME));
+			SET @FORMAT = @FORMAT
+				+ REPLACE(REPLACE(@MATERIAL_LINE, '@@POSY',
+									CAST(@POSY AS VARCHAR)),
+							'@@MATERIAL',
+							ISNULL(@MATERIAL_NAME, ''));
+			SET @FORMAT = @FORMAT
+				+ REPLACE(REPLACE(@QTY_LINE, '@@POSY',
+									CAST(@POSY AS VARCHAR)),
+							'@@QTY', ISNULL(@QTY, ''));
+			SET @POSY = @POSY + 20;
+			DELETE FROM
+				@MATERIALES_DOCUMENTO
+			WHERE
+				[MATERIAL_ID] = @MATERIAL_ID;
+
+		END;
+
+    -- ------------------------------------------------------------------------------------
+    -- fin seccion materiales del pase de salida por documento
+    -- ------------------------------------------------------------------------------------
+
+		SET @POSY = @POSY + 30;
+		SET @FORMAT = @FORMAT
+			+ REPLACE(@LINE_SEPARATOR_TOTAL_PASS, '@@POSY',
+						CAST(@POSY AS VARCHAR));
+
+		SET @POSY = @POSY + 20;
+		SET @FORMAT = @FORMAT + REPLACE(@TOTAL_LABEL_PASS,
+										'@@POSY',
+										CAST(@POSY AS VARCHAR));
+		SET @FORMAT = @FORMAT + REPLACE(REPLACE(@TOTAL_PASS,
+											'@@POSY',
+											CAST(@POSY AS VARCHAR)),
+										'@@QTY', @TOTAL_QTY);
+
+		SET @FORMAT = @FORMAT + @FONT_HEADER_PASS;
+		SET @POSY = @POSY + 210;
+
+		SET @FORMAT = @FORMAT
+			+ REPLACE('^FO20,@@POSY^FDFirma recibido: ^FS'
+						+ CHAR(13), '@@POSY',
+						CAST(@POSY AS VARCHAR));
+		SET @POSY = @POSY + 50;
+		SET @FORMAT = @FORMAT
+			+ REPLACE(@LINE_SEPARATOR_TOTAL_PASS, '@@POSY',
+						CAST(@POSY AS VARCHAR));
+
+		DELETE FROM
+			@DOCUMENTOS_PASE
+		WHERE
+			[DOCNUM] = @doc_id;
+
+	END;
+
+	SET @HIGH_ZPL = '^LL'
+		+ CAST((@POSY + 100) AS VARCHAR(10));
+
+	SET @FORMAT = @START_ZPL + @HIGH_ZPL + @FORMAT
+		+ @END_ZPL;
+
+  --SET @FORMAT ='^XA^MMT^PW812^LL1218^LS0 ^BY3,2,160^FT24,183^B3N,N,,Y,N  ^XZ';
+	PRINT @FORMAT;
+
+	SELECT
+		@FORMAT AS [FORMAT];
+
+END;

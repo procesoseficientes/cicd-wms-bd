@@ -1,0 +1,72 @@
+﻿
+CREATE PROCEDURE [wms].[sp_OP_WMS_AUTORIZACION_SYNC_SAT]
+@POLIZA varchar(50),
+@DOC_ID numeric(18,0),
+@CLIENT_CODE varchar(25),
+@CLIENT_NAME varchar(200),
+@STATUS numeric(2,0),
+@SENT datetime,
+@RECEIVED datetime,
+@SAT_RESULT varchar(200),
+@LAST_UPDATED_BY varchar(25)
+AS
+DECLARE @retCode int
+
+IF NOT EXISTS(SELECT * FROM [wms].OP_WMS_AUTORIZATION_SYNC_SAT WHERE POLIZA = @POLIZA)
+	BEGIN
+		BEGIN TRANSACTION
+			INSERT INTO [wms].[OP_WMS_AUTORIZATION_SYNC_SAT]
+           ([POLIZA]
+           ,[DOC_ID]
+           ,[CLIENT_CODE]           
+           ,[STATUS]
+           ,[SENT]
+           ,[RECEIVED]
+           ,[SAT_RESULT],[CREATED],[LAST_UPDATED],[LAST_UPDATED_BY])
+     VALUES
+			(@POLIZA,
+			 @DOC_ID,
+			 @CLIENT_CODE,			 
+			 @STATUS,
+			 @SENT,
+			 @RECEIVED,
+			 @SAT_RESULT,GETDATE(),GETDATE(),@LAST_UPDATED_BY);
+	IF @@ERROR <> 0
+		BEGIN
+			ROLLBACK TRANSACTION
+			SELECT @retCode = 0
+			RETURN @retCode
+		END
+	 ELSE
+		BEGIN
+			COMMIT TRANSACTION
+			SELECT @retCode = 1
+			RETURN @retCode
+		END
+	END
+ELSE
+	BEGIN
+		BEGIN TRANSACTION
+			UPDATE [wms].[OP_WMS_AUTORIZATION_SYNC_SAT]
+		    SET [DOC_ID] = @DOC_ID
+			  ,[CLIENT_CODE] = @CLIENT_CODE
+			  ,[STATUS] = @STATUS
+			  ,[SENT] = @SENT
+			  ,[RECEIVED] = @RECEIVED
+			  ,[SAT_RESULT] = @SAT_RESULT
+			  ,[LAST_UPDATED] = GETDATE()
+			  ,[LAST_UPDATED_BY] = @LAST_UPDATED_BY
+			WHERE POLIZA = @POLIZA;
+		IF @@ERROR <> 0
+			BEGIN
+				ROLLBACK TRANSACTION
+				SELECT @retCode = 0
+				RETURN @retCode
+			END
+		ELSE
+			BEGIN
+				COMMIT TRANSACTION
+				SELECT @retCode = 2
+				RETURN @retCode
+			END
+	END

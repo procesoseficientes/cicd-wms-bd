@@ -1,0 +1,5 @@
+﻿CREATE TABLE [wms].[TAB_ROLES_BY_USER] (
+    [USER_ID] NCHAR (10) NULL,
+    [ROLE_ID] NCHAR (10) NULL
+);
+

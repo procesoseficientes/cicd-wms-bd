@@ -1,0 +1,3 @@
+﻿CREATE USER [wms] FOR LOGIN [wms]
+    WITH DEFAULT_SCHEMA = [wms];
+

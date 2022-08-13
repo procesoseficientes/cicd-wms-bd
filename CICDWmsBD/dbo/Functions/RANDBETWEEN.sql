@@ -1,0 +1,9 @@
+﻿
+CREATE FUNCTION RANDBETWEEN(@LowerBound INT, @UpperBound INT)
+RETURNS INT
+AS
+BEGIN
+    DECLARE @TMP FLOAT;
+    SELECT @TMP = (SELECT MyRAND FROM Get_RAND);
+    RETURN CAST(@TMP* (@UpperBound - @LowerBound) + @LowerBound AS INT);
+END

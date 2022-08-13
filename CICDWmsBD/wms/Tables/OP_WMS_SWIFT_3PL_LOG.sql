@@ -1,0 +1,10 @@
+﻿CREATE TABLE [wms].[OP_WMS_SWIFT_3PL_LOG] (
+    [ID_LOG]          INT           IDENTITY (1, 1) NOT NULL,
+    [PROCESS_LOG]     VARCHAR (250) NULL,
+    [MESSAGE_LOG]     VARCHAR (250) NULL,
+    [DATETIME_LOG]    DATETIME      NULL,
+    [LOGIN_ID]        VARCHAR (25)  NULL,
+    [WAVE_PICKING_ID] INT           NULL,
+    [MATERIAL_ID]     VARCHAR (25)  NULL
+);
+

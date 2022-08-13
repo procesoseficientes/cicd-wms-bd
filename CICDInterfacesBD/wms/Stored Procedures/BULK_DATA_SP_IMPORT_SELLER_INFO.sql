@@ -1,0 +1,59 @@
+﻿
+-- =============================================
+-- Autor:				diego.as
+-- Fecha de Creacion: 	18-08-2016
+-- Description:			SP que importa los datos de vendedor, ruta y bodega 
+
+/*
+-- Ejemplo de Ejecucion:
+				-- 
+				EXEC [wms].[BULK_DATA_SP_IMPORT_SELLER_INFO]
+*/
+-- =============================================
+CREATE PROCEDURE [wms].[BULK_DATA_SP_IMPORT_SELLER_INFO]
+AS
+BEGIN
+  SET NOCOUNT ON;
+  --
+  MERGE SWIFT_EXPRESS.[wms].[USERS] AS TRG
+  USING (SELECT
+      [EVS].[SELLER_CODE]
+     ,[EVS].[SELLER_NAME]
+     ,[EVS].[SELLER_TYPE]
+     ,[EVS].[SELLER_TYPE_DESCRIPTION]
+     ,[EVS].[CODE_ROUTE]
+     ,[EVS].[NAME_ROUTE]
+     ,[EVS].[CODE_WAREHOUSE]
+     ,[EVS].[NAME_WAREHOUSE]
+    FROM [SWIFT_INTERFACES_ONLINE].[wms].[ERP_VIEW_SELLER] EVS) AS SRC
+  ON TRG.[RELATED_SELLER] COLLATE database_default = SRC.[SELLER_CODE]
+  WHEN MATCHED
+    THEN UPDATE
+      SET [SELLER_ROUTE] = [SRC].[CODE_ROUTE]
+         ,[USER_TYPE] = [SRC].[SELLER_TYPE_DESCRIPTION]
+         ,[DEFAULT_WAREHOUSE] = [SRC].[CODE_WAREHOUSE]
+         ,[PRESALE_WAREHOUSE] = [SRC].[CODE_WAREHOUSE]
+         ,[ROUTE_RETURN_WAREHOUSE] = [SRC].[CODE_WAREHOUSE];
+  --
+  MERGE SWIFT_EXPRESS.[dbo].[SWIFT_USER] AS TRG
+  USING (SELECT
+      [EVS].[SELLER_CODE]
+     ,[EVS].[SELLER_NAME]
+     ,[EVS].[SELLER_TYPE]
+     ,[EVS].[SELLER_TYPE_DESCRIPTION]
+     ,[EVS].[CODE_ROUTE]
+     ,[EVS].[NAME_ROUTE]
+     ,[EVS].[CODE_WAREHOUSE]
+     ,[EVS].[NAME_WAREHOUSE]
+    FROM [SWIFT_INTERFACES_ONLINE].[wms].[ERP_VIEW_SELLER] EVS) AS SRC
+  ON TRG.[RELATED_SELLER] COLLATE database_default = SRC.[SELLER_CODE]
+  WHEN MATCHED
+    THEN UPDATE
+      SET [SELLER_ROUTE] = [SRC].[CODE_ROUTE]
+         ,[USER_TYPE] = [SRC].[SELLER_TYPE_DESCRIPTION]
+         ,[DEFAULT_WAREHOUSE] = [SRC].[CODE_WAREHOUSE]
+         ,[PRESALE_WAREHOUSE] = [SRC].[CODE_WAREHOUSE]
+         ,[ROUTE_RETURN_WAREHOUSE] = [SRC].[CODE_WAREHOUSE];
+END
+
+

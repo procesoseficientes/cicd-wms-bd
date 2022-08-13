@@ -1,0 +1,2 @@
+﻿CREATE USER [Uwms] WITHOUT LOGIN;
+

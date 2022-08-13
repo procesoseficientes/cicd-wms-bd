@@ -1,0 +1,13 @@
+﻿CREATE TABLE [wms].[OP_WMS_PHYSICAL_COUNTS_DETAIL] (
+    [PHYSICAL_COUNT_DETAIL_ID] INT           IDENTITY (1, 1) NOT NULL,
+    [PHYSICAL_COUNT_HEADER_ID] INT           NULL,
+    [WAREHOUSE_ID]             VARCHAR (25)  NULL,
+    [ZONE]                     VARCHAR (200) NULL,
+    [LOCATION]                 VARCHAR (25)  NULL,
+    [CLIENT_CODE]              VARCHAR (25)  NULL,
+    [MATERIAL_ID]              VARCHAR (25)  NULL,
+    [ASSIGNED_TO]              VARCHAR (25)  NULL,
+    [STATUS]                   VARCHAR (25)  NULL,
+    PRIMARY KEY CLUSTERED ([PHYSICAL_COUNT_DETAIL_ID] ASC) WITH (FILLFACTOR = 80)
+);
+

@@ -1,0 +1,251 @@
+﻿-- =============================================
+-- Autor:				alberto.ruiz
+-- Fecha de Creacion: 	20-Jul-17 @ Nexus TEAM Sprint AgeOfEmpires 
+-- Description:			Obtiene todas las pólizas fiscales filtrándolas por los parámetros enviados
+
+/*
+-- Ejemplo de Ejecucion:
+				EXEC [wms].[OP_WMS_SP_GET_POLIZAS_FOR_EXPIRATION]
+					@START_DATETIME = '20170301 00:00:00.000'
+					,@END_DATETIME = '20170801 00:00:00.000'
+					,@CUSTOMER = N'<Data>
+							<CLIENT_CODE>C00030</CLIENT_CODE>
+						</Data>'
+					,@DAYS = -1
+					,@BLOCKED_ONLY = 0
+				--
+				EXEC [wms].[OP_WMS_SP_GET_POLIZAS_FOR_EXPIRATION]
+					@START_DATETIME = '20170301 00:00:00.000'
+					,@END_DATETIME = '20170801 00:00:00.000'
+					,@CUSTOMER = N'<Data>
+							<CLIENT_CODE>C00030</CLIENT_CODE>
+						</Data>'
+					,@DAYS = 1
+					,@BLOCKED_ONLY = 0
+				--
+				EXEC [wms].[OP_WMS_SP_GET_POLIZAS_FOR_EXPIRATION]
+					@START_DATETIME = '20170301 00:00:00.000'
+					,@END_DATETIME = '20170801 00:00:00.000'
+					,@CUSTOMER = N'<Data>
+							<CLIENT_CODE>C00030</CLIENT_CODE>
+						</Data>'
+					,@DAYS = 30
+					,@BLOCKED_ONLY = 0
+				--
+				EXEC [wms].[OP_WMS_SP_GET_POLIZAS_FOR_EXPIRATION]
+					@START_DATETIME = '20170301 00:00:00.000'
+					,@END_DATETIME = '20170801 00:00:00.000'
+					,@CUSTOMER = N'<Data>
+							<CLIENT_CODE>C00030</CLIENT_CODE>
+						</Data>'
+					,@DAYS = 30
+					,@BLOCKED_ONLY = 1
+*/
+-- =============================================
+CREATE PROCEDURE [wms].[OP_WMS_SP_GET_POLIZAS_FOR_EXPIRATION] (
+	@START_DATETIME DATETIME
+	,@END_DATETIME DATETIME
+	,@CUSTOMER XML
+	,@DAYS INT = -1
+	,@BLOCKED_ONLY INT = 0
+)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	--
+	DECLARE @CLIENT TABLE (
+		[CLIENT_CODE] VARCHAR(25) NOT NULL
+		PRIMARY KEY([CLIENT_CODE])
+	)
+	--
+	DECLARE @PARAM TABLE (
+		[IDENTITY] INT NOT NULL
+		,[GROUP_ID] VARCHAR(250) NOT NULL
+		,[PARAMETER_ID] VARCHAR(250) NOT NULL
+		,[VALUE] VARCHAR(250) NULL
+		,[LABEL] VARCHAR(250) NULL
+		,PRIMARY KEY ([IDENTITY])
+		,UNIQUE([PARAMETER_ID])
+	)
+	--
+	DECLARE
+		@WAREHOUSE_REGIMEN VARCHAR(25)
+		,@QUERY NVARCHAR(4000)
+		,@START_EXPIRATION_DATETIME DATETIME
+		,@END_EXPIRATION_DATETIME DATETIME
+		,@PARAM_TYPE VARCHAR(25)
+		,@PARAM_GROUP VARCHAR(25)
+	--
+	SELECT
+		@WAREHOUSE_REGIMEN = 'FISCAL'
+		,@QUERY = N''
+		,@START_EXPIRATION_DATETIME = CONVERT(DATE,GETDATE())
+		,@END_EXPIRATION_DATETIME = CASE
+			WHEN @DAYS = -1 THEN NULL
+			ELSE DATEADD(DAY,@DAYS,CONVERT(DATE,GETDATE()))
+		END
+		,@PARAM_TYPE = 'WMS3PL'
+		,@PARAM_GROUP = 'REGIMEN'
+	
+	-- ------------------------------------------------------------------------------------
+	-- Obtiene los clientes
+	-- ------------------------------------------------------------------------------------
+	INSERT INTO @CLIENT ([CLIENT_CODE])
+	SELECT x.Rec.query('./.').value('.', 'varchar(25)')
+	FROM @CUSTOMER.nodes('/Data/CLIENT_CODE') AS x (Rec)
+
+	-- ------------------------------------------------------------------------------------
+	-- Obtiene los estados
+	-- ------------------------------------------------------------------------------------
+	INSERT INTO @PARAM
+			(
+				[IDENTITY]
+				,[GROUP_ID]
+				,[PARAMETER_ID]
+				,[VALUE]
+				,[LABEL]
+			)
+	SELECT
+		[P].[IDENTITY]
+		,[P].[GROUP_ID]
+		,[P].[PARAMETER_ID]
+		,[P].[VALUE]
+		,[P].[LABEL]
+	FROM [wms].[OP_WMS_FN_GET_PARAMETER_BY_GROUP]('STATUS') [P]
+
+	-- ------------------------------------------------------------------------------------
+	-- Obtiene las polizas segun los criterios de busqueda
+	-- ------------------------------------------------------------------------------------
+	SELECT
+		[PH].[DOC_ID]
+		,[PH].[CODIGO_POLIZA]
+		,MAX([VW].[CLIENT_NAME]) [CLIENT_NAME]
+		,[wms].[OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA]([PH].[CODIGO_POLIZA]) [EXPIRATION_DATE]
+		,MAX([S].[VALUE]) [BLOCKED_STATUS]
+		,MAX([S].[LABEL]) [DESCRIPTION_STATUS]
+		,CASE 
+			WHEN DATEDIFF(DAY,[wms].[OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA]([PH].[CODIGO_POLIZA]),GETDATE()) > 0
+			THEN DATEDIFF(DAY,[wms].[OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA]([PH].[CODIGO_POLIZA]),GETDATE())
+			ELSE 0 
+		END [TIME_BLOCKED]
+		,CASE 
+			WHEN DATEDIFF(DAY,GETDATE(),[wms].[OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA]([PH].[CODIGO_POLIZA])) > 0
+			THEN DATEDIFF(DAY,GETDATE(),[wms].[OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA]([PH].[CODIGO_POLIZA])) 
+			ELSE 0
+		END DAYS_FOR_LOCKING
+		,SUM([VF].[TOTAL_VALOR]) [TOTAL_VALUE]
+		,SUM([VF].[QTY]) [QTY]
+		,MAX([CO].[SPARE1]) [REGIMEN_GROUP]
+	INTO #POLIZA_HEDER
+	FROM [wms].[OP_WMS_POLIZA_HEADER] [PH]
+	INNER JOIN @CLIENT [C] ON ([C].[CLIENT_CODE] = [PH].[CLIENT_CODE])
+	INNER JOIN [wms].[OP_WMS_VIEW_CLIENTS] [VW] ON ([VW].[CLIENT_CODE] = [C].[CLIENT_CODE])
+	LEFT JOIN @PARAM [S] ON ([S].[VALUE] = [PH].[BLOCKED_STATUS])
+	INNER JOIN [wms].[OP_WMS_VIEW_VALORIZACION_FISCAL] [VF] ON ([VF].[CODIGO_POLIZA] = [PH].[CODIGO_POLIZA])
+	INNER JOIN [wms].[OP_WMS_CONFIGURATIONS] [CO] ON (
+		[CO].[PARAM_TYPE] = @PARAM_TYPE
+		AND [CO].[PARAM_GROUP] = @PARAM_GROUP
+		AND [CO].[PARAM_NAME] = [PH].[REGIMEN]
+	)
+	WHERE [PH].[WAREHOUSE_REGIMEN] = @WAREHOUSE_REGIMEN
+		AND [PH].[DOC_ID] > 0
+	GROUP BY 
+		[PH].[DOC_ID]
+		,[PH].[CODIGO_POLIZA]
+	--
+	CREATE INDEX [IN_TEMP_POLIZA_HEDER_DOC_ID]
+	ON #POLIZA_HEDER
+		([DOC_ID]) INCLUDE ([CLIENT_NAME],[EXPIRATION_DATE],[DESCRIPTION_STATUS]);
+
+	-- ------------------------------------------------------------------------------------
+	-- Forma el query a ejecutar
+	-- ------------------------------------------------------------------------------------
+	SELECT @QUERY = N'SELECT 
+			[PH].[DOC_ID]
+			,[PH].[NUMERO_ORDEN]
+			,[PH].[ADUANA_ENTRADA_SALIDA]
+			,[PH].[NUMERO_DUA]
+			,[PH].[FECHA_ACEPTACION_DMY]
+			,[PH].[ADUANA_DESPACHO_DESTINO]
+			,[PH].[REGIMEN]
+			,[PH].[CLASE]
+			,[PH].[PAIS_PROCEDENCIA]
+			,[PH].[NATURALEZA_TRANS]
+			,[PH].[DEPOSITO_FISCAL_ZF]
+			,[PH].[MODO]
+			,[PH].[FECHA_LLEGADA]
+			,[PH].[TIPO_CAMBIO]
+			,[PH].[TOTAL_VALOR_ADUANA]
+			,[PH].[TOTAL_NUMERO_LINEAS]
+			,[PH].[TOTAL_BULTOS]
+			,[PH].[TOTAL_PESO_BRUTO_KG]
+			,[PH].[TOTAL_FOB_USD]
+			,[PH].[TOTAL_FLETE_USD]
+			,[PH].[TOTAL_SEGURO_USD]
+			,[PH].[TOTAL_OTROS_USD]
+			,[PH].[NUMERO_SAT]
+			,[PH].[TIPO_IMPORTADOR]
+			,[PH].[ID_TRIB_IMPORTADOR]
+			,[PH].[PAIS_IMPORTADOR]
+			,[PH].[RAZON_SOCIAL_IMPORTADOR]
+			,[PH].[DOMICILIO_IMPORTADOR]
+			,[PH].[TIPO_REPRESENTANTE]
+			,[PH].[ID_TRIB_REPRESENTANTE]
+			,[PH].[PAIS_REPRESENTANTE]
+			,[PH].[TIPO_DECLARANTE_REPRESENTANTE]
+			,[PH].[RAZON_SOCIAL_REPRESENTANTE]
+			,[PH].[DOMICILIO_REPRESENTANTE]
+			,[PH].[TIPO_CONTENEDOR]
+			,[PH].[NUMERO_CONTENEDOR]
+			,[PH].[ENTIDAD_CONTENEDOR]
+			,[PH].[NUMERO_MARCHAMO_CONTENEDOR]
+			,[PH].[TOTAL_LIQUIDAR]
+			,[PH].[TOTAL_OTROS]
+			,[PH].[TOTAL_GENERAL]
+			,[PH].[CODIGO_POLIZA]
+			,[PH].[LAST_UPDATED_BY]
+			,[PH].[LAST_UPDATED]
+			,[PH].[STATUS]
+			,[PH].[ACUERDO_COMERCIAL]
+			,[PH].[WAREHOUSE_REGIMEN]
+			,[PH].[CLIENT_CODE]
+			,[P].[CLIENT_NAME]
+			,[PH].[FECHA_DOCUMENTO]
+			,[P].[EXPIRATION_DATE]
+			,[PH].[TIPO]
+			,[PH].[REFERENCIA_EXTRA]
+			,[PH].[POLIZA_ASEGURADA]
+			,[PH].[POLIZA_ASSIGNEDTO]
+			,[PH].[TRANSLATION]
+			,[PH].[PENDIENTE_RECTIFICACION]
+			,[PH].[CODIGO_POLIZA_RECTIFICACION]
+			,[PH].[COMENTARIO_RECTIFICACION]
+			,[PH].[CLASE_POLIZA_RECTIFICACION]
+			,[PH].[DOC_ID_RECTIFICACION]
+			,[PH].[COMENTARIO_RECTIFICADO]
+			,[PH].[IS_EXTERNAL_INVENTORY]
+			,[PH].[IS_BLOCKED]
+			,[P].[BLOCKED_STATUS]
+			,[P].[DESCRIPTION_STATUS]
+			,[PH].[DOCUMENTO_DESBLOQUEO] [UNLOCK_DOCUMENT]
+			,[PH].[COMENTARIO_DESBLOQUEO] [UNLOCK_COMMENT]
+			,[PH].[USUARIO_DESBLOQUEO] [UNLOCK_USER]
+			,[PH].[FECHA_DESBLOQUEO] [UNLOCK_DATE]
+			,[P].[TIME_BLOCKED]
+			,[P].[DAYS_FOR_LOCKING]
+			,[P].[TOTAL_VALUE]
+			,[P].[QTY]
+			,[P].[REGIMEN_GROUP]
+		FROM [wms].[OP_WMS_POLIZA_HEADER] [PH]
+		INNER JOIN [#POLIZA_HEDER] [P] ON ([P].[DOC_ID] = [PH].[DOC_ID])'
+		+ CASE
+			WHEN @BLOCKED_ONLY = 1 THEN 'WHERE [PH].[IS_BLOCKED] = 1'
+			WHEN @DAYS > 0 THEN 'WHERE ([P].[EXPIRATION_DATE] BETWEEN ''' + CONVERT(VARCHAR,@START_EXPIRATION_DATETIME,121) + ''' AND ''' + CONVERT(VARCHAR,@END_EXPIRATION_DATETIME,121) + ''')		
+			AND ([PH].[FECHA_LLEGADA] BETWEEN ''' + CONVERT(VARCHAR,@START_DATETIME,121) + ''' AND ''' + CONVERT(VARCHAR,@END_DATETIME,121) + ''')'
+			ELSE ''
+		END
+	--
+	PRINT '--> @QUERY: ' + @QUERY
+	--
+	EXEC (@QUERY)
+END

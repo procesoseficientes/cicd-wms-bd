@@ -1,0 +1,15 @@
+﻿CREATE TABLE [wms].[OP_WMS_AUTORIZATION_SYNC_SAT] (
+    [DOC_ID]          NUMERIC (18)  NOT NULL,
+    [RECEPTION]       NUMERIC (18)  NULL,
+    [CLIENT_NAME]     VARCHAR (200) NULL,
+    [CLIENT_CODE]     VARCHAR (25)  NULL,
+    [STATUS]          NUMERIC (2)   NULL,
+    [SENT]            DATETIME      NULL,
+    [RECEIVED]        DATETIME      NULL,
+    [SAT_RESULT]      VARCHAR (200) NULL,
+    [CREATED]         DATETIME      NULL,
+    [LAST_UPDATED]    DATETIME      NULL,
+    [LAST_UPDATED_BY] VARCHAR (25)  NULL,
+    [POLIZA]          VARCHAR (25)  NULL
+);
+

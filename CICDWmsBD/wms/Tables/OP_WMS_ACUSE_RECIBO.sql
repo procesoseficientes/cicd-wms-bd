@@ -1,0 +1,18 @@
+﻿CREATE TABLE [wms].[OP_WMS_ACUSE_RECIBO] (
+    [DOC_ID]               NUMERIC (18) IDENTITY (1, 1) NOT NULL,
+    [CODIGO_POLIZA]        VARCHAR (20) NULL,
+    [FOB]                  VARCHAR (50) NULL,
+    [DATE]                 DATETIME     NULL,
+    [CODIGO_TRANSPORTISTA] VARCHAR (50) NULL,
+    [PLACA_TRANSPORTE]     VARCHAR (20) NULL,
+    [NUMERO_CONTENEDOR]    VARCHAR (20) NULL,
+    [NUMERO_MARCHAMO]      VARCHAR (20) NULL,
+    [FOTO_1]               IMAGE        NULL,
+    [FOTO_2]               IMAGE        NULL,
+    [FOTO_3]               IMAGE        NULL,
+    [STATUS]               VARCHAR (20) NULL,
+    [LAST_UPDATED]         DATETIME     NULL,
+    [LAST_UPDATED_BY]      VARCHAR (25) NULL,
+    CONSTRAINT [PK_OP_WMS_ACUSE_RECIBO] PRIMARY KEY CLUSTERED ([DOC_ID] ASC) WITH (FILLFACTOR = 80)
+);
+

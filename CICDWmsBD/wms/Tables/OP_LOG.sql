@@ -1,0 +1,6 @@
+﻿CREATE TABLE [wms].[OP_LOG] (
+    [ERR_DATETIME] DATETIME      NULL,
+    [ERR_TEXT]     VARCHAR (200) NULL,
+    [ERR_SQL]      VARCHAR (MAX) NULL
+);
+
