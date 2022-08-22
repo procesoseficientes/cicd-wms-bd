@@ -7,6 +7,10 @@
 -- pablo.aguilar
 -- Se agrega if para realizar el ultimo top 1 ordenado segun la regla de batch o qty mas pequeña.
 
+-- Modificación:				Elder Lucas
+-- Fecha Modificació:			16 de agosto 2022
+-- Descripción:					Se obtiene usuario por defecto segun bodega de destino del reabastecimiento
+
 /*
 -- Ejemplo de Ejecucion:
 			EXEC [wms].[OP_WMS_SP_CREATE_REPLEANISH_TASK] @MATERIAL_ID = 'C00277/MILAN-16M'
@@ -81,11 +85,11 @@ BEGIN
 		,@QUANTITY_PENDING = @QTY;
 
 
-	IF @WAVE_PICKING_ID = 0
-	BEGIN
+	--IF @WAVE_PICKING_ID = 0
+	--BEGIN
 		SELECT @WAVE_PICKING_ID = NEXT VALUE FOR [wms].[OP_WMS_SEQ_WAVE_PICKING_ID]; 
 
-	END;
+	--END;
 
 
 	IF NOT EXISTS ( SELECT TOP 1
@@ -243,6 +247,10 @@ BEGIN
 
 			PRINT CAST(@LICENSE_ID AS VARCHAR);
 
+			--Obtenemos usuario por defecto
+
+			DECLARE @DEFAULT_USER VARCHAR(25) = (SELECT TEXT_VALUE FROM wms.OP_WMS_CONFIGURATIONS WHERE PARAM_TYPE = 'SISTEMA' AND PARAM_GROUP = 'DEFAULT_USER_REPLANISH' AND PARAM_NAME = @WAREHOUSE_TARGET)
+
 			INSERT	INTO [wms].[OP_WMS_TASK_LIST]
 					(
 						[WAVE_PICKING_ID]
@@ -280,7 +288,7 @@ BEGIN
 						,@TASK_TYPE
 						,@TASK_SUB_TYPE
 						,'AUTOMATICO'
-						,''
+						,ISNULL(@DEFAULT_USER, '')
 						,@ASSIGNED_DATE
 						,@CURRENT_ASSIGNED
 						,@CURRENT_ASSIGNED
