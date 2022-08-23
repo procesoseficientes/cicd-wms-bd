@@ -11,6 +11,10 @@
 -- Fecha de Creacion: 	2022-15-01
 -- Description:			Parámetro @pCOMPLETE_TASK para compatibilidad con nueva versión del servidor
 
+-- Modificación:		Elder Lucas
+-- Fecha de Creacion: 	2022-23-08
+-- Description:			Creación de licencia de despacho para reabastecimiento
+
 -- =============================================
 CREATE PROCEDURE [wms].[OP_WMS_SP_REGISTER_AND_CHANGE_STATUS_OF_TASK] (
 		@pTRANS_TYPE VARCHAR(25)
@@ -40,7 +44,8 @@ BEGIN
 		,@TRANSFER_REQUEST_OPEN_STATUS VARCHAR(25) = 'OPEN'
 		,@TRANSFER_REQUEST_CLOSED_STATUS VARCHAR(25) = 'CLOSED'
 		,@TASK_SUB_TYPE VARCHAR(25)
-		,@LICESE_ID INT = NULL;
+		,@LICESE_ID INT = NULL
+		,@CREATE_PICKING_LICENSE INT = 0;
 
 	BEGIN TRAN;
 	BEGIN TRY
@@ -320,14 +325,25 @@ BEGIN
 			END;
 		END;
 
-		IF EXISTS ( SELECT TOP 1
-						1
-					FROM
-						[wms].[OP_WMS_PARAMETER] [P]
+		IF EXISTS ( SELECT TOP 1 1 FROM [wms].[OP_WMS_PARAMETER] [P]
 					WHERE
 						[P].[GROUP_ID] = 'PICKING'
 						AND [P].[PARAMETER_ID] = 'CREATE_LICENSE_IN_PICKING'
 						AND [P].[VALUE] = '1' )
+		BEGIN
+			SET @CREATE_PICKING_LICENSE = 1
+		END
+		ELSE
+		BEGIN
+			IF EXISTS(SELECT TOP 1 1 FROM WMS.OP_WMS_TASK_LIST WHERE WAVE_PICKING_ID = 80278 AND TASK_SUBTYPE = 'REUBICACION_BUFFER')
+			BEGIN
+				SET @CREATE_PICKING_LICENSE = 1
+			END
+		END
+
+
+
+		IF (@CREATE_PICKING_LICENSE = 1)
 		BEGIN
               -- ------------------------------------------------------------------------------------
               -- Se declaran las variables a utilizar
