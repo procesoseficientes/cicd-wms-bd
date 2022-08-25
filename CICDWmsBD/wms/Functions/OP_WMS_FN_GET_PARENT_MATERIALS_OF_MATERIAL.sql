@@ -4,6 +4,10 @@
 -- Fecha de Creacion: 	2017-04-12 @ Team ERGON - Sprint ERGON Ganandorf
 -- Description:	 Función para obttiene los materiales padre de una material. 
 
+--Modificación:			Elder Lucas
+--Fecha:				24-08-2022
+--Descripción:			Control de decimales en masterpack
+
 /*
 -- Ejemplo de Ejecucion:
 			SELECT * FROM [wms].OP_WMS_FN_GET_PARENT_MATERIALS_OF_MATERIAL ('wms/U00000491')
@@ -14,7 +18,7 @@
 CREATE FUNCTION [wms].[OP_WMS_FN_GET_PARENT_MATERIALS_OF_MATERIAL] (@MATERIAL_ID VARCHAR(50))
 RETURNS @PARENTS_MATERIALS TABLE (
   PARENT_MATERIAL_ID VARCHAR(50)
-  , CONVERTION_TO_BASE_CHILD INT
+  , CONVERTION_TO_BASE_CHILD NUMERIC (18,6)
   , LEVEL INT
 )
 AS

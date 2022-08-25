@@ -7,6 +7,10 @@
 -- Fecha de Creacion: 	2018-02-12 @ Team Reborn - Sprint ulrick
 -- Description:	 se modifica para que devuelva objeto Operation
 
+--Modificación:			Elder Lucas
+--Fecha:				24-08-2022
+--Descripción:			Control de decimales en masterpack
+
 /*
 -- Ejemplo de Ejecucion:
 			exec [wms].[OP_WMS_SP_PROCESS_REPLENISHMENTS_BASED_ON_MAX_AND_MINS]
@@ -26,12 +30,12 @@ BEGIN
 	DECLARE
 		@LOCATION_SPOT VARCHAR(25)
 		,@MATERIAL_ID VARCHAR(25)
-		,@QTY_TO_REPLENISH NUMERIC
-		,@QTY_AVAILABLE_TO_REPLENISH NUMERIC
+		,@QTY_TO_REPLENISH NUMERIC(18,6)
+		,@QTY_AVAILABLE_TO_REPLENISH NUMERIC(18,6)
 		,@ZONE VARCHAR(25)
 		,@RECEIVE_EXPLODED_MATERIALS INT
 		,@PARENT_MATERIAL_ID VARCHAR(25)
-		,@CONVERTION_TO_BASE_CHILD INT
+		,@CONVERTION_TO_BASE_CHILD NUMERIC(18,6)
 		,@LEVEL INT
 		,@WAVE_PICKING_ID_LP INT = 0
 		,@WAVE_PICKING_ID_BF INT = 0
@@ -190,6 +194,9 @@ BEGIN
 				ORDER BY
 					[LEVEL] ASC;
 
+
+				PRINT '@MATERIAL_ID'
+				PRINT @MATERIAL_ID
 				PRINT '@PARENT_MATERIAL_ID '
 					+ CAST(@PARENT_MATERIAL_ID AS VARCHAR);
 				PRINT '@@CONVERTION_TO_BASE_CHILD '
@@ -213,10 +220,10 @@ BEGIN
 		
 				SELECT
 					@QTY_AVAILABLE_TO_REPLENISH = CASE
-											WHEN FLOOR(CAST(@QTY_TO_REPLENISH AS NUMERIC)
-											/ CAST(@CONVERTION_TO_BASE_CHILD AS NUMERIC)) < @QTY_AVAILABLE_TO_REPLENISH
-											THEN FLOOR(CAST(@QTY_TO_REPLENISH AS NUMERIC)
-											/ CAST(@CONVERTION_TO_BASE_CHILD AS NUMERIC))
+											WHEN (@QTY_TO_REPLENISH 
+											/ @CONVERTION_TO_BASE_CHILD) < @QTY_AVAILABLE_TO_REPLENISH
+											THEN (@QTY_TO_REPLENISH 
+											/ @CONVERTION_TO_BASE_CHILD)
 											ELSE @QTY_AVAILABLE_TO_REPLENISH
 											END;
 				PRINT '@QTY_AVAILABLE_TO_REPLENISH '
@@ -235,7 +242,7 @@ BEGIN
           -- Crear tarea
           ---------------------------------------------------------------------------------  
 					EXEC [wms].[OP_WMS_SP_CREATE_REPLEANISH_TASK] @MATERIAL_ID = @PARENT_MATERIAL_ID,
-						@WAVE_PICKING_ID = @WAVE_PICKING_ID_BF OUTPUT,
+						@WAVE_PICKING_ID = @WAVE_PICKING_ID_BF OUTPUT,--Obtiene el valor del SP que crea la tarea y lo utiliza en todo el grupo
 						@TARGET_ZONE = @ZONE,
 						@TARGET_LOCATION = @LOCATION_SPOT,
 						@MATERIAL_ID_TARGET = @MATERIAL_ID,
