@@ -40,6 +40,9 @@
 -- Fecha de Creacion: 	30 de julio 2022
 -- Description:			Se agrega condición para decidir si se calculará el potencial de armado de del material en caso de que no hayan masterpacks ya armados
 
+-- Autor:				Elder Lucas
+-- Fecha de Creacion: 	30 de agosto 2022
+-- Description:			Cambio en condición de calculo de potencial de armado para no dejar en 0 la cantidad cuando el parametro está apagado
 /*
 -- Ejemplo de Ejecucion:
 				EXEC [wms].[OP_WMS_SP_VALIDATE_STOCK_INVENTORY_BY_MATERIAL_FOR_DISPATCH]
@@ -289,7 +292,7 @@ BEGIN
 			,@CLIENT_OWNER = [e].[MATERIAL_OWNER]
 			,@SOURCE_NAME = [e].[SOURCE_NAME]
 			,@MATERIAL_NAME = [e].[MATERIAL_NAME]
-			,@CURRENTLY_AVAILABLE = 0
+			,@CURRENTLY_AVAILABLE = [e].[QTY]
 			,@STATUS_CODE = [e].[STATUS_CODE]
 		FROM
 			[#MATERIAL] [e]
@@ -306,17 +309,17 @@ BEGIN
 		WHERE
 			[MATERIAL_ID] = @MATERIAL_ID;
 		print 'material id: '+@MATERIAL_ID + ' wharehouse: '+ @CODE_WAREHOUSE
-    -- ------------------------------------------------------------------------------------
+    -- ------------------------------------------------------------------------ac------------
     -- Obtiene la cantidad disponible en la vista OP_WMS_VIEW_PICKING_AVAILABLE_GENERAL 
     -- ------------------------------------------------------------------------------------
 	IF EXISTS (SELECT TOP 1 1 FROM WMS.OP_WMS_PARAMETER WHERE GROUP_ID = 'PICKING_DEMAND' AND PARAMETER_ID = 'CALCULATE_MASTERPACK_POTENTIAL' AND VALUE = 1)
 	BEGIN
-		SELECT @CURRENTLY_AVAILABLE = wms.OP_WMS_FN_GET_AVAILABLE_INVENTORY_FOR_MASTERPACK(@MATERIAL_ID, @CODE_WAREHOUSE)
+		SELECT @CURRENTLY_AVAILABLE = (wms.OP_WMS_FN_GET_AVAILABLE_INVENTORY_FOR_MASTERPACK(@MATERIAL_ID, @CODE_WAREHOUSE) + @CURRENTLY_AVAILABLE)
 	END
-	ELSE
-	BEGIN
-		SET @CURRENTLY_AVAILABLE = 0
-	END
+	--ELSE
+	--BEGIN
+	--	SET @CURRENTLY_AVAILABLE = 0
+	--END
 		--PRINT 'MAT: ' + @MATERIAL_ID +' ; AVAV: ' + CAST(@CURRENTLY_AVAILABLE AS VARCHAR)
     -- ------------------------------------------------------------------------------------
     -- Inserta en la tabla de resultado @DETAIL_RESULT
