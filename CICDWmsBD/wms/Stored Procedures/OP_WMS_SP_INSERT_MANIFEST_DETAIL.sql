@@ -269,7 +269,7 @@ BEGIN
                        [DD].[QTY] * ISNULL([M].[WEIGTH], 0)
                END [WEIGTH_X_LINE],
                [M].[WEIGHT_MEASUREMENT],
-               ISNULL([DD].[CURRENT_COST_BY_PRODUCT], 0),
+               ISNULL([CBP].[COSTO_PROM], 0),
 			   [DD].STATUS_CODE
         FROM [wms].[OP_WMS_NEXT_PICKING_DEMAND_DETAIL] [DD]
             INNER JOIN [wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [DH]
@@ -281,8 +281,8 @@ BEGIN
                    AND [MD].[ROW_NUMBER] = 1
             LEFT JOIN [wms].[OP_WMS_MATERIALS] [M]
                 ON ([M].[MATERIAL_ID] = [DD].[MATERIAL_ID])
-			--LEFT JOIN [wms].[OP_WMS_VIEW_SAE_COST_BY_PRODUCT] [CBP]
-			--	ON [CBP].[CVE_ART] = [M].[ITEM_CODE_ERP] COLLATE DATABASE_DEFAULT
+			LEFT JOIN [wms].[OP_WMS_VIEW_SAE_COST_BY_PRODUCT] [CBP]
+				ON [CBP].[CVE_ART] = [M].[ITEM_CODE_ERP] COLLATE DATABASE_DEFAULT
         WHERE [DH].[PICKING_DEMAND_HEADER_ID] = @PICKING_DEMAND_HEADER_ID
               AND
               (
