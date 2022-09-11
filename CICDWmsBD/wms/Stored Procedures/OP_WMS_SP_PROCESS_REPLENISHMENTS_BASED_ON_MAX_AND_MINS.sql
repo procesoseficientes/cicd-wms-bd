@@ -1,10 +1,4 @@
-USE [OP_WMS_ALZA]
-GO
-/****** Object:  StoredProcedure [wms].[OP_WMS_SP_PROCESS_REPLENISHMENTS_BASED_ON_MAX_AND_MINS]    Script Date: 8/27/2022 4:14:35 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
+
 -- =============================================
 -- Autor:	pablo.aguilar
 -- Fecha de Creacion: 	2017-05-02 @ Team ERGON - Sprint Ganondorf
