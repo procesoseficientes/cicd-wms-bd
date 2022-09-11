@@ -1,16 +1,3 @@
-USE [OP_WMS_ALZA]
-GO
-
-/****** Object:  View [wms].[OP_WMS_VIEW_LOCATION_TO_REPLENISH]    Script Date: 8/27/2022 4:13:46 AM ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-
-
 
 -- =============================================
 -- Autor:	pablo.aguilar
