@@ -54,7 +54,7 @@ AS
        NULL [MT3],
        '0' [BATCH_REQUESTED],
        0 [SERIAL_NUMBER_REQUESTS],
-       [m].[ULT_COSTO] [ERP_AVERAGE_PRICE],
+       ISNULL([m].[ULT_COSTO], 0) [ERP_AVERAGE_PRICE],
        1 [INVT],
        '0' [HANDLE_TONE],
        '0' [HANDLE_CALIBER],
