@@ -223,9 +223,7 @@ BEGIN
                 GROUP BY [T].[CVE_ART]
                 HAVING SUM([EXIST]) <
                 (
-                    SELECT SUM(@QTY_DETAIL)
-                    FROM [#DETALLE]
-                    WHERE [CVE_ART] = @ERP_MATERIAL_CODE
+                    SELECT @QTY_DETAIL
                 )
             )
             BEGIN
