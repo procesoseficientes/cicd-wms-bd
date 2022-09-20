@@ -12,6 +12,10 @@
 -- Modificación:		Elder Lucas
 -- Fecha: 				18 de abril de 2022  
 -- Description:			Se agrega manejo de ordenes consolidadas que compartan material, las cantidades en task list no pueden superar las cantidades en demand detail
+
+-- Modificación:		Elder Lucas
+-- Fecha: 				20 de septiembre 2022 
+-- Description:			Manejo de folio por bodega
 /*
 -- Ejemplo de Ejecucion:
 				EXEC [dbo].[SAE_CREATE_REMISION_BY_SALE_ORDER] @NEXT_PICKING_DEMAND_HEADER = 75286 -- numeric
@@ -545,11 +549,24 @@ SELECT [D].[PICKING_DEMAND_DETAIL_ID],
               AND [ULT_CVE] = @ULTIMO_DOCUMENTO_32;
 
 
-		if (@ALMACEN = 4)
-			select @SERIE_FOLIO='004-00108-'
+		--if (@ALMACEN = 4)
+		--	select @SERIE_FOLIO='004-00108-'
+
+		IF EXISTS(SELECT TOP 1 1 FROM SAE70EMPRESA01.dbo.FOLIOSRWMS WHERE Bodega = @ALMACEN)
+		BEGIN
+			SELECT @SERIE_FOLIO = Folio FROM SAE70EMPRESA01.dbo.FOLIOSRWMS WHERE Bodega = @ALMACEN
+		END
+		ELSE
+		BEGIN
+			SELECT -1 AS [Resultado],
+               CONCAT('Proceso fallido, no se encontraron folios configurados para la bodega: ', CAST(@ALMACEN AS VARCHAR), ' en la tabla dbo.FOLIOSRWMS') [Mensaje],
+               0 [Codigo],
+               '0' [DbData];
+			RETURN;
+		END
 
 
-        -- ------------------------------------------------------------------------------------
+        -- ------------------------------------------------------------------------------------	
         -- obtiene folios y serie de documento de recepción 
         -- ------------------------------------------------------------------------------------
         SELECT TOP (1)
