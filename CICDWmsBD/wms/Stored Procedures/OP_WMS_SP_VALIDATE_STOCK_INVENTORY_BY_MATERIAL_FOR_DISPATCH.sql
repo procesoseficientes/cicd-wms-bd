@@ -43,6 +43,10 @@
 -- Autor:				Elder Lucas
 -- Fecha de Creacion: 	30 de agosto 2022
 -- Description:			Cambio en condición de calculo de potencial de armado para no dejar en 0 la cantidad cuando el parametro está apagado
+
+-- Autor:				Elder Lucas
+-- Fecha de Creacion: 	21 de septiembre 2022
+-- Description:			Se revierten los cambios anteriores por mal funcionamiento imprevisto
 /*
 -- Ejemplo de Ejecucion:
 				EXEC [wms].[OP_WMS_SP_VALIDATE_STOCK_INVENTORY_BY_MATERIAL_FOR_DISPATCH]
@@ -292,7 +296,7 @@ BEGIN
 			,@CLIENT_OWNER = [e].[MATERIAL_OWNER]
 			,@SOURCE_NAME = [e].[SOURCE_NAME]
 			,@MATERIAL_NAME = [e].[MATERIAL_NAME]
-			,@CURRENTLY_AVAILABLE = [e].[QTY]
+			,@CURRENTLY_AVAILABLE = 0
 			,@STATUS_CODE = [e].[STATUS_CODE]
 		FROM
 			[#MATERIAL] [e]
@@ -312,10 +316,11 @@ BEGIN
     -- ------------------------------------------------------------------------ac------------
     -- Obtiene la cantidad disponible en la vista OP_WMS_VIEW_PICKING_AVAILABLE_GENERAL 
     -- ------------------------------------------------------------------------------------
-	IF EXISTS (SELECT TOP 1 1 FROM WMS.OP_WMS_PARAMETER WHERE GROUP_ID = 'PICKING_DEMAND' AND PARAMETER_ID = 'CALCULATE_MASTERPACK_POTENTIAL' AND VALUE = 1)
-	BEGIN
+	--PRINT @CURRENTLY_AVAILABLE
+	--IF EXISTS (SELECT TOP 1 1 FROM WMS.OP_WMS_PARAMETER WHERE GROUP_ID = 'PICKING_DEMAND' AND PARAMETER_ID = 'CALCULATE_MASTERPACK_POTENTIAL' AND VALUE = 1)
+	--BEGIN
 		SELECT @CURRENTLY_AVAILABLE = (wms.OP_WMS_FN_GET_AVAILABLE_INVENTORY_FOR_MASTERPACK(@MATERIAL_ID, @CODE_WAREHOUSE) + @CURRENTLY_AVAILABLE)
-	END
+	--END
 	--ELSE
 	--BEGIN
 	--	SET @CURRENTLY_AVAILABLE = 0
