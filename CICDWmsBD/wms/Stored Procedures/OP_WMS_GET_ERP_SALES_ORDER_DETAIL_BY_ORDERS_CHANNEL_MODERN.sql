@@ -123,7 +123,7 @@ AS
               [U_Serie] NVARCHAR(50) ,
               [U_NoDocto] NVARCHAR(10) ,
               [CLIENT_ID] NVARCHAR(15) ,
-              [NAME_CUSTOMER] NVARCHAR(100) ,
+              [NAME_CUSTOMER] NVARCHAR(MAX) ,
               [SLPNAME] NVARCHAR(155) ,
               [CODE_SELLER] NVARCHAR(50) ,
               [SKU] NVARCHAR(50) ,
