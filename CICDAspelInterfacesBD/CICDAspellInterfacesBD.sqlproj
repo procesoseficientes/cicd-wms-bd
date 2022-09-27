@@ -67,34 +67,15 @@
     <Build Include="dbo\Tables\ajuste_inventario.sql" />
     <Build Include="dbo\Functions\FUNC_ADD_CHARS.sql" />
     <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_CREDIT_MEMO.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_PURCHASE_ORDERgh.sql" />
     <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_TRANSFER_SAE.sql" />
     <Build Include="dbo\Stored Procedures\SAE_CREATE_REMISION_BY_SALE_ORDER.sql" />
     <Build Include="dbo\Stored Procedures\SAE_CREATE_REMISION_BY_TRANSFER.sql" />
     <Build Include="dbo\Stored Procedures\SAE_CREATE_REMISION_BY_GENERAL.sql" />
     <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_GENERAL.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_CREDIT_MEMO08052021.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_CREDIT_MEMO_SAE_PRUEBAS.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_PURCHASE_ORDER08052021.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_PURCHASE_ORDER_SAE_PRUEBAS.sql" />
     <Build Include="dbo\Stored Procedures\SAE_CREATE_EXPLOSION_BY_MASTERPACK.sql" />
     <Build Include="dbo\Stored Procedures\SAE_CREATE_INVOICE_TO_SALE_ORDER.sql" />
     <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_PURCHASE_ORDER.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_REMISION_BY_SALE_ORDER08052021.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_IMPLOSION_BY_PICKING.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_REMISION_BY_SALE_ORDER_SAE_PRUEBAS.sql" />
     <Build Include="dbo\Stored Procedures\SAE_CREATE_SALES_ORDER.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_SALES_ORDER_PRUEBAS.sql" />
     <Build Include="dbo\Stored Procedures\SAE_UPDATE_CUSTOMER_GPS.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_REMISION_BY_TRANSFER24022022.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_TRANSFER_SAE24022022.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_CREDIT_MEMO_SAE_PRUEBAS1.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_PURCHASE_ORDER_SAE_PRUEBAS1.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_REMISION_BY_SALE_ORDER_SAE_PRUEBAS1.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_REMISION_BY_TRANSFER19062021.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_TRANSFER_SAE19062021.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_CREDIT_MEMO19062021.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_PURCHASE_ORDER19062021.sql" />
-    <Build Include="dbo\Stored Procedures\SAE_CREATE_REMISION_BY_SALE_ORDER19062021.sql" />
   </ItemGroup>
 </Project>
