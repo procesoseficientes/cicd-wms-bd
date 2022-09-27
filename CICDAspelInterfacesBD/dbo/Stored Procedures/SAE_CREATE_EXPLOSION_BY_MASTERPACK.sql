@@ -144,7 +144,7 @@ BEGIN
                [H].[ERP_REFERENCE],
                [H].EXPLODED_DATE,
                [H].[ERP_REFERENCE_DOC_NUM],
-			   W.ERP_WAREHOUSE,
+			   isnull(W.ERP_WAREHOUSE,W2.ERP_WAREHOUSE) ERP_WAREHOUSE,
 			   H.MATERIAL_ID,
 			   M.ITEM_CODE_ERP,
 			   H.QTY,
@@ -155,8 +155,11 @@ BEGIN
         INNER JOIN OP_WMS_ALZA.WMS.OP_WMS_LICENSES L
 				ON H.LICENSE_ID=L.LICENSE_ID
 		INNER JOIN OP_WMS_ALZA.WMS.OP_WMS_MATERIALS M ON H.MATERIAL_ID = M.MATERIAL_ID
+		left join OP_WMS_ALZA.WMS.OP_WMS_LOGINS lg on lg.LOGIN_ID=L.CURRENT_WAREHOUSE
 		LEFT JOIN OP_WMS_ALZA.WMS.OP_WMS_WAREHOUSES W 
 				ON W.WAREHOUSE_ID=L.CURRENT_WAREHOUSE
+		LEFT JOIN OP_WMS_ALZA.WMS.OP_WMS_WAREHOUSES W2
+				 on W2.WAREHOUSE_ID=lg.[3PL_WAREHOUSE]
         WHERE [H].MASTER_PACK_HEADER_ID = @MATERPACK_ID
               --AND [H].[IS_AUTHORIZED] > 0;
 
@@ -294,11 +297,13 @@ BEGIN
         FROM [SAE70EMPRESA01].[dbo].[TBLCONTROL01]
         WHERE [ID_TABLA] = @TABLA_DOCUMENTO_COMENTARIO;
 		PRINT 'G2'
+		print @TABLA_DOCUMENTO_COMENTARIO;
+		print @ULTIMO_DOCUMENTO_COMENTARIO
         UPDATE [SAE70EMPRESA01].[dbo].[TBLCONTROL01]
         SET [ULT_CVE] = @ULTIMO_DOCUMENTO_COMENTARIO + 1
         WHERE [ID_TABLA] = @TABLA_DOCUMENTO_COMENTARIO
               AND [ULT_CVE] = @ULTIMO_DOCUMENTO_COMENTARIO;
-			  PRINT 'G3'
+		PRINT 'G3'
         SELECT TOP (1)
                @COMENTARIO
                    = 'Documento: '
@@ -511,8 +516,6 @@ BEGIN
                     ON [D].MASTER_PACK_HEADER_ID = [H].MASTER_PACK_HEADER_ID
             WHERE D.MATERIAL_ID = H.MATERIAL_ID;
 
-
-		
 			
 
             -- ------------------------------------------------------------------------------------
@@ -587,17 +590,17 @@ BEGIN
 
     END TRY
     BEGIN CATCH
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
-
+        --IF @@TRANCOUNT > 0
+        --    ROLLBACK TRANSACTION;
         DECLARE @MENSAJE_ERROR VARCHAR(500) = ERROR_MESSAGE();
-
+		print 'ERROR: ' + @MENSAJE_ERROR
         --
         SELECT -1 AS [Resultado],
                'Proceso fallido: ' + @MENSAJE_ERROR [Mensaje],
                0 [Codigo],
                '0' [DbData];
-
+			return
+		--RAISERROR(@MENSAJE_ERROR, 16, 1);
     END CATCH;
 
 	-------------------------------
@@ -733,8 +736,8 @@ BEGIN
 				   @COSTO_ARTICULO_DOCUMENTO = COST,
                    @QTY_DETAIL = QTY,
                    @EXISTENCIAS = 0,
-                   @EXISTENCIAS_GENERAL = 0,
-				   @ALMACEN = [NUM_ALM]
+                   @EXISTENCIAS_GENERAL = 0
+				   --@ALMACEN = [NUM_ALM]
             FROM [#DETALLE]
             WHERE [ENVIADO] = 0
           --  ORDER BY [LINE_NUM] ASC;
@@ -773,6 +776,7 @@ BEGIN
 			PRINT '@COSTO_ARTICULO_DOCUMENTO'+ CAST(@COSTO_ARTICULO_DOCUMENTO AS VARCHAR)
 			PRINT '@COSTO_PROMEDO_CALCULADO' +CAST(@COSTO_PROMEDO_CALCULADO AS VARCHAR)
 
+			PRINT @ERP_MATERIAL_CODE
 			--SELECT * FROM [SAE70EMPRESA01].[dbo].[INVE01] [I] WHERE CVE_ART='27102'
 
             PRINT 'Obtuvo Existencias ' + @ERP_MATERIAL_CODE + ' ' + CAST(@EXISTENCIAS AS VARCHAR) + ' '
@@ -900,16 +904,16 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
+            --ROLLBACK TRANSACTION;
 
         DECLARE @MENSAJE_ERROR2 VARCHAR(500) = ERROR_MESSAGE();
-
+		print 'ERROR3: ' + @MENSAJE_ERROR2
         --
         SELECT -1 AS [Resultado],
                'Proceso fallido: ' + @MENSAJE_ERROR2 [Mensaje],
                0 [Codigo],
                '0' [DbData];
-
+	
     END CATCH;
 
 
