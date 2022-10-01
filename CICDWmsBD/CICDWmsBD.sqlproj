@@ -1309,6 +1309,8 @@
     <Build Include="Security\wms_1.sql" />
     <Build Include="wms\Sequences\OP_WMS_SEQ_WAVE_PICKING_ID.sql" />
     <Build Include="Security\Loginwms.sql" />
+    <Build Include="wms\Functions\OP_WMS_FN_GET_LICENSE_TO_PICK_PER_CHANNEL.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND_PER_CHANNEL.sql" />
   </ItemGroup>
   <ItemGroup>
     <SqlCmdVariable Include="CICDAspellInterfacesBD">

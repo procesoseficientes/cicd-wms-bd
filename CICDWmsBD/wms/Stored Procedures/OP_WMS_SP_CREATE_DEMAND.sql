@@ -40,6 +40,10 @@
 -- Fecha de Creacion: 	21-Ago-2019 @ G-Force-Team Sprint FlorencioVarela
 -- Description:			envío el valor de días mínimo de fecha de expiración al proceso de generacion de tareas
 
+-- Modificación:		Elder Lucas
+-- Fecha Modificación: 	30 de noviembre 2022
+-- Description:			Implementación SP de creación de tareas de picking por canal [wms].[OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND_PER_CHANNEL]
+
 /*
 -- Ejemplo de Ejecucion:
         EXEC [wms].[OP_WMS_SP_CREATE_DEMAND]
@@ -283,6 +287,9 @@ BEGIN
   -- ------------------------------------------------------------------------------------
   -- Obtiene los encabezados de la demanda
   -- ------------------------------------------------------------------------------------
+
+ -- if(@SOURCE = 'SO - ERP') return;
+
 	INSERT	INTO @HEADER
 			(
 				[HEADER_ID]
@@ -891,6 +898,8 @@ BEGIN
 			IF (@NON_STORAGE = 0)
 			BEGIN
 				DECLARE	@pDOC_NUM VARCHAR(50)= CAST(@DOC_NUM AS VARCHAR);
+				IF(@SOURCE = 'SO - ERP' AND @QUANTITY_ASSIGNED < (SELECT ISNULL(ROOF_QUANTITY, 0) FROM WMS.OP_WMS_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID))
+				BEGIN
 				INSERT	INTO @OPERACION
 						(
 							[Resultado]
@@ -928,6 +937,46 @@ BEGIN
 							@ORDER_NUMBER = @ORDER_NUMBER,
 							@MIN_DAYS_EXPIRATION_DATE = @MIN_DAYS_BY_SALE_ORDER,
 							@DOC_NUM = @pDOC_NUM;
+				END
+				ELSE
+				BEGIN
+				INSERT	INTO @OPERACION
+					(
+						[Resultado]
+						,[Mensaje]
+						,[Codigo]
+						,[DbData]
+					)
+					EXEC [wms].[OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND_PER_CHANNEL] @TASK_OWNER = @LOGIN, -- varchar(25)
+						@TASK_ASSIGNEDTO = @TASK_ASSIGNEDTO, -- varchar(25)
+						@QUANTITY_ASSIGNED = @QUANTITY_ASSIGNED, -- numeric
+						@CODIGO_POLIZA_TARGET = @CODIGO_POLIZA_TARGET, -- varchar(25)
+						@MATERIAL_ID = @MATERIAL_ID, -- varchar(50)
+						@BARCODE_ID = @BARCODE_ID, -- varchar(50)
+						@ALTERNATE_BARCODE = @ALTERNATE_BARCODE, -- varchar(50)
+						@MATERIAL_NAME = @MATERIAL_NAME, -- varchar(200)
+						@CLIENT_OWNER = @CLIENT_OWNER, -- varchar(25)
+						@CLIENT_NAME = @CLIENT_NAME, -- varchar(150)
+						@IS_FROM_SONDA = @IS_FROM_SONDA, -- int
+						@CODE_WAREHOUSE = @CODE_WAREHOUSE, -- varchar(50)
+						@IS_FROM_ERP = @IS_FROM_ERP, -- int
+						@WAVE_PICKING_ID = @WAVE_PICKING_ID, -- numeric
+						@DOC_ID_TARGET = @DOC_ID_TARGET, -- int
+						@LOCATION_SPOT_TARGET = @LOCATION_TARGET, -- varchar(25)
+						@IS_CONSOLIDATED = @IS_CONSOLIDATED, -- int
+						@SOURCE_TYPE = @SOURCE, -- varchar(50)
+						@TRANSFER_REQUEST_ID = @TRANSFER_REQUEST_ID, -- int
+						@TONE = @TONE, -- varchar(20)
+						@CALIBER = @CALIBER, -- varchar(20)
+						@IN_PICKING_LINE = @IN_PICKING_LINE, -- int
+						@IS_FOR_DELIVERY_IMMEDIATE = @IS_FOR_DELIVERY_IMMEDIATE,
+						@PRIORITY = @PRIORITY,
+						@PICKING_HEADER_ID = @NON_IMMEDIATE_PICKING_HEADER_ID,
+						@STATUS_CODE = @STATUS_CODE,
+						@ORDER_NUMBER = @ORDER_NUMBER,
+						@MIN_DAYS_EXPIRATION_DATE = @MIN_DAYS_BY_SALE_ORDER,
+						@DOC_NUM = @pDOC_NUM;
+				END
 
 			END;
       -- ------------------------------------------------------------------------------------
