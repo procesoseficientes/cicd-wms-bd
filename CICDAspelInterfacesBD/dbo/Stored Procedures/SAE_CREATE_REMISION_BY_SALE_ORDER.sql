@@ -16,6 +16,10 @@
 -- Modificación:		Elder Lucas
 -- Fecha: 				20 de septiembre 2022 
 -- Description:			Manejo de folio por bodega
+
+-- Modificación:		Elder Lucas
+-- Fecha: 				6 de septiembre 2022 
+-- Description:			Modificación Join Para detalle de ordenes consolidadas DOC_ENTRY
 /*
 -- Ejemplo de Ejecucion:
 				EXEC [dbo].[SAE_CREATE_REMISION_BY_SALE_ORDER] @NEXT_PICKING_DEMAND_HEADER = 75286 -- numeric
@@ -180,7 +184,7 @@ SELECT [D].[PICKING_DEMAND_DETAIL_ID],
             INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H]
                 ON [H].[PICKING_DEMAND_HEADER_ID] = [D].[PICKING_DEMAND_HEADER_ID]
 			LEFT JOIN [OP_WMS_ALZA].[wms].OP_WMS_TASK_LIST TL
-				ON TL.WAVE_PICKING_ID = H.WAVE_PICKING_ID AND TL.MATERIAL_ID = D.MATERIAL_ID AND TL.STATUS_CODE = D.STATUS_CODE
+				ON TL.WAVE_PICKING_ID = H.WAVE_PICKING_ID AND TL.MATERIAL_ID = D.MATERIAL_ID AND TL.STATUS_CODE = D.STATUS_CODE AND TL.DOC_ID_SOURCE = H.DOC_ENTRY
             INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_MATERIALS] [M]
                 ON [M].[MATERIAL_ID] = [D].[MATERIAL_ID]
             LEFT JOIN [SAE70EMPRESA01].[dbo].[PAR_FACTP01] [DF]
@@ -282,6 +286,7 @@ SELECT [D].[PICKING_DEMAND_DETAIL_ID],
 					WHERE  LTRIM(RTRIM([CVE_DOC])) collate database_default in (select  [DOC_NUM]  collate database_default 
 						from [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] 
 						where [PICKING_DEMAND_HEADER_ID] = @NEXT_PICKING_DEMAND_HEADER) ;
+				print 'commit 1'
 				COMMIT;        
 				SELECT 1 AS [Resultado],
 					   'sin movimientos' [Mensaje],
@@ -533,6 +538,7 @@ SELECT [D].[PICKING_DEMAND_DETAIL_ID],
 		deallocate detail
 		IF(@missing=1)
 		BEGIN
+		print 'commit 2'
 			commit;
 			print @pRESULT
 			SELECT -1 AS [Resultado],
@@ -541,6 +547,21 @@ SELECT [D].[PICKING_DEMAND_DETAIL_ID],
                '0' [DbData];
 			RETURN;
 		END;
+
+		IF EXISTS(SELECT TOP 1 1 FROM SAE70EMPRESA01.dbo.FOLIOSRWMS WHERE Bodega = @ALMACEN)
+		BEGIN
+			SELECT @SERIE_FOLIO = Folio FROM SAE70EMPRESA01.dbo.FOLIOSRWMS WHERE Bodega = @ALMACEN
+		END
+		ELSE
+		BEGIN
+		print 'commmit 3'
+			commit
+			SELECT -1 AS [Resultado],
+               CONCAT('Proceso fallido, no se encontraron folios configurados para la bodega: ', CAST(@ALMACEN AS VARCHAR), ' en la tabla dbo.FOLIOSRWMS') [Mensaje],
+               0 [Codigo],
+               '0' [DbData];
+			RETURN;
+		END
 
 		 PRINT 'Obtuvo ultimo documento @ULTIMO_DOCUMENTO_32' + CAST(@ULTIMO_DOCUMENTO_32 AS VARCHAR);
         UPDATE [SAE70EMPRESA01].[dbo].[TBLCONTROL01]
@@ -552,23 +573,17 @@ SELECT [D].[PICKING_DEMAND_DETAIL_ID],
 		--if (@ALMACEN = 4)
 		--	select @SERIE_FOLIO='004-00108-'
 
-		IF EXISTS(SELECT TOP 1 1 FROM SAE70EMPRESA01.dbo.FOLIOSRWMS WHERE Bodega = @ALMACEN)
-		BEGIN
-			SELECT @SERIE_FOLIO = Folio FROM SAE70EMPRESA01.dbo.FOLIOSRWMS WHERE Bodega = @ALMACEN
-		END
-		ELSE
-		BEGIN
-			SELECT -1 AS [Resultado],
-               CONCAT('Proceso fallido, no se encontraron folios configurados para la bodega: ', CAST(@ALMACEN AS VARCHAR), ' en la tabla dbo.FOLIOSRWMS') [Mensaje],
-               0 [Codigo],
-               '0' [DbData];
-			RETURN;
-		END
+		
 
 
         -- ------------------------------------------------------------------------------------	
         -- obtiene folios y serie de documento de recepción 
         -- ------------------------------------------------------------------------------------
+	
+		print ' @SERIE_FOLIO'
+		print  @SERIE_FOLIO
+		print 'TIPO_DOCUMENTO_FOLIO'
+		print @TIPO_DOCUMENTO_FOLIO
         SELECT TOP (1)
                @ULT_DOC_FOLIO = [ULT_DOC],
                @FOLIO_DESDE = [FOLIODESDE],
@@ -1296,6 +1311,7 @@ SELECT [D].[PICKING_DEMAND_DETAIL_ID],
         SET [BLOQ] = 'N'
         WHERE [BLOQ] = 'S'
               AND ([CVE_DOC] = @ORDEN_VENTA_DOCUMENTO);
+			  print 'commit 4'
 		COMMIT;
         DECLARE @RESPONSE VARCHAR(500) = 'Proceso exitoso, Recepción: GG ' + @DOCUMENTO_ERP_FORMATEADO;
 
@@ -1310,8 +1326,6 @@ SELECT [D].[PICKING_DEMAND_DETAIL_ID],
 
     END TRY
     BEGIN CATCH
-      IF @@TRANCOUNT > 0
-            commit;
 
 
         DECLARE @MENSAJE_ERROR VARCHAR(500) = ERROR_MESSAGE();
