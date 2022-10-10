@@ -39,6 +39,10 @@
 -- Fecha:				19-Mayo-2021
 -- Descripcion:			Se agrega validación de estado de material para la Task list al momento de ingresar, manejo de estados en cambios de licencia
 
+-- Modificacion:		Elder Lucas
+-- Fecha:				6 de octubre 2022
+-- Descripcion:			Se agrega campo de DOC_ID_SOURCE a la TASK_LIST para usarse en el envio de ordenes consolidadas a SAE
+
 -- =============================================
 CREATE PROCEDURE [wms].[OP_WMS_SP_REGISTER_DISPATCH_BY_REGIME_GENERAL] (
 		@pLOGIN_ID VARCHAR(25)
@@ -349,7 +353,6 @@ BEGIN
 			print @pWAVE_PICKING_ID
 			print @pMATERIAL_ID_LOCAL
 			print @pSOURCE_LICENSE
-			print 'Hola como estas'
 			IF NOT EXISTS ( SELECT TOP 1
 								1
 							FROM
@@ -443,6 +446,7 @@ BEGIN
 							,[PROJECT_CODE]
 							,[PROJECT_NAME]
 							,[PROJECT_SHORT_NAME]
+							,[DOC_ID_SOURCE]
 						)
 				SELECT TOP 1
 					[TL].[WAVE_PICKING_ID]
@@ -496,6 +500,7 @@ BEGIN
 					,@PROJECT_CODE
 					,@PROJECT_NAME
 					,@PROJECT_SHORT_NAME
+					,[TL].[DOC_ID_SOURCE]
 				FROM
 					[wms].[OP_WMS_TASK_LIST] [TL]
 				WHERE
