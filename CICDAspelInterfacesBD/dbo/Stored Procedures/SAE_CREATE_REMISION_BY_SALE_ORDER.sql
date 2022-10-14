@@ -18,8 +18,12 @@
 -- Description:			Manejo de folio por bodega
 
 -- Modificación:		Elder Lucas
--- Fecha: 				6 de septiembre 2022 
+-- Fecha: 				6 de octubre 2022 
 -- Description:			Modificación Join Para detalle de ordenes consolidadas DOC_ENTRY
+
+-- Modificación:		Elder Lucas
+-- Fecha: 				14  de octubre 2022
+-- Description:			Numero de almacen proviene de wms y no de sae
 /*
 -- Ejemplo de Ejecucion:
 				EXEC [dbo].[SAE_CREATE_REMISION_BY_SALE_ORDER] @NEXT_PICKING_DEMAND_HEADER = 75286 -- numeric
@@ -151,7 +155,7 @@ SELECT [D].[PICKING_DEMAND_DETAIL_ID],
                [DF].[COMI],
                [DF].[APAR],
                [DF].[ACT_INV],
-               ISNULL([DF].[NUM_ALM],(SELECT ERP_WAREHOUSE AS [NUM_ALM] FROM  [OP_WMS_ALZA].[wms].OP_WMS_WAREHOUSES WHERE WAREHOUSE_ID=H.CODE_WAREHOUSE)) [NUM_ALM],
+               (SELECT ERP_WAREHOUSE AS [NUM_ALM] FROM  [OP_WMS_ALZA].[wms].OP_WMS_WAREHOUSES WHERE WAREHOUSE_ID=H.CODE_WAREHOUSE) [NUM_ALM],
                [DF].[POLIT_APLI],
                [DF].[TIP_CAM],
                [DF].[UNI_VENTA],
