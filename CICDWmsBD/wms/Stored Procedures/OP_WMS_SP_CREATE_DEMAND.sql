@@ -41,8 +41,12 @@
 -- Description:			envío el valor de días mínimo de fecha de expiración al proceso de generacion de tareas
 
 -- Modificación:		Elder Lucas
--- Fecha Modificación: 	30 de noviembre 2022
+-- Fecha Modificación: 	30 de octubre 2022
 -- Description:			Implementación SP de creación de tareas de picking por canal [wms].[OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND_PER_CHANNEL]
+
+-- Modificación:		Elder Lucas
+-- Fecha Modificación: 	8 de noviembre
+-- Description:			Envio de ordenes consolidadas en una sola petición al SP de picking por canal
 
 /*
 -- Ejemplo de Ejecucion:
@@ -212,6 +216,12 @@ BEGIN
 			,[HEADER_ID] INT NOT NULL
 								PRIMARY KEY
 		);
+
+	DECLARE @CONSOLIDATED_MATERIALS TABLE (
+		 MATERIAL_ID VARCHAR(50)
+		,QTY DECIMAL(18,6)
+		,TAKEN INT
+	);
   --
 	DECLARE	@OPERACION TABLE (
 			[Resultado] INT
@@ -243,7 +253,8 @@ BEGIN
 		,@NON_IMMEDIATE_PICKING_HEADER_ID INT = 0
 		,@TRANSFER_REQUEST_FIRST_TIME INT = 0
 		,@NON_STORAGE INT = 0
-		,@STATUS_CODE VARCHAR(50) = NULL;
+		,@STATUS_CODE VARCHAR(50) = NULL
+		,@COSOLIDATED_QTY DECIMAL(18,6);
 
   -- ------------------------------------------------------------------------------------
   -- Obtenemos la informacion del proyecto si lo mandaran
@@ -283,7 +294,8 @@ BEGIN
 		,@DOC_NUM NUMERIC(18, 0)
 		,@DOC_ENTRY NUMERIC(18, 0)
 		,@QTY NUMERIC(18, 4)
-		,@TRANSFER_REQUEST_ID_H NUMERIC(18, 4);
+		,@TRANSFER_REQUEST_ID_H NUMERIC(18, 4)
+		,@DOCS_AND_QTYS VARCHAR(MAX);
   -- ------------------------------------------------------------------------------------
   -- Obtiene los encabezados de la demanda
   -- ------------------------------------------------------------------------------------
@@ -588,6 +600,20 @@ BEGIN
 		@DEMAND.[nodes]('/ArrayOfOrdenDeVentaEncabezado/OrdenDeVentaEncabezado/Detalles/OrdenDeVentaDetalle')
 		AS [x] ([Rec]);
 
+  -- --------------------------------------------------------------------------------------------------------
+  -- Se insertan los materiales en una tabla temporal que los agrupará para ser procesados como consolidados
+  -- --------------------------------------------------------------------------------------------------------
+	IF(@IS_CONSOLIDATED = 1 )
+	BEGIN
+		INSERT INTO @CONSOLIDATED_MATERIALS
+	    SELECT
+			 SKU
+			,SUM(QTY)
+			,0
+		FROM @DETAIL
+	  GROUP BY SKU
+	END
+
   -- ------------------------------------------------------------------------------------
   -- Poliza
   -- ------------------------------------------------------------------------------------
@@ -758,6 +784,9 @@ BEGIN
 				+ CAST(@HEADER_ID AS VARCHAR);
 			PRINT '--> @DETAIL_ID: '
 				+ CAST(@DETAIL_ID AS VARCHAR);
+
+
+			SELECT @COSOLIDATED_QTY = (SELECT QTY FROM @CONSOLIDATED_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID AND TAKEN = 0)
       -- ------------------------------------------------------------------------------------
       -- inserta transfer request
       -- ------------------------------------------------------------------------------------
@@ -859,6 +888,23 @@ BEGIN
 			IF @IS_CONSOLIDATED = 1
 			BEGIN
 				SET @MIN_DAYS_BY_SALE_ORDER = @pMIN_DAYS_EXPIRATION_DATE;
+				--Convertimos los documentos y sus cantidades en un varchar que se podrá mandar al SP que crea la tarea
+				 SELECT
+					SALES_ORDER_ID,
+					QTY
+				  INTO #DOCS_TEMP
+				  FROM @DETAIL WHERE SKU = @MATERIAL_ID
+				--SELECT * FROM #DOCS_TEMP
+				WHILE EXISTS(SELECT TOP 1 1 FROM #DOCS_TEMP)
+				BEGIN
+					SELECT @DOCS_AND_QTYS = CONCAT(@DOCS_AND_QTYS,
+					(SELECT TOP 1 CONCAT(SALES_ORDER_ID, ',',QTY,',') FROM #DOCS_TEMP))
+
+					DELETE TOP (1) FROM #DOCS_TEMP
+				END
+				DROP TABLE #DOCS_TEMP
+				PRINT '@DOCS_AND_QTYS'
+				PRINT @DOCS_AND_QTYS
 			END;
 
 			SELECT
@@ -898,9 +944,17 @@ BEGIN
 			IF (@NON_STORAGE = 0)
 			BEGIN
 				DECLARE	@pDOC_NUM VARCHAR(50)= CAST(@DOC_NUM AS VARCHAR);
-				IF(@SOURCE = 'SO - ERP' AND @QUANTITY_ASSIGNED > (SELECT ISNULL(ROOF_QUANTITY, 0) FROM WMS.OP_WMS_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID))
+				IF((IIF(@IS_CONSOLIDATED = 1, @COSOLIDATED_QTY, @QUANTITY_ASSIGNED)) > (SELECT ISNULL(ROOF_QUANTITY, 0) FROM WMS.OP_WMS_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID))
 				BEGIN
-				PRINT 'OPERACIÓN NORMAL'
+				PRINT 'OPERACIÓN POR CANAL'
+				--Verificamos si este material puede ir consolidado
+				IF(ISNULL(@COSOLIDATED_QTY, 0) > 0)
+				BEGIN
+				print 'Cantidad Consolidada: ' + cast(@COSOLIDATED_QTY AS VARCHAR) 
+					SET @QUANTITY_ASSIGNED = @COSOLIDATED_QTY
+					SET @COSOLIDATED_QTY = 0
+					UPDATE @CONSOLIDATED_MATERIALS SET TAKEN = 1 WHERE MATERIAL_ID = @MATERIAL_ID
+				END
 				INSERT	INTO @OPERACION
 						(
 							[Resultado]
@@ -936,11 +990,12 @@ BEGIN
 							@STATUS_CODE = @STATUS_CODE,
 							@ORDER_NUMBER = @ORDER_NUMBER,
 							@MIN_DAYS_EXPIRATION_DATE = @MIN_DAYS_BY_SALE_ORDER,
-							@DOC_NUM = @pDOC_NUM;
+							@DOC_NUM = @pDOC_NUM,
+							@DOCS_AND_QTYS = @DOCS_AND_QTYS;
 				END
-				ELSE
+				ELSE IF (ISNULL((SELECT TOP 1 1 FROM @CONSOLIDATED_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID), 0) = 0)
 				BEGIN
-				PRINT 'OPERACIÓN POR CANAL'
+				PRINT 'OPERACIÓN NORMAL'
 				INSERT	INTO @OPERACION
 					(
 						[Resultado]
@@ -979,6 +1034,8 @@ BEGIN
 						@MIN_DAYS_EXPIRATION_DATE = @MIN_DAYS_BY_SALE_ORDER,
 						@DOC_NUM = @pDOC_NUM;
 				END
+
+				SET @DOCS_AND_QTYS = ''
 
 			END;
       -- ------------------------------------------------------------------------------------
