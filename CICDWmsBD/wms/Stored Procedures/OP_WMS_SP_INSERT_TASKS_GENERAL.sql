@@ -48,6 +48,10 @@
 -- Fecha de Creacion: 	08-Mayo-2020
 -- Descripcion:			MasterPack ahora es completamente recursivo.
 
+--Modificación:			Elder Lucas
+--Fecha modificación:	10 de noviembre 2022
+--Descripción:			Manejo de tareas que superan el techo del material para que sean procesadas como picking por canal
+
 /*
 -- Ejemplo de Ejecucion:
        

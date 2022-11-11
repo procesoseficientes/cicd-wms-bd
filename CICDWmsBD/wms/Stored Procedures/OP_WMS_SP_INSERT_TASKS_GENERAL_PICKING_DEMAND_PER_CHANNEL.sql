@@ -7,6 +7,10 @@
 --Mofificación:				Elder Lucas
 --Fecha:					8 de noviembre 2022
 --Descripción:				Se agrega manejo de varchar con lineas de documentos cantidades, se agregan 3 casos de manejo de ordenes consolidadas
+
+--Modificación:				Elder Lucas
+--Fecha:					10 de noviembre 2022
+--Descripción:				Arreglo de bucle cuando son tareas no consolidadas, manejo de tareas de egreso general
 --==============================================================================
 CREATE PROCEDURE [wms].[OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND_PER_CHANNEL](
 		 @TASK_OWNER VARCHAR(25)
