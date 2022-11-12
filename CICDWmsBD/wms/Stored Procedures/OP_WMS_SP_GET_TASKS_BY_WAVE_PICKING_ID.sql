@@ -8,6 +8,11 @@
 -- Fecha de Creacion: 	09-Diciembre-2019 G-Force@Kioto
 -- Description:			Se elimina fitro de regimen
 
+-- Autor:				gustavo.garcia
+-- Fecha de Creacion: 	11-11-2022 Sprint 57
+-- Historia:            DES-1754  
+-- Description:			se agrega material a la agrupacion.
+
 /*
 -- Ejemplo de Ejecucion:
 				EXEC [wms].[OP_WMS_SP_GET_TASKS_BY_WAVE_PICKING_ID] @LOGIN_ID='MARVIN',@WAVE_PICKING_ID = 10306
@@ -21,7 +26,7 @@ CREATE PROCEDURE [wms].[OP_WMS_SP_GET_TASKS_BY_WAVE_PICKING_ID]
 )
 AS
 BEGIN
-    SELECT MAX([TaskList].[SERIAL_NUMBER]) AS [id],
+     SELECT MAX([TaskList].[SERIAL_NUMBER]) AS [id],
            MAX([TaskList].[WAVE_PICKING_ID]) AS [wavePickingId],
            MAX([TaskList].[TRANS_OWNER]) AS [transOwner],
            MAX([TaskList].[TASK_TYPE]) AS [taskType],
@@ -36,8 +41,8 @@ BEGIN
            MAX([TaskList].[CODIGO_POLIZA_TARGET]) AS [targetPolicyCode],
            [TaskList].[LICENSE_ID_SOURCE] AS [licenseIdSource],
            MAX([TaskList].[REGIMEN]) AS [regime],
-		   IIF(ISNULL((SELECT TOP 1 1 FROM [wms].[OP_WMS_TASK_LIST] WHERE LICENSE_ID_SOURCE = [TaskList].[LICENSE_ID_SOURCE] AND MATERIAL_ID = MAX([TaskList].[MATERIAL_ID]) AND IS_COMPLETED = 0), 0) = 1, 0, MAX([TaskList].[IS_COMPLETED])) AS [isCompleted],
-           --MAX([TaskList].[IS_COMPLETED]) AS [isCompleted],
+		   --IIF(ISNULL((SELECT TOP 1 1 FROM [wms].[OP_WMS_TASK_LIST] WHERE LICENSE_ID_SOURCE = [TaskList].[LICENSE_ID_SOURCE] AND MATERIAL_ID = MAX([TaskList].[MATERIAL_ID]) AND IS_COMPLETED = 0), 0) = 1, 0, MAX([TaskList].[IS_COMPLETED])) AS [isCompleted],
+           min([TaskList].[IS_COMPLETED]) AS [isCompleted],
            MAX([TaskList].[IS_DISCRETIONAL]) AS [isDiscretional],
            MAX([TaskList].[IS_PAUSED]) AS [isPaused],
            MAX([TaskList].[IS_CANCELED]) AS [isCanceled],
@@ -83,7 +88,7 @@ BEGIN
            MAX([TaskList].[PROJECT_NAME]) AS [projectName],
            MAX([TaskList].[PROJECT_SHORT_NAME]) AS [projectShortName],
            MAX([TaskList].[PRIORITY]),
-           MAX([TaskList].[MATERIAL_ID]),
+           [TaskList].[MATERIAL_ID],
            [TaskList].[LICENSE_ID_SOURCE],
            MAX([TaskList].[STATUS_CODE]) [STATUS_CODE],
            MAX([Material].[MATERIAL_ID]) AS [MmaterialId],
@@ -180,6 +185,6 @@ BEGIN
           AND [TaskList].[IS_PAUSED] = 0
           AND [TaskList].[IS_CANCELED] = 0
           AND [TaskList].[WAVE_PICKING_ID] = @WAVE_PICKING_ID
-	GROUP BY [TaskList].[LICENSE_ID_SOURCE], [License].LICENSE_ID, [License].[CURRENT_LOCATION]
+	GROUP BY [TaskList].[LICENSE_ID_SOURCE], [License].LICENSE_ID, [License].[CURRENT_LOCATION],[TaskList].[MATERIAL_ID]
     ORDER BY [License].[CURRENT_LOCATION] ASC;
 END;
