@@ -19,6 +19,11 @@
 -- Fecha de Modificación: 2022.01.20
 -- Description:  Se agrega update a la tabla de manifiestos para que se habilite nuevamente el documento tras la cancelacion de la tarea recepción que le corresponde
 
+-- Modificación: Elder Lucas
+-- Fecha de Modificación: 2022.10.24
+-- Description:  Corección del update a la tabla de manifiesto para que utilice el trasfer request ID en vez del doc_num
+
+
 /*
   -- Ejemplo de Ejecucion:
 				-- 
@@ -97,7 +102,7 @@ BEGIN TRY
 
 		UPDATE [wms].[OP_WMS_MANIFEST_HEADER] 
 		SET STATUS = 'CREATED' 
-		WHERE MANIFEST_HEADER_ID = (SELECT DOC_ID FROM wms.OP_WMS_ERP_RECEPTION_DOCUMENT_HEADER WHERE TASK_ID = @SERIAL_NUMBER)
+		WHERE MANIFEST_HEADER_ID = (SELECT TOP 1 TRANSFER_REQUEST_ID FROM WMS.OP_WMS_TASK_LIST WHERE SERIAL_NUMBER = @SERIAL_NUMBER)
       --WHERE SERIAL_NUMBER = @SERIAL_NUMBER
 
       --    UPDATE [wms].OP_WMS_TASK_LIST
