@@ -254,7 +254,9 @@ BEGIN
 		,@TRANSFER_REQUEST_FIRST_TIME INT = 0
 		,@NON_STORAGE INT = 0
 		,@STATUS_CODE VARCHAR(50) = NULL
-		,@COSOLIDATED_QTY DECIMAL(18,6);
+		,@COSOLIDATED_QTY DECIMAL(18,6)
+		,@CONSOLIDATED_QTY_LOWER_ROOF DECIMAL(18,6)
+		,@ROOF_QTY NUMERIC(18,6);
 
   -- ------------------------------------------------------------------------------------
   -- Obtenemos la informacion del proyecto si lo mandaran
@@ -292,6 +294,7 @@ BEGIN
 		,@IS_FROM_ERP_FRO_REQUEST INT = 0
 		,@OWNER VARCHAR(50)
 		,@DOC_NUM NUMERIC(18, 0)
+		,@pDOC_NUM varchar(50)
 		,@DOC_ENTRY NUMERIC(18, 0)
 		,@QTY NUMERIC(18, 4)
 		,@TRANSFER_REQUEST_ID_H NUMERIC(18, 4)
@@ -785,8 +788,12 @@ BEGIN
 			PRINT '--> @DETAIL_ID: '
 				+ CAST(@DETAIL_ID AS VARCHAR);
 
-
-			SELECT @COSOLIDATED_QTY = (SELECT QTY FROM @CONSOLIDATED_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID AND TAKEN = 0)
+			--Obtiene la cantidad de materiales consolidados que no se hayan tomado anteriormente, caso contrario no se vuele a ejecutar como picking por canal 
+			SET @COSOLIDATED_QTY = (SELECT QTY FROM @CONSOLIDATED_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID AND TAKEN = 0)
+			--Obtiene la cantidad de materiales consolidados aún si ya fue tomado para validar consolidados cuya suma no supere la cantidad de techo
+			set @CONSOLIDATED_QTY_LOWER_ROOF = (SELECT QTY FROM @CONSOLIDATED_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID)
+			--Obtenemos el techo del material
+			SET @ROOF_QTY = (SELECT ISNULL(ROOF_QUANTITY, 999999) FROM WMS.OP_WMS_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID)
       -- ------------------------------------------------------------------------------------
       -- inserta transfer request
       -- ------------------------------------------------------------------------------------
@@ -943,25 +950,25 @@ BEGIN
 
 			IF (@NON_STORAGE = 0)
 			BEGIN
-				DECLARE	@pDOC_NUM VARCHAR(50)= CAST(@DOC_NUM AS VARCHAR);
-				IF((IIF(@IS_CONSOLIDATED = 1, @COSOLIDATED_QTY, @QUANTITY_ASSIGNED)) > (SELECT ISNULL(ROOF_QUANTITY, 0) FROM WMS.OP_WMS_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID))
+				SET @pDOC_NUM = CAST(@DOC_NUM AS VARCHAR);
+				IF((IIF(@IS_CONSOLIDATED = 1, @COSOLIDATED_QTY, @QUANTITY_ASSIGNED)) > @ROOF_QTY)
 				BEGIN
-				PRINT 'OPERACIÓN POR CANAL'
-				--Verificamos si este material puede ir consolidado
-				IF(ISNULL(@COSOLIDATED_QTY, 0) > 0)
-				BEGIN
-				print 'Cantidad Consolidada: ' + cast(@COSOLIDATED_QTY AS VARCHAR) 
-					SET @QUANTITY_ASSIGNED = @COSOLIDATED_QTY
-					SET @COSOLIDATED_QTY = 0
-					UPDATE @CONSOLIDATED_MATERIALS SET TAKEN = 1 WHERE MATERIAL_ID = @MATERIAL_ID
-				END
-				INSERT	INTO @OPERACION
-						(
+					PRINT 'OPERACIÓN POR CANAL'
+					--Verificamos si este material puede ir consolidado
+					IF(ISNULL(@COSOLIDATED_QTY, 0) > 0)
+					BEGIN
+					print 'Cantidad Consolidada: ' + cast(@COSOLIDATED_QTY AS VARCHAR) 
+						SET @QUANTITY_ASSIGNED = @COSOLIDATED_QTY
+						SET @COSOLIDATED_QTY = 0
+						UPDATE @CONSOLIDATED_MATERIALS SET TAKEN = 1 WHERE MATERIAL_ID = @MATERIAL_ID
+					END
+						INSERT	INTO @OPERACION
+							(
 							[Resultado]
 							,[Mensaje]
 							,[Codigo]
 							,[DbData]
-						)
+							)
 						EXEC [wms].[OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND_PER_CHANNEL] @TASK_OWNER = @LOGIN, -- varchar(25)
 							@TASK_ASSIGNEDTO = @TASK_ASSIGNEDTO, -- varchar(25)
 							@QUANTITY_ASSIGNED = @QUANTITY_ASSIGNED, -- numeric
@@ -993,16 +1000,17 @@ BEGIN
 							@DOC_NUM = @pDOC_NUM,
 							@DOCS_AND_QTYS = @DOCS_AND_QTYS;
 				END
-				ELSE IF (ISNULL((SELECT TOP 1 1 FROM @CONSOLIDATED_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID), 0) = 0)
+				ELSE IF ((ISNULL((SELECT TOP 1 1 FROM @CONSOLIDATED_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID), 0) = 0) OR 
+						(ISNULL((SELECT TOP 1 1 FROM @CONSOLIDATED_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID), 0) = 1 AND @CONSOLIDATED_QTY_LOWER_ROOF < @ROOF_QTY))
 				BEGIN
-				PRINT 'OPERACIÓN NORMAL'
-				INSERT	INTO @OPERACION
-					(
+					PRINT CONCAT('OPERACIÓN NORMAL: @pDOC_NUM = ', @pDOC_NUM, ' @QUANTITY_ASSIGNED = ', CAST(@QUANTITY_ASSIGNED AS VARCHAR))
+					INSERT	INTO @OPERACION
+						(
 						[Resultado]
 						,[Mensaje]
 						,[Codigo]
 						,[DbData]
-					)
+						)
 					EXEC [wms].[OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND] @TASK_OWNER = @LOGIN, -- varchar(25)
 						@TASK_ASSIGNEDTO = @TASK_ASSIGNEDTO, -- varchar(25)
 						@QUANTITY_ASSIGNED = @QUANTITY_ASSIGNED, -- numeric

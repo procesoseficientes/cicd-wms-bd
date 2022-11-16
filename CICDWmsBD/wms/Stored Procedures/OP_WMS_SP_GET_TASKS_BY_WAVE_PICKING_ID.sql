@@ -8,11 +8,6 @@
 -- Fecha de Creacion: 	09-Diciembre-2019 G-Force@Kioto
 -- Description:			Se elimina fitro de regimen
 
--- Autor:				gustavo.garcia
--- Fecha de Creacion: 	11-11-2022 Sprint 57
--- Historia:            DES-1754  
--- Description:			se agrega material a la agrupacion.
-
 /*
 -- Ejemplo de Ejecucion:
 				EXEC [wms].[OP_WMS_SP_GET_TASKS_BY_WAVE_PICKING_ID] @LOGIN_ID='MARVIN',@WAVE_PICKING_ID = 10306
@@ -26,7 +21,7 @@ CREATE PROCEDURE [wms].[OP_WMS_SP_GET_TASKS_BY_WAVE_PICKING_ID]
 )
 AS
 BEGIN
-     SELECT MAX([TaskList].[SERIAL_NUMBER]) AS [id],
+    SELECT MAX([TaskList].[SERIAL_NUMBER]) AS [id],
            MAX([TaskList].[WAVE_PICKING_ID]) AS [wavePickingId],
            MAX([TaskList].[TRANS_OWNER]) AS [transOwner],
            MAX([TaskList].[TASK_TYPE]) AS [taskType],
