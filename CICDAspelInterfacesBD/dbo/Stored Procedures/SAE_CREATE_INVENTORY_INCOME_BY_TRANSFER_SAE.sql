@@ -777,9 +777,9 @@ BEGIN
 
             SELECT @CONTADOR_LINEA = @CONTADOR_LINEA + 1;
 
-            UPDATE [#DETALLE]
+            UPDATE TOP (1 )[#DETALLE]
             SET [ENVIADO] = 1
-            WHERE [LINE_NUM] = @LINE_NUM_DETAIL;
+            --WHERE [LINE_NUM] = @LINE_NUM_DETAIL;
         END;
 
 

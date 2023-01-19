@@ -77,5 +77,6 @@
     <Build Include="dbo\Stored Procedures\SAE_CREATE_INVENTORY_INCOME_BY_PURCHASE_ORDER.sql" />
     <Build Include="dbo\Stored Procedures\SAE_CREATE_SALES_ORDER.sql" />
     <Build Include="dbo\Stored Procedures\SAE_UPDATE_CUSTOMER_GPS.sql" />
+    <Build Include="dbo\Stored Procedures\SAE_CREATE_IMPLOSION_BY_PICKING.sql" />
   </ItemGroup>
 </Project>

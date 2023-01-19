@@ -3,22 +3,17 @@
 -- Autor:				gustavo.garcía
 -- Fecha de Creacion: 	11-Nov-2021  
 -- Description:			SP que crea explosiones en SAE
-
--- Autor:				Brandon Sicay
--- Fecha de Creacion: 	16-Jun-2022  
--- Description:			Correccion de costos en desarmado de master pack 
-
 /*
 -- Ejemplo de Ejecucion:
-				EXEC [dbo].[SAE_CREATE_EXPLOSION_BY_MASTERPACK] @MATERPACK_ID = 4491 -- numeric
+				EXEC [dbo].[SAE_CREATE_IMPLOSION_BY_PICKING] @@NEXT_PICKING_DEMAND_HEADER = 75070 -- numeric
 				rollback
 				Proceso fallido: Violation of PRIMARY KEY constraint 'PK_FACTR01'. Cannot insert duplicate key in object 'dbo.FACTR01'. The duplicate key value is (00000108-00000015).
 				Proceso fallido: Cannot insert the value NULL into column 'CVE_DOC', table 'select *from SAE70EMPRESA01.dbo.FACTR01 where CVE_DOC like '%00000108-000000%''; column does not allow nulls. INSERT fails.
 				
 */
 -- =============================================
-CREATE PROCEDURE [dbo].[SAE_CREATE_EXPLOSION_BY_MASTERPACK]
-(@MATERPACK_ID NUMERIC)
+CREATE PROCEDURE [dbo].[SAE_CREATE_IMPLOSION_BY_PICKING]
+(@NEXT_PICKING_DEMAND_HEADER NUMERIC)
 AS
 BEGIN
    SET NOCOUNT ON;
@@ -31,7 +26,7 @@ BEGIN
 			@CVE_FOLIO INT = 32,
 			@CVE_ULTIMO_DOCUMENTO INT = 0,
             @TIPO_DOCUMENTO_FOLIO VARCHAR(1) = 'M',--Salida de inventario
-            @SERIE_FOLIO VARCHAR(10) = 'WMS_EXP',
+            @SERIE_FOLIO VARCHAR(10) = 'WMS_IMP',
             @ULT_DOC_FOLIO INT,
             @CODIGO_CLIENTE_SAE VARCHAR(10),
             @NOMBRE_CLIENTE_SAE VARCHAR(100),
@@ -89,76 +84,66 @@ BEGIN
 
 	
         SELECT --min([D].SERIAL_NUMBER) SERIAL_NUMBER,
-               [H].MASTER_PACK_HEADER_ID,
-               H.[MATERIAL_ID] [MATERIAL_ID],
-               sum(H.QTY*D.QTY)QTY,
-			   SUM(D.QTY) QTY_DET,
+               [H].[PICKING_DEMAND_HEADER_ID],
+               c.COMPONENT_MATERIAL [MATERIAL_ID],
+               [D].[QTY_IMPLODED] * [C].[QTY] QTY,
+			   D.[QTY_IMPLODED] QTY_DET,
 			   CAST(-1.0000 AS FLOAT )COST,
-               T.[TONE],
-               T.[CALIBER],
-               L.STATUS,
                W.ERP_WAREHOUSE [NUM_ALM],
                [M].[MATERIAL_NAME],
                [M].[ITEM_CODE_ERP],
                [M].[BASE_MEASUREMENT_UNIT],
+			   c.qty COMPONENT_QTY,
                CAST(0 AS INT) [ENVIADO],
                CAST(0 AS INT) [NUMERO_MOVIMIENTO]
         INTO [#DETALLE]
-        FROM [OP_WMS_ALZA].[wms].[OP_WMS_MASTER_PACK_DETAIL] [D]
-            INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_MASTER_PACK_HEADER] [H]
-                ON [H].MASTER_PACK_HEADER_ID = [D].MASTER_PACK_HEADER_ID
-            INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_MATERIALS] [M]
-                ON [M].[MATERIAL_ID] = [D].[MATERIAL_ID]
-			INNER JOIN OP_WMS_ALZA.WMS.OP_WMS_LICENSES L
-				ON H.LICENSE_ID=L.LICENSE_ID
-			INNER JOIN [OP_WMS_ALZA].[wms].OP_WMS_INV_X_LICENSE IXL
-				ON H.LICENSE_ID = IXL.LICENSE_ID 
-				AND IXL.MATERIAL_ID=H.MATERIAL_ID
-			LEFT JOIN OP_WMS_ALZA.WMS.OP_WMS_TONE_AND_CALIBER_BY_MATERIAL T
-				ON T.TONE_AND_CALIBER_ID=IXL.TONE_AND_CALIBER_ID
+        FROM [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_DETAIL] [D]
+            INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H]
+                ON [H].[PICKING_DEMAND_HEADER_ID] = [D].[PICKING_DEMAND_HEADER_ID]
+            
 			LEFT JOIN OP_WMS_ALZA.WMS.OP_WMS_WAREHOUSES W 
-				ON W.WAREHOUSE_ID=L.CURRENT_WAREHOUSE
-        WHERE [H].MASTER_PACK_HEADER_ID = @MATERPACK_ID
-              --AND [H].[IS_AUTHORIZED] > 0
-   
-		GROUP BY [H].[MATERIAL_ID],
-				[H].MASTER_PACK_HEADER_ID,
-				 t.[TONE],
-				 T.[CALIBER],
-				 L.STATUS,
-				 [M].[MATERIAL_NAME],
-               [M].[ITEM_CODE_ERP],
-			   
-               [M].[BASE_MEASUREMENT_UNIT], W.ERP_WAREHOUSE
+				ON W.WAREHOUSE_ID=H.[CODE_WAREHOUSE]
+			INNER JOIN OP_WMS_ALZA.[wms].[OP_WMS_COMPONENTS_BY_MASTER_PACK] [C] ON ([C].[MASTER_PACK_CODE] = [D].[MATERIAL_ID])
+			INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_MATERIALS] [M]
+                ON [M].[MATERIAL_ID] = [C].COMPONENT_MATERIAL
 
+        WHERE [H].[PICKING_DEMAND_HEADER_ID] = @NEXT_PICKING_DEMAND_HEADER
+              --AND [H].[IS_AUTHORIZED] > 0
+			AND [D].[WAS_IMPLODED] = 1
+			AND [D].[QTY_IMPLODED] > 0
+		
 		-- ------------------------------------------------------------------------------------
         -- OBTENER DATOS DE ENCABEZADO MASTERPACK
         -- ------------------------------------------------------------------------------------	
         SELECT 
-               [H].MASTER_PACK_HEADER_ID,
+               [H].[PICKING_DEMAND_HEADER_ID],
                [H].[IS_AUTHORIZED],
                [H].[ATTEMPTED_WITH_ERROR],
                [H].[IS_POSTED_ERP],
                [H].[POSTED_ERP],
                [H].[POSTED_RESPONSE],
                [H].[ERP_REFERENCE],
-               [H].EXPLODED_DATE,
+               [H].CREATED_DATE,
                [H].[ERP_REFERENCE_DOC_NUM],
 			   W.ERP_WAREHOUSE,
-			   H.MATERIAL_ID,
+			   D.MATERIAL_ID,
+			    CAST(-1.0000 AS FLOAT )COST,
 			   M.ITEM_CODE_ERP,
-			   H.QTY,
+			   D.[QTY_IMPLODED] QTY,
                CAST(0 AS INT) [ENVIADO],
                CAST(0 AS INT) [NUMERO_MOVIMIENTO]
         INTO [#ENCABEZADO]
-        FROM [OP_WMS_ALZA].[wms].[OP_WMS_MASTER_PACK_HEADER] [H]
-        INNER JOIN OP_WMS_ALZA.WMS.OP_WMS_LICENSES L
-				ON H.LICENSE_ID=L.LICENSE_ID
-		INNER JOIN OP_WMS_ALZA.WMS.OP_WMS_MATERIALS M ON H.MATERIAL_ID = M.MATERIAL_ID
+        FROM [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_DETAIL] [D]
+        INNER JOIN OP_WMS_ALZA.WMS.[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H]
+				ON H.[PICKING_DEMAND_HEADER_ID]=D.[PICKING_DEMAND_HEADER_ID]
+		INNER JOIN OP_WMS_ALZA.WMS.OP_WMS_MATERIALS M ON D.MATERIAL_ID = M.MATERIAL_ID
 		LEFT JOIN OP_WMS_ALZA.WMS.OP_WMS_WAREHOUSES W 
-				ON W.WAREHOUSE_ID=L.CURRENT_WAREHOUSE
-        WHERE [H].MASTER_PACK_HEADER_ID = @MATERPACK_ID
+				ON W.WAREHOUSE_ID=H.[CODE_WAREHOUSE]
+        WHERE [D].[PICKING_DEMAND_HEADER_ID] = @NEXT_PICKING_DEMAND_HEADER
+			AND [D].[WAS_IMPLODED] = 1
+			AND [D].[QTY_IMPLODED] > 0
               --AND [H].[IS_AUTHORIZED] > 0;
+
 
 		--oBTIENE ALMACEN ORIGEN
 		SELECT  @ALMACEN=ERP_WAREHOUSE 
@@ -175,14 +160,16 @@ BEGIN
        declare @missing NUMERIC =0,
 	   @pRESULT1 VARCHAR(200)=''; 
 
-		DECLARE detail CURSOR FOR SELECT [ITEM_CODE_ERP],[MATERIAL_ID],[QTY] FROM [#ENCABEZADO]
+		DECLARE detail CURSOR FOR SELECT [ITEM_CODE_ERP],[MATERIAL_ID],[QTY] FROM [#DETALLE]
 		open detail
 			fetch next from detail into @ERP_MATERIAL_CODE,@MATERIAL_ID_DETAIL,@QTY_DETAIL
 			while @@FETCH_STATUS =0 and @missing= 0
 			begin
 				
 
-   --         PRINT 'Ciclo detalle line: V:  ' + CAST(@LINE_NUM_DETAIL AS VARCHAR);
+            PRINT 'Ciclo detalle line: V:  ' + CAST(@QTY_DETAIL AS VARCHAR);
+			 PRINT 'Ciclo detalle line: @ERP_MATERIAL_CODE:  ' + CAST(@ERP_MATERIAL_CODE AS VARCHAR);
+			  PRINT 'Ciclo detalle line: @MATERIAL_ID_DETAIL:  ' + CAST(@MATERIAL_ID_DETAIL AS VARCHAR);
 			--select @DEMAND_TYPE =demand_type 
 			--	from [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H] 
 			--	where h.PICKING_DEMAND_HEADER_ID=@MATERPACK_ID
@@ -244,7 +231,7 @@ BEGIN
 				SELECT @missing=1,
 
 				 @pRESULT1
-                    = 'La cantidad es mayor a la existencia de los siguientes productos: ' + @ERP_MATERIAL_CODE;
+                    = 'La cantidad es mayor a la existencia de los siguientes productossss: ' + @ERP_MATERIAL_CODE;
 				PRINT @pRESULT1;
 				BREAK;
 		
@@ -274,8 +261,8 @@ BEGIN
         -- ------------------------------------------------------------------------------------
         -- Obtiene ultimo documento
         -- ------------------------------------------------------------------------------------
-		SELECT @ULTIMO_DOCUMENTO = CAST(@MATERPACK_ID AS int),
-			@DOCUMENTO_ERP_FORMATEADO= ISNULL(@SERIE_FOLIO, 0) + [dbo].[FUNC_ADD_CHARS](@MATERPACK_ID, '0', 8)
+		SELECT @ULTIMO_DOCUMENTO = CAST(@NEXT_PICKING_DEMAND_HEADER AS int),
+			@DOCUMENTO_ERP_FORMATEADO= ISNULL(@SERIE_FOLIO, 0) + [dbo].[FUNC_ADD_CHARS](@NEXT_PICKING_DEMAND_HEADER, '0', 8)
 
 		PRINT 'Obtuvo @DOCUMENTO_ERP_FORMATEADO' + CAST(@ULTIMO_DOCUMENTO AS VARCHAR);
 
@@ -288,29 +275,27 @@ BEGIN
 			--FROM [OP_WMS_ALZA].[wms].[OP_WMS_CONFIGURATIONS] C
 			--INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_PICKING_ERP_DOCUMENT] H ON C.PARAM_NAME=H.DEMAND_TYPE
 			--WHERE H.[PICKING_ERP_DOCUMENT_ID] = @MATERPACK_ID
-			PRINT 'G1'
 
         SELECT @ULTIMO_DOCUMENTO_COMENTARIO = [ULT_CVE]
         FROM [SAE70EMPRESA01].[dbo].[TBLCONTROL01]
         WHERE [ID_TABLA] = @TABLA_DOCUMENTO_COMENTARIO;
-		PRINT 'G2'
-		print @TABLA_DOCUMENTO_COMENTARIO;
-		print @ULTIMO_DOCUMENTO_COMENTARIO
+
         UPDATE [SAE70EMPRESA01].[dbo].[TBLCONTROL01]
         SET [ULT_CVE] = @ULTIMO_DOCUMENTO_COMENTARIO + 1
         WHERE [ID_TABLA] = @TABLA_DOCUMENTO_COMENTARIO
               AND [ULT_CVE] = @ULTIMO_DOCUMENTO_COMENTARIO;
-		PRINT 'G3'
+
         SELECT TOP (1)
                @COMENTARIO
                    = 'Documento: '
                      + ISNULL(@DOCUMENTO_ERP_FORMATEADO, ' ') + ' Tarea Swift: '
-                     + CAST([e].MASTER_PACK_HEADER_ID AS VARCHAR(18))+' '
+                     + CAST([e].PICKING_DEMAND_HEADER_ID AS VARCHAR(18))+' '
         FROM [#ENCABEZADO] [e]
             --INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_TASK_LIST] [t]
             --    ON [e].[WAVE_PICKING_ID] = [t].[WAVE_PICKING_ID];
-			PRINT 'G4'
+
  PRINT 'alacen' + cast(@ALMACEN as varchar)
+ PRINT 'comentario: '+@COMENTARIO
 
        -- PRINT 'Comentario ' + CAST(@COMENTARIO AS VARCHAR(250));
         INSERT INTO [SAE70EMPRESA01].[dbo].[OBS_DOCF01]
@@ -339,7 +324,7 @@ BEGIN
 
 	------------------------------------------------------------------------------   
 	   
-	   WHILE EXISTS (SELECT TOP 1 1 FROM [#ENCABEZADO] WHERE [ENVIADO] = 0)
+	   WHILE EXISTS (SELECT TOP 1 1 FROM [#DETALLE] WHERE [ENVIADO] = 0)
         BEGIN
 			 PRINT 'Obtuvo Existencias CICLO'
             SELECT TOP (1)
@@ -349,7 +334,7 @@ BEGIN
                    @QTY_DETAIL = [QTY],                   
                    @EXISTENCIAS = 0,
                    @EXISTENCIAS_GENERAL = 0
-            FROM [#ENCABEZADO]
+            FROM [#DETALLE]
             WHERE [ENVIADO] = 0
            -- ORDER BY SERIAL_NUMBER ASC;
             PRINT 'Ciclo detalle line: ' + CAST(@LINE_NUM_DETAIL AS VARCHAR);
@@ -479,7 +464,7 @@ BEGIN
                 [MOV_ENLAZADO]
             )
             SELECT TOP 1
-                   H.[ITEM_CODE_ERP],
+                   @ERP_MATERIAL_CODE,
                    @ALMACEN ,
                    @ULTIMO_DOCUMENTO_MOVIMIENTO + 1,
                    @CVE_CPTO,
@@ -488,20 +473,20 @@ BEGIN
                    @DOCUMENTO_ERP_FORMATEADO,
                    @CODIGO_CLIENTE_SAE,
                    null,
-                   [H].[QTY],
+                   @QTY_DETAIL,
                    0,
                    0,
                    @COSTO_PROMEDIO_ANTERIOR [COSTO],
                    0,
                    [D].[BASE_MEASUREMENT_UNIT],
                    0,
-                   @EXISTENCIAS_GENERAL - [H].[QTY] [EXISTENCIA_GENERAL],
-                   @EXISTENCIAS - [H].[QTY] [EXISTENCIA],
+                   @EXISTENCIAS_GENERAL - [D].[QTY] [EXISTENCIA_GENERAL],
+                   @EXISTENCIAS - [D].[QTY] [EXISTENCIA],
 				   'P',
                    1,
                    @FECHA_SYNC,
                    @CVE_ULTIMO_DOCUMENTO +1 [CVE_FOLIO],
-                   @SIGNO,
+                   -1,
                    'S',
                    @COSTO_PROMEDIO_ANTERIOR [COSTO_PROM_INI],
                    @COSTO_PROMEDIO_ANTERIOR [COSTO_PROM_FIN],
@@ -510,9 +495,11 @@ BEGIN
                    0
             FROM #ENCABEZADO [H]
                 INNER JOIN [#DETALLE] [D]
-                    ON [D].MASTER_PACK_HEADER_ID = [H].MASTER_PACK_HEADER_ID
-            WHERE D.MATERIAL_ID = H.MATERIAL_ID;
+                    ON [D].PICKING_DEMAND_HEADER_ID = [H].PICKING_DEMAND_HEADER_ID
+            WHERE D.MATERIAL_ID = @MATERIAL_ID_DETAIL;
 
+
+		
 			
 
             -- ------------------------------------------------------------------------------------
@@ -533,7 +520,7 @@ BEGIN
 
 
             PRINT 'termina linea';
-            UPDATE #ENCABEZADO
+            UPDATE #DETALLE
             SET [ENVIADO] = 1,
                 [NUMERO_MOVIMIENTO] = @ULTIMO_DOCUMENTO_MOVIMIENTO + 1
             WHERE MATERIAL_ID = @MATERIAL_ID_DETAIL;
@@ -587,24 +574,24 @@ BEGIN
 
     END TRY
     BEGIN CATCH
-        --IF @@TRANCOUNT > 0
-        --    ROLLBACK TRANSACTION;
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
         DECLARE @MENSAJE_ERROR VARCHAR(500) = ERROR_MESSAGE();
-		print 'ERROR: ' + @MENSAJE_ERROR
+
         --
         SELECT -1 AS [Resultado],
                'Proceso fallido: ' + @MENSAJE_ERROR [Mensaje],
                0 [Codigo],
                '0' [DbData];
-			return
-		--RAISERROR(@MENSAJE_ERROR, 16, 1);
+
     END CATCH;
 
 	-------------------------------
 	--------------------------------
 	-----------INCOME-------------------
 	----------------------------------
-
+	print 'INCOME'
 	
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -638,8 +625,9 @@ BEGIN
             @ORDEN_COMPRA_DOCUMENTO VARCHAR(50)
             --@COMENTARIO VARCHAR(200);
 
-			update  D set d.cost=ISNULL((@COSTO_PROMEDIO_ANTERIOR),0) / ISNULL([D].QTY_DET, 1) 
-			from #DETALLE d
+			update  H set h.cost=ISNULL((@COSTO_PROMEDIO_ANTERIOR),0) * ISNULL([D].QTY_DET, 1) 
+			from #ENCABEZADO h
+			inner join #DETALLE d on d.PICKING_DEMAND_HEADER_ID=h.PICKING_DEMAND_HEADER_ID
 
 
     --VARIABLES DETALLE
@@ -664,8 +652,8 @@ BEGIN
         -- ------------------------------------------------------------------------------------
         -- Obtiene ultimo documento
         -- ------------------------------------------------------------------------------------
-		SELECT @ULTIMO_DOCUMENTO = CAST(@MATERPACK_ID AS int),
-			@DOCUMENTO_ERP_FORMATEADO2= ISNULL(@SERIE_FOLIO, 0) + [dbo].[FUNC_ADD_CHARS](@MATERPACK_ID, '0', 8)-- + 'E'
+		SELECT @ULTIMO_DOCUMENTO = CAST(@NEXT_PICKING_DEMAND_HEADER AS int),
+			@DOCUMENTO_ERP_FORMATEADO2= ISNULL(@SERIE_FOLIO, 0) + [dbo].[FUNC_ADD_CHARS](@NEXT_PICKING_DEMAND_HEADER, '0', 8)-- + 'E'
 
 
 			        -- ------------------------------------------------------------------------------------
@@ -724,22 +712,25 @@ BEGIN
 		-- ------------------------------------------------------------------------------------
         -- INSERT DE DETALLE DE MOVIMIENTO EN SAE Y ACTUALIZACION DE COSTOS
         -- ------------------------------------------------------------------------------------
-        WHILE EXISTS (SELECT TOP 1 1 FROM [#DETALLE] WHERE [ENVIADO] = 0)
+        WHILE EXISTS (SELECT TOP 1 1 FROM [#ENCABEZADO] WHERE [ENVIADO] = 0)
         BEGIN
             SELECT TOP (1)
-                   @ERP_MATERIAL_CODE = [ITEM_CODE_ERP],
-                   @MATERIAL_ID_DETAIL = [MATERIAL_ID],
+                   @ERP_MATERIAL_CODE = h.[ITEM_CODE_ERP],
+                   @MATERIAL_ID_DETAIL = h.[MATERIAL_ID],
                    --@LINE_NUM_DETAIL = ERP_RECEPTION_DOCUMENT_DETAIL_ID,
-				   @COSTO_ARTICULO_DOCUMENTO = COST,
-                   @QTY_DETAIL = QTY,
+				   @COSTO_ARTICULO_DOCUMENTO = h.COST*D.COMPONENT_QTY,
+                   @QTY_DETAIL = d.QTY_DET,
                    @EXISTENCIAS = 0,
                    @EXISTENCIAS_GENERAL = 0,
-				   @ALMACEN = [NUM_ALM]
-            FROM [#DETALLE]
-            WHERE [ENVIADO] = 0
-          --  ORDER BY [LINE_NUM] ASC;
-            PRINT 'Ciclo detalle line: ' + CAST(@LINE_NUM_DETAIL AS VARCHAR);
+				   @ALMACEN = ERP_WAREHOUSE
+			FROM [#ENCABEZADO] h
+			   INNER JOIN [#DETALLE] [D]
+                    ON [D].PICKING_DEMAND_HEADER_ID = [H].PICKING_DEMAND_HEADER_ID
+            WHERE  h.[ENVIADO] = 0
 
+			print 'material header: ' + CAST(@MATERIAL_ID_DETAIL AS VARCHAR);
+			print '@ERP_MATERIAL_CODE: ' + CAST(@ERP_MATERIAL_CODE AS VARCHAR);
+			print '@QTY_DETAIL: ' + CAST(@QTY_DETAIL AS VARCHAR);
             SELECT @ULTIMO_DOCUMENTO_MOVIMIENTO = [ULT_CVE]
             FROM [SAE70EMPRESA01].[dbo].[TBLCONTROL01]
             WHERE [ID_TABLA] = @TABLA_DOCUMENTO_MOVIMIENTO;
@@ -760,20 +751,19 @@ BEGIN
 
 			       SELECT TOP (1)
                    @EXISTENCIAS = ISNULL([M].[EXIST], 0),
-                   @EXISTENCIAS_GENERAL = [I].[EXIST],
+                   @EXISTENCIAS_GENERAL = ISNULL([I].[EXIST], 0),
                    @COSTO_PROMEDO_CALCULADO = (([I].[EXIST] * [I].[COSTO_PROM]) + (@QTY_DETAIL * @COSTO_ARTICULO_DOCUMENTO)) / ([I].[EXIST] + @QTY_DETAIL),
-                   @COSTO_PROMEDIO_ANTERIOR = [I].[COSTO_PROM]
+                   @COSTO_PROMEDIO_ANTERIOR = ISNULL([I].[COSTO_PROM], 0)
 				   FROM 
 				   [SAE70EMPRESA01].[dbo].[INVE01] [I] LEFT JOIN 
 				   [SAE70EMPRESA01].[dbo].[MULT01] [M]
                    ON [M].[CVE_ART] = [I].[CVE_ART]
                    AND [M].[CVE_ALM] = @ALMACEN
             WHERE [I].[CVE_ART] = @ERP_MATERIAL_CODE;
-			PRINT '@QTY_DETAIL' + CAST(@QTY_DETAIL AS VARCHAR)
+			PRINT '@QTY_DETAIL ' + CAST(@QTY_DETAIL AS VARCHAR)
 			PRINT '@COSTO_ARTICULO_DOCUMENTO'+ CAST(@COSTO_ARTICULO_DOCUMENTO AS VARCHAR)
 			PRINT '@COSTO_PROMEDO_CALCULADO' +CAST(@COSTO_PROMEDO_CALCULADO AS VARCHAR)
 
-			PRINT @ERP_MATERIAL_CODE
 			--SELECT * FROM [SAE70EMPRESA01].[dbo].[INVE01] [I] WHERE CVE_ART='27102'
 
             PRINT 'Obtuvo Existencias ' + @ERP_MATERIAL_CODE + ' ' + CAST(@EXISTENCIAS AS VARCHAR) + ' '
@@ -816,7 +806,7 @@ BEGIN
                 [MOV_ENLAZADO]
             )
             SELECT TOP 1
-                   [ITEM_CODE_ERP],
+                   @ERP_MATERIAL_CODE,
                    --[ERP_WAREHOUSE_CODE],
 				   --DEM. 11/01/2020. Se hara cambio ya que si la OC se actualiza en SAE, toma el Almacen viejo y no el Nuevo.
 				   --Problemas reportados Alza SPS con Proyesa.
@@ -828,15 +818,15 @@ BEGIN
                    ISNULL(@DOCUMENTO_ERP_FORMATEADO2, 0),
                    null,
                    null,
-                   QTY,
+                   @QTY_DETAIL,
                    0,
                    0,
                    @COSTO_ARTICULO_DOCUMENTO [COSTO],
                    0,
                    [BASE_MEASUREMENT_UNIT],
                    0,
-                   @EXISTENCIAS_GENERAL + QTY [EXISTENCIA_GENERAL],
-                   @EXISTENCIAS + QTY [EXISTENCIA],
+                   @EXISTENCIAS_GENERAL + @QTY_DETAIL [EXISTENCIA_GENERAL],
+                   @EXISTENCIAS + @QTY_DETAIL [EXISTENCIA],
 				   'P',
                    1,
                    GETDATE(),
@@ -848,8 +838,11 @@ BEGIN
                    @COSTO_PROMEDIO_ANTERIOR,
                    'S',
                    0
-            FROM [#DETALLE] D
-            WHERE MATERIAL_ID = @MATERIAL_ID_DETAIL;
+            FROM #ENCABEZADO [H]
+                INNER JOIN [#DETALLE] [D]
+                    ON [D].PICKING_DEMAND_HEADER_ID = [H].PICKING_DEMAND_HEADER_ID
+            WHERE h.MATERIAL_ID = @MATERIAL_ID_DETAIL;
+			print 'GWGW 1'
             -- ------------------------------------------------------------------------------------
             -- actualiza costos
             -- ------------------------------------------------------------------------------------
@@ -876,7 +869,7 @@ BEGIN
             --      AND [CVE_PROV] = @CODIGO_PROVEEDOR_SAE;
 
             PRINT 'termina linea';
-            UPDATE [#DETALLE]
+            UPDATE [#ENCABEZADO]
             SET [ENVIADO] = 1,
                 [NUMERO_MOVIMIENTO] = @ULTIMO_DOCUMENTO_MOVIMIENTO +1
             WHERE MATERIAL_ID = @MATERIAL_ID_DETAIL;
@@ -887,7 +880,7 @@ BEGIN
   
 
 
-        SELECT  @RESPONSE  =@RESPONSE+ 'Proceso exitoso, Recepción: ' + @DOCUMENTO_ERP_FORMATEADO2;
+        SELECT  @RESPONSE  =@RESPONSE+ 'Proceso exitoso, implosion: ' + @DOCUMENTO_ERP_FORMATEADO2;
 
         PRINT 'Actualizó Swift ';
 
@@ -901,30 +894,17 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0
-            --ROLLBACK TRANSACTION;
+            ROLLBACK TRANSACTION;
 
         DECLARE @MENSAJE_ERROR2 VARCHAR(500) = ERROR_MESSAGE();
-		print 'ERROR3: ' + @MENSAJE_ERROR2
+		print @MENSAJE_ERROR2
         --
         SELECT -1 AS [Resultado],
                'Proceso fallido: ' + @MENSAJE_ERROR2 [Mensaje],
                0 [Codigo],
                '0' [DbData];
-	
+
     END CATCH;
 
 
-END;
-
-
-
-
-
-
-
-
-
-
-
-
-
+END

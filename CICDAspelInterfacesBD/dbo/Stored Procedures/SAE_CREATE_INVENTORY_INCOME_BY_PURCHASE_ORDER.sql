@@ -167,7 +167,7 @@ BEGIN
                [CD].[CVE_ESQ],
                [CD].[DESCR_ART],
                CAST(0 AS INT) [NUMERO_MOVIMIENTO],
-			   	isnull([CD].COST-[CD].COST*[CD].[DESCU]/100,0) UNITARIO_CON_DESCUENTO,
+			   	[CD].COST-[CD].COST*[CD].[DESCU]/100 UNITARIO_CON_DESCUENTO,
 				0 AS COSTO_CALCULADO,
 				0 COSTO_ANTERIOR
       INTO [#DETALLE]
@@ -181,7 +181,7 @@ BEGIN
             LEFT JOIN [SAE70EMPRESA01].[dbo].[PAR_COMPO01] [CD]
                 ON [CH].[CVE_DOC] = [CD].[CVE_DOC]
                    AND [D].[LINE_NUM] = [CD].[NUM_PAR]
-        WHERE [H].[ERP_RECEPTION_DOCUMENT_HEADER_ID] = @RECEPTION_DOCUMENT_HEADER
+        WHERE [H].[ERP_RECEPTION_DOCUMENT_HEADER_ID] =@RECEPTION_DOCUMENT_HEADER
               AND [IS_CONFIRMED] = 1
               AND [QTY_CONFIRMED] > 0;
 
@@ -381,9 +381,7 @@ BEGIN
                    @LINE_NUM_DETAIL = [LINE_NUM],
                    @QTY_DETAIL = [QTY_CONFIRMED],
                    @COSTO_ARTICULO_DOCUMENTO = UNITARIO_CON_DESCUENTO,
-                   @EXISTENCIAS_GENERAL = 0,
-                   @COSTO_PROMEDIO_ANTERIOR = 0,
-                   @COSTO_PROMEDO_CALCULADO = 0,
+
                    --@COSTO_PROMEDO_CALCULADO = [COST],
                    @ORDEN_COMPRA_DOCUMENTO = ISNULL([CVE_DOC],''),
                    @EXISTENCIAS = 0,
@@ -392,10 +390,7 @@ BEGIN
             FROM [#DETALLE]
             WHERE [ENVIADO] = 0
             ORDER BY [LINE_NUM] ASC;
-            PRINT 'Ciclo detalle line: ' + CAST(@LINE_NUM_DETAIL AS VARCHAR);
-			print 'sku: '+@ERP_MATERIAL_CODE
-			print '@QTY_DETAIL: '+ CAST(@QTY_DETAIL AS VARCHAR);
-			print 'Almacen: '+ CAST(@ALMACEN AS VARCHAR)
+            PRINT 'Ciclo detalle line: ' + CAST(@LINE_NUM_DETAIL AS VARCHAR)+@ERP_MATERIAL_CODE+'-'+ +'-MATERIAL-'+@MATERIAL_ID_DETAIL;
 						select @DEMAND_TYPE =type 
 				from [OP_WMS_ALZA].[wms].[OP_WMS_ERP_RECEPTION_DOCUMENT_HEADER] [H] 
 				where h.ERP_RECEPTION_DOCUMENT_HEADER_ID=@RECEPTION_DOCUMENT_HEADER
@@ -422,26 +417,22 @@ BEGIN
             FROM [SAE70EMPRESA01].[dbo].[CONM01]
             WHERE [CVE_CPTO] = @CVE_CPTO
             ORDER BY [CVE_CPTO];
-			print 'qry'
+
 
             SELECT TOP (1)
                    @EXISTENCIAS = ISNULL([M].[EXIST], 0),
-                   @EXISTENCIAS_GENERAL = ISNULL([I].[EXIST],0),
-                   @COSTO_PROMEDIO_ANTERIOR = isnull([I].[COSTO_PROM],0),
+                   @EXISTENCIAS_GENERAL = [I].[EXIST],
+                   @COSTO_PROMEDIO_ANTERIOR = [I].[COSTO_PROM],
                    @COSTO_PROMEDO_CALCULADO
-                       = case when ((isnull([I].[EXIST],0) * isnull([I].[COSTO_PROM],0)) + (@QTY_DETAIL * @COSTO_ARTICULO_DOCUMENTO))
-                         / (isnull([I].[EXIST],0) + @QTY_DETAIL) = 0  then null
-						 else (([I].[EXIST] * [I].[COSTO_PROM]) + (@QTY_DETAIL * @COSTO_ARTICULO_DOCUMENTO))
-                         / (isnull([I].[EXIST],0)+ @QTY_DETAIL)
-						 end 
+                       = (([I].[EXIST] * [I].[COSTO_PROM]) + (@QTY_DETAIL * @COSTO_ARTICULO_DOCUMENTO))
+                         / ([I].[EXIST] + @QTY_DETAIL)
             FROM [SAE70EMPRESA01].[dbo].[INVE01] [I]
                 LEFT JOIN [SAE70EMPRESA01].[dbo].[MULT01] [M]
                     ON [M].[CVE_ART] = [I].[CVE_ART]
                        AND [M].[CVE_ALM] = @ALMACEN
             WHERE [I].[CVE_ART] = @ERP_MATERIAL_CODE;
 			
-            PRINT 'Obtuvo Existencias ' + @ERP_MATERIAL_CODE + ' ' + CAST(@EXISTENCIAS AS VARCHAR)
-			print  'Obtuvo Existencias ' + @ERP_MATERIAL_CODE +' '
+            PRINT 'Obtuvo Existencias ' + @ERP_MATERIAL_CODE + ' ' + CAST(@EXISTENCIAS AS VARCHAR) + ' '
                   + CAST(@EXISTENCIAS + @QTY_DETAIL AS VARCHAR);
             -- ------------------------------------------------------------------------------------
             -- inserta movimiento 
@@ -555,16 +546,16 @@ BEGIN
         --  actualiza encabezados de compra 
         -- ------------------------------------------------------------------------------------
         SELECT @TOTAL_COMPRA = SUM([D].[QTY_CONFIRMED] * [D].[COST]),
-               @TOTAL_IMPUESTO_04 = isnull(SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU4] / 100),0),
-               @TOTAL_IMPUESTO_03 = isnull(SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU3] / 100),0),
-               @TOTAL_IMPUESTO_02 = isnull(SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU2] / 100),0),
-               @TOTAL_IMPUESTO_01 = isnull(SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU1] / 100),0),
-			   @TOTAL_DESCUENTO = isnull(SUM(D.[QTY_CONFIRMED]*D.COST*D.DESCU/100),0),
+               @TOTAL_IMPUESTO_04 = SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU4] / 100),
+               @TOTAL_IMPUESTO_03 = SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU3] / 100),
+               @TOTAL_IMPUESTO_02 = SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU2] / 100),
+               @TOTAL_IMPUESTO_01 = SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU1] / 100),
+			   @TOTAL_DESCUENTO = SUM(D.[QTY_CONFIRMED]*D.COST*D.DESCU/100),
                @TOTAL_IMPORTE
-                   = isnull(SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO) + SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU4] / 100)
+                   = SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO) + SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU4] / 100)
                      + SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU3] / 100)
                      + SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU2] / 100)
-                     + SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU1] / 100),0)
+                     + SUM([D].[QTY_CONFIRMED] * [D].UNITARIO_CON_DESCUENTO * [D].[IMPU1] / 100)
         FROM [#DETALLE] [D];
 
         PRINT 'Actualiza ACOMP04';
@@ -801,7 +792,7 @@ BEGIN
                    @TOTAL_IMPUESTO_01 [TOTIMP1],
                    @TOTAL_IMPUESTO_02 [TOTIMP2],
                    @TOTAL_IMPUESTO_03 [TOTIMP3],
-                   isnull([D].[QTY_CONFIRMED] * D.UNITARIO_CON_DESCUENTO*[D].[IMPU4]/100,0) [TOTIMP4],
+                   [D].[QTY_CONFIRMED] * D.UNITARIO_CON_DESCUENTO*[D].[IMPU4]/100 [TOTIMP4],
                    [D].[DESCU] [DESCU],
                    'S' [ACT_INV],
                    [D].[NUM_ALM] [NUM_ALM],

@@ -24,6 +24,10 @@
 -- Modificación:		Elder Lucas
 -- Fecha: 				14  de octubre 2022
 -- Description:			Numero de almacen proviene de wms y no de sae
+
+-- Modificación:		Nelson Cifuentes
+-- Fecha: 				27  de octubre 2022
+-- Description:			Envío de cantidades incorrectas a ERP
 /*
 -- Ejemplo de Ejecucion:
 				EXEC [dbo].[SAE_CREATE_REMISION_BY_SALE_ORDER] @NEXT_PICKING_DEMAND_HEADER = 75286 -- numeric
@@ -107,7 +111,7 @@ BEGIN
 SELECT [D].[PICKING_DEMAND_DETAIL_ID],
                [D].[PICKING_DEMAND_HEADER_ID],
                [D].[MATERIAL_ID],
-               IIF(D.WAS_IMPLODED=1, [D].[QTY_IMPLODED], SUM([TL].[QUANTITY_ASSIGNED] - [TL].[QUANTITY_PENDING])) AS QTY,
+               SUM([TL].[QUANTITY_ASSIGNED] - [TL].[QUANTITY_PENDING]) AS QTY,
                [D].[LINE_NUM],
                [D].[ERP_OBJECT_TYPE],
                [D].[PRICE],

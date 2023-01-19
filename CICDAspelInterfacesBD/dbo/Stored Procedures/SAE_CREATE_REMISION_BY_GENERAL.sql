@@ -14,6 +14,10 @@
 -- Fecha de Creacion: 	22-Jun-2022  
 -- Description:			Condicion cuando no hay existencias 
 
+-- Autor:				Elder Lucas
+-- Fecha de Creacion: 	19 de julio 2022
+-- Description:			Modificación del having por problemas de calculo
+
 /*
 -- Ejemplo de Ejecucion:
 				EXEC [dbo].[SAE_CREATE_REMISION_BY_GENERAL] @NEXT_PICKING_DEMAND_HEADER = 222 -- numeric
@@ -67,7 +71,8 @@ BEGIN
 			@RANGO_INICIAL FLOAT,
 			@RANGO_FINAL FLOAT,
 			@FECHA_VENCIMIENTO DATE,
-			@IDCAI INT =0
+			@IDCAI INT =0,
+		    @RESPONSE VARCHAR(500)
 
 
 
@@ -158,7 +163,7 @@ BEGIN
 		FROM  [OP_WMS_ALZA].[wms].OP_WMS_WAREHOUSES 
 			INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_PICKING_ERP_DOCUMENT] [PDH] ON ( WAREHOUSE_ID=[PDH].CODE_WAREHOUSE)
 		WHERE [PICKING_ERP_DOCUMENT_ID] = @NEXT_PICKING_DEMAND_HEADER
-
+		PRINT @ALMACEN
        declare @missing NUMERIC =0,
 	   @pRESULT1 VARCHAR(200)=''; 
 
@@ -170,6 +175,7 @@ BEGIN
 				
 
             PRINT 'Ciclo detalle line: V:  ' + CAST(@LINE_NUM_DETAIL AS VARCHAR);
+			PRINT CAST(@QTY_DETAIL AS VARCHAR)
 			select @DEMAND_TYPE =demand_type 
 				from [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H] 
 				where h.PICKING_DEMAND_HEADER_ID=@NEXT_PICKING_DEMAND_HEADER
@@ -221,8 +227,12 @@ BEGIN
                 GROUP BY [T].[CVE_ART]
                 HAVING SUM([EXIST]) <
                 (
-                    SELECT @QTY_DETAIL
-                    
+                    --SELECT SUM(@QTY_DETAIL)
+                    --FROM [#DETALLE]
+                    --WHERE [CVE_ART] = @ERP_MATERIAL_CODE
+					SELECT SUM(QTY)
+                    FROM [#DETALLE]
+                    WHERE [ITEM_CODE_ERP] = @ERP_MATERIAL_CODE
                 )
             )
             BEGIN
@@ -232,7 +242,7 @@ BEGIN
 				 @pRESULT1
                     = 'La cantidad es mayor a la existencia de los siguientes productos: ' + @ERP_MATERIAL_CODE;
 				PRINT @pRESULT1;
-				BREAK;
+				BREAK; 
 		
             END;
 			ELSE
@@ -268,12 +278,25 @@ BEGIN
         PRINT 'Obtuvo ultimo documento @ULTIMO_DOCUMENTO' + CAST(@ULTIMO_DOCUMENTO AS VARCHAR);
 
 
-		--Obtiene tipo de movimiento
+		--Obtiene tipo de movimiento y verifica si es mezcla
 
-		SELECT @CVE_CPTO=53--C.SPARE4 
-			--FROM [OP_WMS_ALZA].[wms].[OP_WMS_CONFIGURATIONS] C
-			--INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_PICKING_ERP_DOCUMENT] H ON C.PARAM_NAME=H.DEMAND_TYPE
-			--WHERE H.[PICKING_ERP_DOCUMENT_ID] = @NEXT_PICKING_DEMAND_HEADER
+		 SELECT TOP 1 
+			   @CVE_CPTO = CASE 
+				WHEN D.MASTER_PACK_CODE like '%M' THEN 
+					 53
+				ELSE 
+					55
+			   END
+        FROM [OP_WMS_ALZA].[wms].[OP_WMS_TASK_LIST] [D]
+            INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_PICKING_ERP_DOCUMENT] [H]
+                ON [H].WAVE_PICKING_ID = [D].WAVE_PICKING_ID
+        WHERE [H].[PICKING_ERP_DOCUMENT_ID] = @NEXT_PICKING_DEMAND_HEADER
+              AND  D.MASTER_PACK_CODE IS NOT NULL
+
+		--SELECT @CVE_CPTO=55--C.SPARE4 
+		--	--FROM [OP_WMS_ALZA].[wms].[OP_WMS_CONFIGURATIONS] C
+		--	--INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_PICKING_ERP_DOCUMENT] H ON C.PARAM_NAME=H.DEMAND_TYPE
+		--	--WHERE H.[PICKING_ERP_DOCUMENT_ID] = @NEXT_PICKING_DEMAND_HEADER
 
         SELECT @ULTIMO_DOCUMENTO_COMENTARIO = [ULT_CVE]
         FROM [SAE70EMPRESA01].[dbo].[TBLCONTROL01]
@@ -382,13 +405,16 @@ BEGIN
                 HAVING SUM([EXIST]) <
 
                 (
-                    SELECT @QTY_DETAIL
+                    SELECT SUM(QTY)
+                    FROM [#DETALLE]
+                    WHERE [ITEM_CODE_ERP] = @ERP_MATERIAL_CODE
                 )
             )
             BEGIN
-                DECLARE @pRESULT VARCHAR(200)
+                SELECT @pRESULT1 
                     = 'La cantidad es mayor a la existencias de los siguientes productos: ' + @ERP_MATERIAL_CODE;
-                RAISERROR(@pRESULT, 16, 1);
+				print @pRESULT1;
+				THROW 51000, 'La cantidad es mayor a la existencias de los siguientes productos: ', 1;  
             END;
 			print 'si hay existencia'
             SELECT @ULTIMO_DOCUMENTO_MOVIMIENTO = [ULT_CVE]
@@ -560,7 +586,7 @@ BEGIN
 
 
 		COMMIT;
-        DECLARE @RESPONSE VARCHAR(500) = 'Proceso exitoso, Recepción: GG ' + @DOCUMENTO_ERP_FORMATEADO;
+        SET @RESPONSE  = 'Proceso exitoso, Recepción: GG ' + @DOCUMENTO_ERP_FORMATEADO;
 
         PRINT 'Actualizó Swift ';
 

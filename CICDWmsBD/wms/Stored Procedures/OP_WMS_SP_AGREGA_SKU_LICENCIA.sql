@@ -92,6 +92,10 @@
 -- Fecha de Creacion: 	19-Mayo-2021
 -- Descripcion:			Se maneja nuevo tipo de error cuando el estado del material recibido no cooincide con el estado escogido en la demanda de despacho
 
+-- Autor:				Denis Arango
+-- Fecha de Creacion: 	23-Nov-2022
+-- Descripcion:			Se agrega validacion para la fecha de expiracion
+
 /*
 
 Ejemplo de ejecucion:
@@ -222,6 +226,18 @@ BEGIN
     BEGIN TRY
         BEGIN
             BEGIN TRAN;
+			IF @DATE_EXPIRATION <= GETDATE() - 1 
+			BEGIN
+				SELECT @ErrorCode = 1111;
+                        RAISERROR(
+                                     N'La fecha de expiración es debe ser mayor a la fecha actual',
+                                     16,
+                                     1
+                                 );
+                        RETURN;
+			END
+			ELSE
+			BEGIN
             IF @BATCH = ''
             BEGIN
                 SELECT @DATE_EXPIRATION = NULL;
@@ -245,7 +261,8 @@ BEGIN
                       [BARCODE_ID] = @pBARCODE
                       OR [ALTERNATE_BARCODE] = @pBARCODE
                   )
-                  AND [CLIENT_OWNER] = @pCLIENT_ID_LOCAL;
+                  AND [CLIENT_OWNER] = @pCLIENT_ID_LOCAL
+		
 
             -- ------------------------------------------------------------------------------------
             -- OBTENEMOS EL REGIMEN DE LA LICENCIA
@@ -1139,7 +1156,7 @@ BEGIN
                    '' [DbData];
             COMMIT TRAN;
         END;
-
+		END
     END TRY
     BEGIN CATCH
 

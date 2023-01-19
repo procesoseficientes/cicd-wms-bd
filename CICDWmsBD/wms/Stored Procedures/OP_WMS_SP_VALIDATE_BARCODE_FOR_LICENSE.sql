@@ -14,6 +14,12 @@
                     ,@CLIENT_OWNER = 'wms_ALMACENADORA'
                     ,@LICENSE_ID = 367930
                     ,@TASK_ID = 476464
+
+					EXEC [wms].[OP_WMS_SP_VALIDATE_BARCODE_FOR_LICENSE]
+					@BARCODE_ID = '12372'
+                    ,@CLIENT_OWNER = 'ALZA'
+                    ,@LICENSE_ID = 658050
+                    ,@TASK_ID = 1116655
 */
 -- =============================================
 CREATE PROCEDURE [wms].[OP_WMS_SP_VALIDATE_BARCODE_FOR_LICENSE]
@@ -72,6 +78,8 @@ BEGIN
     -- ------------------------------------------------------------------------------------
     -- Valida que exista el codigo de barras para el owner enviado
     -- ------------------------------------------------------------------------------------
+
+	--print 0/0
         IF NOT EXISTS ( SELECT TOP 1
                             1
                         FROM
