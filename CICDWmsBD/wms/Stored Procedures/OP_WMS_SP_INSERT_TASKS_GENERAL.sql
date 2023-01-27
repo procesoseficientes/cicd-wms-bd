@@ -121,7 +121,9 @@ BEGIN
 		,@Resultado INT = -1
 		,@Mensaje VARCHAR(MAX)
 		,@ASSEMBLED_QTY INT = 0
-		,@QUERY NVARCHAR(MAX);
+		,@QUERY NVARCHAR(MAX)
+		,@ROOF_QTY INT
+		,@ES_MEZCLA INT;
 
 	SET NOCOUNT ON;
 
@@ -163,10 +165,15 @@ BEGIN
 		WHERE
 			[CODIGO_POLIZA] = @CODIGO_POLIZA_TARGET;
 
+
+		SELECT @ROOF_QTY = (SELECT ISNULL(ROOF_QUANTITY, 0) FROM WMS.OP_WMS_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID)
+
+		IF((SELECT IS_MASTER_PACK FROM wms.OP_WMS_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID) = 1 AND @MATERIAL_NAME LIKE '%M') SET @ES_MEZCLA = 1
+
 		-- ------------------------------------------------------------------------------------
         -- Verificamos si la cantidad solicitada sobrepasa el techo del material, si es así, se procesa como picking por canal
         -- ------------------------------------------------------------------------------------
-		IF(@QUANTITY_ASSIGNED > (SELECT ISNULL(ROOF_QUANTITY, 0) FROM WMS.OP_WMS_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID))
+		IF((@QUANTITY_ASSIGNED > @ROOF_QTY) AND @ES_MEZCLA = 0)
 		BEGIN
 			SET @HANDLED_PER_CHANNEL = 1
 			print 'Inicia procesos por canal'
