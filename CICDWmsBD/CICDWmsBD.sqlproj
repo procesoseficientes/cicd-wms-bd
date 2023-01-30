@@ -1313,6 +1313,7 @@
     <Build Include="wms\Stored Procedures\OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND_PER_CHANNEL.sql" />
     <Build Include="wms\Stored Procedures\OP_WMS_SP_REGISTER_DISPATCH_BY_REGIME_GENERAL_OLD.sql" />
     <Build Include="wms\Stored Procedures\OP_WMS_GET_DETAIL_MASTERPACK_TASK.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_SP_COMPLETE_REALLOC.sql" />
   </ItemGroup>
   <ItemGroup>
     <SqlCmdVariable Include="CICDAspellInterfacesBD">
