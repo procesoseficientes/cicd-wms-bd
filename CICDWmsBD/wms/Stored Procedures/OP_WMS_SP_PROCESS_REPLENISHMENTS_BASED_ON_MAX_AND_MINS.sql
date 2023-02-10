@@ -51,6 +51,7 @@ BEGIN
 		,@MASTERPACK_COMPONENT_TOTAL_QTY NUMERIC (18,6)
 		,@MAX_QTY INT;
 
+		DECLARE @MAT_MALO VARCHAR(MAX)
 
   ---------------------------------------------------------------------------------
   -- Consulta de maximos y minimos 
@@ -135,23 +136,19 @@ BEGIN
 		END
 
 		--REDONDEAMOS AL ENTERO INFERIOR MAS CERCANO
-		PRINT 'FINAL_QTY_TO_REPLENISH'
 
 		SET @QTY_TO_REPLENISH = CEILING(@QTY_TO_REPLENISH)
 
-		
-
-
 		SELECT
-			[Z].[ZONE]
+			[DZ].[ZONE]
 		INTO
 		[#ZONES_FOR_REALLOC]
 		FROM
-			[wms].[OP_WMS_ZONE] [Z]
-		INNER JOIN [wms].[OP_WMS_ZONE_TO_REPLENISH_IN_ZONE] [ZR] ON [ZR].REPLENISH_ZONE_ID = [Z].[ZONE_ID]
-		INNER JOIN [wms].[OP_WMS_ZONE] [DZ] ON  [ZR].[ZONE_ID] = [DZ].[ZONE_ID]
+			[wms].[OP_WMS_ZONE] [Z] WITH (NOLOCK)
+		INNER JOIN [wms].[OP_WMS_ZONE_TO_REPLENISH_IN_ZONE] [ZR] WITH (NOLOCK) ON [ZR].REPLENISH_ZONE_ID = [Z].[ZONE_ID]
+		INNER JOIN [wms].[OP_WMS_ZONE] [DZ] WITH (NOLOCK) ON [ZR].[ZONE_ID] = [DZ].[ZONE_ID]
 		WHERE
-			[DZ].[ZONE] = @ZONE;
+			[Z].[ZONE] = @ZONE;
 
 		PRINT '@RECEIVE_EXPLODED_MATERIALS '
 			+ CAST(@RECEIVE_EXPLODED_MATERIALS AS VARCHAR);
@@ -273,7 +270,7 @@ BEGIN
 					@QTY_AVAILABLE_TO_REPLENISH = SUM(ISNULL([V].[QTY],
 											0))
 				FROM
-					[wms].[OP_WMS_VIEW_REALLOC_AVAILABLE_GENERAL] [V]
+					[wms].[OP_WMS_VIEW_REALLOC_AVAILABLE_GENERAL] [V] WITH (NOLOCK)
 				INNER JOIN [#ZONES_FOR_REALLOC] [Z] ON [V].[ZONE] = [Z].[ZONE]
 				WHERE
 					[V].[MATERIAL_ID] = @PARENT_MATERIAL_ID;
@@ -301,14 +298,6 @@ BEGIN
 					SELECT
 						@RESULT = 'OK';
 
-			PRINT 'CREAR TAREA----------'
-			PRINT '@ZONE'
-			PRINT @ZONE
-			PRINT '@LOCATION_SPOT'
-			PRINT '@MATERIAL_ID'
-			PRINT @MATERIAL_ID
-			PRINT '@QTY_AVAILABLE_TO_REPLENISH'
-			PRINT @QTY_AVAILABLE_TO_REPLENISH
           ---------------------------------------------------------------------------------
           -- Crear tarea
           ---------------------------------------------------------------------------------  
@@ -327,10 +316,19 @@ BEGIN
 						SELECT
 							@QTY_TO_REPLENISH = @QTY_TO_REPLENISH
 							- @QTY_AVAILABLE_TO_REPLENISH;
-							PRINT 'SS'
+							PRINT 'SI CREO LA TAREA'
 					END;
-					PRINT 'NN'
-				END;
+					ELSE
+                        BEGIN
+							PRINT 'NO CREO LA TAREA'
+						END
+					END;
+				ELSE
+                    BEGIN
+                    SET @MAT_MALO = CONCAT(@MAT_MALO, ', ', @MATERIAL_ID)
+                    PRINT 'EL MATERIAL NO TIENE INVENTARIO DISPONIBLE PARA REUBICAR '
+                    PRINT @MATERIAL_ID
+                END
 
 				IF @QTY_TO_REPLENISH <= 0
 					DELETE
@@ -358,7 +356,7 @@ BEGIN
 
 	
 	END;
-
+	PRINT @MAT_MALO + 'FINAL'
   ---------------------------------------------------------------------------------
   -- Asignar tareas creadas 
   ---------------------------------------------------------------------------------  
