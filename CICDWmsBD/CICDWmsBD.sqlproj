@@ -1314,6 +1314,7 @@
     <Build Include="wms\Stored Procedures\OP_WMS_SP_REGISTER_DISPATCH_BY_REGIME_GENERAL_OLD.sql" />
     <Build Include="wms\Stored Procedures\OP_WMS_GET_DETAIL_MASTERPACK_TASK.sql" />
     <Build Include="wms\Stored Procedures\OP_WMS_SP_COMPLETE_REALLOC.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_SP_CREATE_DEMAND_1.sql" />
   </ItemGroup>
   <ItemGroup>
     <SqlCmdVariable Include="CICDAspellInterfacesBD">
