@@ -1264,7 +1264,6 @@
     <Build Include="wms\Stored Procedures\OP_WMS_SP_GET_ZONES_ASOCCIATE_TO_ZONE_FOR_REPLENISH.sql" />
     <Build Include="wms\Stored Procedures\OP_WMS_SP_GET_IN_TRANSACTION_DETAIL_ERP_BY_MASTER_PACK.sql" />
     <Build Include="wms\Stored Procedures\OP_WMS_SP_ASSOCIATE_DISTRIBUTION_CENTER_WITH_USER.sql" />
-    <Build Include="wms\Stored Procedures\OP_WMS_SP_CREATE_DEMAND1.sql" />
     <Build Include="wms\Stored Procedures\OP_WMS_SP_GET_PREPARED_TRANSFER_REQUEST_TO_DISPATCH_ERP.sql" />
     <Build Include="wms\Stored Procedures\OP_WMS_SP_UPDATE_VEHICLE.sql" />
     <Build Include="wms\Stored Procedures\OP_WMS_SP_VALIDATED_CONFIGURATION_OF_SLOTTING_ZONE_BY_LICENSE.sql" />
@@ -1314,7 +1313,6 @@
     <Build Include="wms\Stored Procedures\OP_WMS_SP_REGISTER_DISPATCH_BY_REGIME_GENERAL_OLD.sql" />
     <Build Include="wms\Stored Procedures\OP_WMS_GET_DETAIL_MASTERPACK_TASK.sql" />
     <Build Include="wms\Stored Procedures\OP_WMS_SP_COMPLETE_REALLOC.sql" />
-    <Build Include="wms\Stored Procedures\OP_WMS_SP_CREATE_DEMAND_1.sql" />
   </ItemGroup>
   <ItemGroup>
     <SqlCmdVariable Include="CICDAspellInterfacesBD">
