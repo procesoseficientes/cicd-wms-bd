@@ -16,54 +16,56 @@
 );
 
 
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Número de empresa', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_PARTIDASCOMP01', @level2type = N'COLUMN', @level2name = N'NUM_EMP';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = '', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_PARTIDASCOMP01', @level2type = N'COLUMN', @level2name = N'CAPENALTADOCTOOBS';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = '', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_PARTIDASCOMP01', @level2type = N'COLUMN', @level2name = N'CAPENALTADOCTOIMP';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = '', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_PARTIDASCOMP01', @level2type = N'COLUMN', @level2name = N'CAPALMACENXPARTIDAS';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = '', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_PARTIDASCOMP01', @level2type = N'COLUMN', @level2name = N'VERENCSTANUMSERIE';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = '', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_PARTIDASCOMP01', @level2type = N'COLUMN', @level2name = N'VERENCSTALOTEPED';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = '', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_PARTIDASCOMP01', @level2type = N'COLUMN', @level2name = N'VERENCSTAOBS';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = '', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_PARTIDASCOMP01', @level2type = N'COLUMN', @level2name = N'VERENCSTADSGLSGPOPROD';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = '', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_PARTIDASCOMP01', @level2type = N'COLUMN', @level2name = N'VERENCAPNUMSERIE';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = '', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_PARTIDASCOMP01', @level2type = N'COLUMN', @level2name = N'VERENCAPLOTEPED';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = '', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_PARTIDASCOMP01', @level2type = N'COLUMN', @level2name = N'VERENCAPOBS';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = '', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_PARTIDASCOMP01', @level2type = N'COLUMN', @level2name = N'CONSIDERAIMP1ENCOSTO';
+
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = '', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_PARTIDASCOMP01', @level2type = N'COLUMN', @level2name = N'INDPORPARTIDA';
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
 

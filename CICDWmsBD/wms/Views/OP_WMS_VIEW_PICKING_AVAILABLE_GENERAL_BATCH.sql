@@ -1,4 +1,5 @@
-﻿-- =============================================
+﻿
+-- =============================================
 -- Autor:	        hector.gonzalez
 -- Fecha de Creacion: 	2017-04-03 @ Team ERGON - Sprint ERGON 
 -- Description:	        SE AGREGO INNER Y WHERE PARA QUE NO TOME EN CUENTA LAS UBICACIONES QUE NO PERMITAN PICKING
@@ -62,6 +63,7 @@ SELECT
 	,[SH].[ZONE]
 	,[SML].[STATUS_ID]
 	,[SML].[STATUS_CODE]
+	,[IL].[CREATED_DATE]
 FROM
 	[wms].[OP_WMS_INV_X_LICENSE] AS [IL]
 INNER JOIN [wms].[OP_WMS_MATERIALS] AS [M] ON ([IL].[MATERIAL_ID] = [M].[MATERIAL_ID])

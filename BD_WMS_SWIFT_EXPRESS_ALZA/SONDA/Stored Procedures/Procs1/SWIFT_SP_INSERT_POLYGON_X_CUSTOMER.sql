@@ -1,0 +1,76 @@
+﻿-- =============================================
+-- Autor:				pablo.aguilar
+-- Fecha de Creacion: 	20-09-2016
+-- Description:			Inserción a la tabla de poligono por cliente
+
+/*
+  Ejemplo Ejecucion: 
+    EXEC [SONDA].[SWIFT_SP_INSERT_POLYGON_X_CUSTOMER]  @POLYGON_ID = 66, @CODE_CUSTOMER ='193' , @IS_NEW = 0
+     SELECT * FROM [SONDA].[SWIFT_POLYGON_X_CUSTOMER]
+ */
+-- =============================================
+CREATE PROCEDURE [SONDA].[SWIFT_SP_INSERT_POLYGON_X_CUSTOMER]
+   @POLYGON_ID INT
+    ,@CODE_CUSTOMER VARCHAR(50)
+    ,@IS_NEW INT
+AS
+BEGIN TRY
+
+	DECLARE 
+		@HAS_PROPOSAL AS INT = 0 
+		,@HAS_FREQUENCY AS INT = 0
+	--
+    SELECT TOP 1 @HAS_FREQUENCY = 1 FROM [SONDA].[SWIFT_FREQUENCY_X_CUSTOMER] WHERE CODE_CUSTOMER = @CODE_CUSTOMER
+    SELECT TOP 1 @HAS_PROPOSAL = 1 FROM [SONDA].[SWIFT_CUSTOMER_FREQUENCY] WHERE CODE_CUSTOMER = @CODE_CUSTOMER
+	--
+	MERGE [SONDA].[SWIFT_POLYGON_X_CUSTOMER] PC
+	USING (SELECT @POLYGON_ID POLYGON_ID ,@CODE_CUSTOMER CODE_CUSTOMER) AS T
+	ON (
+		PC.POLYGON_ID = T.POLYGON_ID
+		AND PC.CODE_CUSTOMER = T.CODE_CUSTOMER
+	)
+	WHEN MATCHED THEN   
+        UPDATE SET 
+			PC.IS_NEW = 0
+			,PC.HAS_PROPOSAL = @HAS_PROPOSAL
+			,PC.HAS_FREQUENCY = @HAS_FREQUENCY
+	WHEN NOT MATCHED THEN
+		INSERT (
+			POLYGON_ID
+			,CODE_CUSTOMER
+			,IS_NEW
+			,HAS_PROPOSAL
+			,HAS_FREQUENCY
+		) VALUES (
+			@POLYGON_ID
+			,@CODE_CUSTOMER
+			,@IS_NEW
+			,@HAS_PROPOSAL
+			,@HAS_FREQUENCY
+		);
+ 
+
+  IF @@error = 0
+  BEGIN
+    SELECT
+      1 AS Resultado
+     ,'Proceso Exitoso' Mensaje
+     ,0 Codigo
+     ,CONVERT(VARCHAR(16), '0') DbData
+  END
+  ELSE
+  BEGIN
+    SELECT
+      -1 AS Resultado
+     ,ERROR_MESSAGE() Mensaje
+     ,@@ERROR Codigo
+     ,CONVERT(VARCHAR(16), '0') DbData
+  END
+END TRY
+BEGIN CATCH
+  SELECT
+    -1 AS Resultado
+   ,ERROR_MESSAGE() Mensaje
+   ,@@ERROR Codigo
+   ,CONVERT(VARCHAR(16), '0') DbData
+END CATCH

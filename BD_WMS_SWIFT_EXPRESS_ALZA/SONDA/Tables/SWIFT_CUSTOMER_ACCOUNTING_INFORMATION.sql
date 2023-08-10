@@ -1,0 +1,9 @@
+﻿CREATE TABLE [SONDA].[SWIFT_CUSTOMER_ACCOUNTING_INFORMATION] (
+    [ID]                  INT             IDENTITY (1, 1) NOT NULL,
+    [CODE_CUSTOMER]       VARCHAR (250)   NOT NULL,
+    [GROUP_NUM]           VARCHAR (50)    NULL,
+    [CREDIT_LIMIT]        NUMERIC (18, 6) NULL,
+    [OUTSTANDING_BALANCE] NUMERIC (18, 6) NULL,
+    [EXTRA_DAYS]          INT             NULL
+);
+

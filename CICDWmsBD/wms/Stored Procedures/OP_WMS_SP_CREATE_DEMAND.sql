@@ -41,8 +41,17 @@
 -- Description:			envío el valor de días mínimo de fecha de expiración al proceso de generacion de tareas
 
 -- Modificación:		Elder Lucas
--- Fecha Modificación: 	30 de noviembre 2022
+-- Fecha Modificación: 	30 de octubre 2022
 -- Description:			Implementación SP de creación de tareas de picking por canal [wms].[OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND_PER_CHANNEL]
+
+-- Modificación:		Elder Lucas
+-- Fecha Modificación: 	8 de noviembre
+-- Description:			Envio de ordenes consolidadas en una sola petición al SP de picking por canal
+
+-- Modificación:		Elder Lucas
+-- Fecha Modificación:  9 de marzo 2023
+-- Description:			Se retiraron validaciones que no se utilizan para el actual algoritmo de picking por canal, se corrige el conteo de material por documento para funcionar con
+--						documentos que tienen lineas repetidas de material pero con diferente cantidad
 
 /*
 -- Ejemplo de Ejecucion:
@@ -212,6 +221,12 @@ BEGIN
 			,[HEADER_ID] INT NOT NULL
 								PRIMARY KEY
 		);
+
+	DECLARE @CONSOLIDATED_MATERIALS TABLE (
+		 MATERIAL_ID VARCHAR(50)
+		,QTY DECIMAL(18,6)
+		,TAKEN INT
+	);
   --
 	DECLARE	@OPERACION TABLE (
 			[Resultado] INT
@@ -243,7 +258,10 @@ BEGIN
 		,@NON_IMMEDIATE_PICKING_HEADER_ID INT = 0
 		,@TRANSFER_REQUEST_FIRST_TIME INT = 0
 		,@NON_STORAGE INT = 0
-		,@STATUS_CODE VARCHAR(50) = NULL;
+		,@STATUS_CODE VARCHAR(50) = NULL
+		,@COSOLIDATED_QTY DECIMAL(18,6)
+		,@CONSOLIDATED_QTY_LOWER_ROOF DECIMAL(18,6)
+		,@ROOF_QTY NUMERIC(18,6);
 
   -- ------------------------------------------------------------------------------------
   -- Obtenemos la informacion del proyecto si lo mandaran
@@ -281,9 +299,11 @@ BEGIN
 		,@IS_FROM_ERP_FRO_REQUEST INT = 0
 		,@OWNER VARCHAR(50)
 		,@DOC_NUM NUMERIC(18, 0)
+		,@pDOC_NUM varchar(50)
 		,@DOC_ENTRY NUMERIC(18, 0)
 		,@QTY NUMERIC(18, 4)
-		,@TRANSFER_REQUEST_ID_H NUMERIC(18, 4);
+		,@TRANSFER_REQUEST_ID_H NUMERIC(18, 4)
+		,@DOCS_AND_QTYS VARCHAR(MAX);
   -- ------------------------------------------------------------------------------------
   -- Obtiene los encabezados de la demanda
   -- ------------------------------------------------------------------------------------
@@ -588,6 +608,20 @@ BEGIN
 		@DEMAND.[nodes]('/ArrayOfOrdenDeVentaEncabezado/OrdenDeVentaEncabezado/Detalles/OrdenDeVentaDetalle')
 		AS [x] ([Rec]);
 
+  -- --------------------------------------------------------------------------------------------------------
+  -- Se insertan los materiales en una tabla temporal que los agrupará para ser procesados como consolidados
+  -- --------------------------------------------------------------------------------------------------------
+	IF(@IS_CONSOLIDATED = 1 )
+	BEGIN
+		INSERT INTO @CONSOLIDATED_MATERIALS
+	    SELECT
+			 SKU
+			,SUM(QTY)
+			,0
+		FROM @DETAIL
+	  GROUP BY SKU
+	END
+
   -- ------------------------------------------------------------------------------------
   -- Poliza
   -- ------------------------------------------------------------------------------------
@@ -605,7 +639,6 @@ BEGIN
 											[PH].[CODIGO_POLIZA] = [H].[CODIGO_POLIZA]
 											AND [PH].[TIPO] = @TIPO
 											);
-
     -- ------------------------------------------------------------------------------------
     -- Crea las polizas nuevas
     -- ------------------------------------------------------------------------------------
@@ -758,6 +791,13 @@ BEGIN
 				+ CAST(@HEADER_ID AS VARCHAR);
 			PRINT '--> @DETAIL_ID: '
 				+ CAST(@DETAIL_ID AS VARCHAR);
+
+			--Obtiene la cantidad de materiales consolidados que no se hayan tomado anteriormente, caso contrario no se vuele a ejecutar como picking por canal 
+			SET @COSOLIDATED_QTY = (SELECT QTY FROM @CONSOLIDATED_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID AND TAKEN = 0)
+			--Obtiene la cantidad de materiales consolidados aún si ya fue tomado para validar consolidados cuya suma no supere la cantidad de techo
+			set @CONSOLIDATED_QTY_LOWER_ROOF = (SELECT QTY FROM @CONSOLIDATED_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID)
+			--Obtenemos el techo del material
+			SET @ROOF_QTY = (SELECT ISNULL(ROOF_QUANTITY, 999999) FROM WMS.OP_WMS_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID)
       -- ------------------------------------------------------------------------------------
       -- inserta transfer request
       -- ------------------------------------------------------------------------------------
@@ -859,6 +899,25 @@ BEGIN
 			IF @IS_CONSOLIDATED = 1
 			BEGIN
 				SET @MIN_DAYS_BY_SALE_ORDER = @pMIN_DAYS_EXPIRATION_DATE;
+				--Convertimos los documentos y sus cantidades en un varchar que se podrá mandar al SP que crea la tarea
+				 SELECT
+					SALES_ORDER_ID,
+					QTY
+				  INTO #DOCS_TEMP
+				  FROM @DETAIL WHERE  DETAIL_ID = @DETAIL_ID --SKU = @MATERIAL_ID AND HEADER_ID = @HEADER_ID AND QTY = @QUANTITY_ASSIGNED and DETAIL_ID = @DETAIL_ID
+
+				WHILE EXISTS(SELECT TOP 1 1 FROM #DOCS_TEMP)
+				BEGIN
+					SELECT @DOCS_AND_QTYS = CONCAT(@DOCS_AND_QTYS,
+					(SELECT TOP 1 CONCAT(SALES_ORDER_ID, ',',QTY,',') FROM #DOCS_TEMP))
+
+					DELETE TOP (1) FROM #DOCS_TEMP
+				END
+				DROP TABLE #DOCS_TEMP
+				PRINT '@MATERIAL_ID'
+				PRINT @MATERIAL_ID
+				PRINT '@DOCS_AND_QTYS'
+				PRINT @DOCS_AND_QTYS
 			END;
 
 			SELECT
@@ -897,17 +956,25 @@ BEGIN
 
 			IF (@NON_STORAGE = 0)
 			BEGIN
-				DECLARE	@pDOC_NUM VARCHAR(50)= CAST(@DOC_NUM AS VARCHAR);
-				IF(@SOURCE = 'SO - ERP' AND @QUANTITY_ASSIGNED > (SELECT ISNULL(ROOF_QUANTITY, 0) FROM WMS.OP_WMS_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID))
-				BEGIN
-				PRINT 'OPERACIÓN NORMAL'
-				INSERT	INTO @OPERACION
-						(
+				--SET @pDOC_NUM = CAST(@DOC_NUM AS VARCHAR);
+				--IF((IIF(@IS_CONSOLIDATED = 1, @COSOLIDATED_QTY, @QUANTITY_ASSIGNED)) > @ROOF_QTY)
+				--BEGIN
+					PRINT 'OPERACIÓN POR CANAL'
+					--Verificamos si este material puede ir consolidado
+					IF(ISNULL(@COSOLIDATED_QTY, 0) > 0)
+					BEGIN
+					print 'Cantidad Consolidada: ' + cast(@COSOLIDATED_QTY AS VARCHAR) 
+						--SET @QUANTITY_ASSIGNED = @COSOLIDATED_QTY
+						SET @COSOLIDATED_QTY = 0
+						UPDATE @CONSOLIDATED_MATERIALS SET TAKEN = 1 WHERE MATERIAL_ID = @MATERIAL_ID
+					END
+						INSERT	INTO @OPERACION
+							(
 							[Resultado]
 							,[Mensaje]
 							,[Codigo]
 							,[DbData]
-						)
+							)
 						EXEC [wms].[OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND_PER_CHANNEL] @TASK_OWNER = @LOGIN, -- varchar(25)
 							@TASK_ASSIGNEDTO = @TASK_ASSIGNEDTO, -- varchar(25)
 							@QUANTITY_ASSIGNED = @QUANTITY_ASSIGNED, -- numeric
@@ -936,49 +1003,53 @@ BEGIN
 							@STATUS_CODE = @STATUS_CODE,
 							@ORDER_NUMBER = @ORDER_NUMBER,
 							@MIN_DAYS_EXPIRATION_DATE = @MIN_DAYS_BY_SALE_ORDER,
-							@DOC_NUM = @pDOC_NUM;
-				END
-				ELSE
-				BEGIN
-				PRINT 'OPERACIÓN POR CANAL'
-				INSERT	INTO @OPERACION
-					(
-						[Resultado]
-						,[Mensaje]
-						,[Codigo]
-						,[DbData]
-					)
-					EXEC [wms].[OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND] @TASK_OWNER = @LOGIN, -- varchar(25)
-						@TASK_ASSIGNEDTO = @TASK_ASSIGNEDTO, -- varchar(25)
-						@QUANTITY_ASSIGNED = @QUANTITY_ASSIGNED, -- numeric
-						@CODIGO_POLIZA_TARGET = @CODIGO_POLIZA_TARGET, -- varchar(25)
-						@MATERIAL_ID = @MATERIAL_ID, -- varchar(50)
-						@BARCODE_ID = @BARCODE_ID, -- varchar(50)
-						@ALTERNATE_BARCODE = @ALTERNATE_BARCODE, -- varchar(50)
-						@MATERIAL_NAME = @MATERIAL_NAME, -- varchar(200)
-						@CLIENT_OWNER = @CLIENT_OWNER, -- varchar(25)
-						@CLIENT_NAME = @CLIENT_NAME, -- varchar(150)
-						@IS_FROM_SONDA = @IS_FROM_SONDA, -- int
-						@CODE_WAREHOUSE = @CODE_WAREHOUSE, -- varchar(50)
-						@IS_FROM_ERP = @IS_FROM_ERP, -- int
-						@WAVE_PICKING_ID = @WAVE_PICKING_ID, -- numeric
-						@DOC_ID_TARGET = @DOC_ID_TARGET, -- int
-						@LOCATION_SPOT_TARGET = @LOCATION_TARGET, -- varchar(25)
-						@IS_CONSOLIDATED = @IS_CONSOLIDATED, -- int
-						@SOURCE_TYPE = @SOURCE, -- varchar(50)
-						@TRANSFER_REQUEST_ID = @TRANSFER_REQUEST_ID, -- int
-						@TONE = @TONE, -- varchar(20)
-						@CALIBER = @CALIBER, -- varchar(20)
-						@IN_PICKING_LINE = @IN_PICKING_LINE, -- int
-						@IS_FOR_DELIVERY_IMMEDIATE = @IS_FOR_DELIVERY_IMMEDIATE,
-						@PRIORITY = @PRIORITY,
-						@PICKING_HEADER_ID = @NON_IMMEDIATE_PICKING_HEADER_ID,
-						@STATUS_CODE = @STATUS_CODE,
-						@PROJECT_ID = @PROJECT_ID,
-						@ORDER_NUMBER = @ORDER_NUMBER,
-						@MIN_DAYS_EXPIRATION_DATE = @MIN_DAYS_BY_SALE_ORDER,
-						@DOC_NUM = @pDOC_NUM;
-				END
+							@DOC_NUM = @pDOC_NUM,
+							@DOCS_AND_QTYS = @DOCS_AND_QTYS;
+				--END
+				--ELSE IF ((ISNULL((SELECT TOP 1 1 FROM @CONSOLIDATED_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID), 0) = 0) OR 
+				--		(ISNULL((SELECT TOP 1 1 FROM @CONSOLIDATED_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID), 0) = 1 AND @CONSOLIDATED_QTY_LOWER_ROOF < @ROOF_QTY))
+				--BEGIN
+				--	PRINT CONCAT('OPERACIÓN NORMAL: @pDOC_NUM = ', @pDOC_NUM, ' @QUANTITY_ASSIGNED = ', CAST(@QUANTITY_ASSIGNED AS VARCHAR))
+				--	INSERT	INTO @OPERACION
+				--		(
+				--		[Resultado]
+				--		,[Mensaje]
+				--		,[Codigo]
+				--		,[DbData]
+				--		)
+				--	EXEC [wms].[OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND_PER_CHANNEL] @TASK_OWNER = @LOGIN, -- varchar(25)
+				--			@TASK_ASSIGNEDTO = @TASK_ASSIGNEDTO, -- varchar(25)
+				--			@QUANTITY_ASSIGNED = @QUANTITY_ASSIGNED, -- numeric
+				--			@CODIGO_POLIZA_TARGET = @CODIGO_POLIZA_TARGET, -- varchar(25)
+				--			@MATERIAL_ID = @MATERIAL_ID, -- varchar(50)
+				--			@BARCODE_ID = @BARCODE_ID, -- varchar(50)
+				--			@ALTERNATE_BARCODE = @ALTERNATE_BARCODE, -- varchar(50)
+				--			@MATERIAL_NAME = @MATERIAL_NAME, -- varchar(200)
+				--			@CLIENT_OWNER = @CLIENT_OWNER, -- varchar(25)
+				--			@CLIENT_NAME = @CLIENT_NAME, -- varchar(150)
+				--			@IS_FROM_SONDA = @IS_FROM_SONDA, -- int
+				--			@CODE_WAREHOUSE = @CODE_WAREHOUSE, -- varchar(50)
+				--			@IS_FROM_ERP = @IS_FROM_ERP, -- int
+				--			@WAVE_PICKING_ID = @WAVE_PICKING_ID, -- numeric
+				--			@DOC_ID_TARGET = @DOC_ID_TARGET, -- int
+				--			@LOCATION_SPOT_TARGET = @LOCATION_TARGET, -- varchar(25)
+				--			@IS_CONSOLIDATED = @IS_CONSOLIDATED, -- int
+				--			@SOURCE_TYPE = @SOURCE, -- varchar(50)
+				--			@TRANSFER_REQUEST_ID = @TRANSFER_REQUEST_ID, -- int
+				--			@TONE = @TONE, -- varchar(20)
+				--			@CALIBER = @CALIBER, -- varchar(20)
+				--			@IN_PICKING_LINE = @IN_PICKING_LINE, -- int
+				--			@IS_FOR_DELIVERY_IMMEDIATE = @IS_FOR_DELIVERY_IMMEDIATE,
+				--			@PRIORITY = @PRIORITY,
+				--			@PICKING_HEADER_ID = @NON_IMMEDIATE_PICKING_HEADER_ID,
+				--			@STATUS_CODE = @STATUS_CODE,
+				--			@ORDER_NUMBER = @ORDER_NUMBER,
+				--			@MIN_DAYS_EXPIRATION_DATE = @MIN_DAYS_BY_SALE_ORDER,
+				--			@DOC_NUM = @pDOC_NUM,
+				--			@DOCS_AND_QTYS = @DOCS_AND_QTYS;
+				--END
+
+				SET @DOCS_AND_QTYS = ''
 
 			END;
       -- ------------------------------------------------------------------------------------
@@ -1027,13 +1098,11 @@ BEGIN
 	  PRINT 'Marca como bloqueado en SAE: '+ @DOC_VARCHAR
 	 -- RAISERROR (15600,-1,-1, @DOC_VARCHAR );  
 
-			UPDATE 
-				FACT 
-			SET	
-				FACT.BLOQ='W',
-				FACT.[ENLAZADO] = 'W'
+			UPDATE FACT 
+			SET	FACT.BLOQ='W',FACT.[ENLAZADO] = 'W'
 			FROM [SAE70EMPRESA01].[dbo].[FACTP01] FACT
-			INNER JOIN @HEADER HEADER ON FACT.[CVE_DOC] LIKE '%'+HEADER.SALES_ORDER_ID+'%' COLLATE DATABASE_DEFAULT
+			INNER JOIN @HEADER HEADER
+			ON TRIM(FACT.[CVE_DOC]) = TRIM(HEADER.SALES_ORDER_ID) COLLATE DATABASE_DEFAULT
 			
 	  PRINT 'END UPDATE'
 

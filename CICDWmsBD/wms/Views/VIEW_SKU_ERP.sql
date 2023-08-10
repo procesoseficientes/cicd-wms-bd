@@ -1,4 +1,5 @@
-﻿-- =============================================
+﻿
+-- =============================================
 -- Autor:	pablo.aguilar
 -- Fecha de Creacion: 	2017-01-31 @ Team G-FORCE - Sprint LANGOSTA
 -- Description:	 NA
@@ -54,15 +55,15 @@ AS
        NULL [MT3],
        '0' [BATCH_REQUESTED],
        0 [SERIAL_NUMBER_REQUESTS],
-       ISNULL([m].[ULT_COSTO], 0) [ERP_AVERAGE_PRICE],
+       ISNULL([m].[ULT_COSTO], 0)[ERP_AVERAGE_PRICE],
        1 [INVT],
        '0' [HANDLE_TONE],
        '0' [HANDLE_CALIBER],
        0 [QM],
        [m].[UNI_MED] [BaseUnit],
        [m].[LIN_PROD] [Family]
-FROM [$(CICDSaeBD)].[dbo].[INVE01] [m]
-    INNER JOIN [$(CICDSaeBD)].[dbo].[INVE_CLIB01] [M1]
+FROM [SAE70EMPRESA01].[dbo].[INVE01] [m]
+    INNER JOIN [SAE70EMPRESA01].[dbo].[INVE_CLIB01] [M1]
         ON [m].[CVE_ART] = [M1].[CVE_PROD]
      
 

@@ -1,0 +1,8 @@
+﻿CREATE TABLE [SONDA].[SWIFT_QUERY_LIST] (
+    [ID]     INT           IDENTITY (1, 1) NOT NULL,
+    [NAME]   VARCHAR (150) NULL,
+    [QUERY]  VARCHAR (MAX) NULL,
+    [ACTIVE] INT           DEFAULT ((1)) NULL,
+    PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+

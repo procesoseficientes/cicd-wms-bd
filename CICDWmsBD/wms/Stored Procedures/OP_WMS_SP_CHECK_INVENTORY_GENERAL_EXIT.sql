@@ -423,8 +423,8 @@ BEGIN
 		-- ------------------------------------------------------------------------------------
 		print '@NEEDED_FOR_ASSEMBLY'
 		print @NEEDED_FOR_ASSEMBLY
-		select * from @RESULT_DETAIL
-		select * from @RESULT_COMPONENT
+		--select * from @RESULT_DETAIL
+		--select * from @RESULT_COMPONENT
 		SELECT
 			[MATERIAL_ID]
 			,[QTY]

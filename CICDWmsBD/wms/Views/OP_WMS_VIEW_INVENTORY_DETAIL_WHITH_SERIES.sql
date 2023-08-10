@@ -1,6 +1,4 @@
 ﻿
-
-
 -- =============================================
 -- Autor:					        hector.gonzalez
 -- Fecha de Creacion: 		22-05-2017
@@ -131,34 +129,34 @@ SELECT
 	,[P].[OPPORTUNITY_CODE] [PROJECT_CODE]
 	,[P].[SHORT_NAME] [PROJECT_SHORT_NAME]
 FROM
-	[wms].[OP_WMS_INV_X_LICENSE] AS [I]
-INNER JOIN [wms].[OP_WMS_LICENSES] AS [L] ON [I].[LICENSE_ID] = [L].[LICENSE_ID]
-INNER JOIN [wms].[OP_WMS_MATERIALS] AS [M] ON (
+	[wms].[OP_WMS_INV_X_LICENSE] AS [I] WITH (NOLOCK)
+INNER JOIN [wms].[OP_WMS_LICENSES] AS [L] WITH (NOLOCK) ON [I].[LICENSE_ID] = [L].[LICENSE_ID]
+INNER JOIN [wms].[OP_WMS_MATERIALS] AS [M] WITH (NOLOCK) ON (
 											[I].[MATERIAL_ID] = [M].[MATERIAL_ID]
 											AND [M].[MATERIAL_ID] > ''
 											)
-INNER JOIN [wms].[OP_WMS_VIEW_CLIENTS] AS [C] ON ([C].[CLIENT_CODE] = [L].[CLIENT_OWNER])
-INNER JOIN [wms].[OP_WMS_POLIZA_HEADER] AS [PH] ON (
+INNER JOIN [wms].[OP_WMS_VIEW_CLIENTS] AS [C] WITH (NOLOCK) ON ([C].[CLIENT_CODE] = [L].[CLIENT_OWNER])
+INNER JOIN [wms].[OP_WMS_POLIZA_HEADER] AS [PH] WITH (NOLOCK) ON (
 											[PH].[CODIGO_POLIZA] = [L].[CODIGO_POLIZA]
 											AND [PH].[CODIGO_POLIZA] > ''
 											)
-LEFT JOIN [wms].[OP_WMS_SHELF_SPOTS] [SH] ON (
+LEFT JOIN [wms].[OP_WMS_SHELF_SPOTS] [SH] WITH (NOLOCK) ON (
 											[L].[CURRENT_LOCATION] = [SH].[LOCATION_SPOT]
 											AND [SH].[LOCATION_SPOT] > ''
 											)
-LEFT JOIN [wms].[OP_WMS_MATERIAL_X_SERIAL_NUMBER] [SN] ON (
+LEFT JOIN [wms].[OP_WMS_MATERIAL_X_SERIAL_NUMBER] [SN] WITH (NOLOCK) ON (
 											[I].[LICENSE_ID] = [SN].[LICENSE_ID]
 											AND [I].[MATERIAL_ID] = [SN].[MATERIAL_ID]
 											AND [SN].[LICENSE_ID] > 0
 											AND [SN].[STATUS] > 0
 											AND [SN].[MATERIAL_ID] > ''
 											)
-INNER JOIN [wms].[OP_WMS_STATUS_OF_MATERIAL_BY_LICENSE] [S] ON (
+INNER JOIN [wms].[OP_WMS_STATUS_OF_MATERIAL_BY_LICENSE] [S] WITH (NOLOCK) ON (
 											[I].[STATUS_ID] = [S].[STATUS_ID]
 											AND [S].[STATUS_ID] > 0
 											)
-LEFT JOIN [wms].[OP_WMS_TONE_AND_CALIBER_BY_MATERIAL] [TC] ON (
+LEFT JOIN [wms].[OP_WMS_TONE_AND_CALIBER_BY_MATERIAL] [TC] WITH (NOLOCK) ON (
 											[I].[TONE_AND_CALIBER_ID] = [TC].[TONE_AND_CALIBER_ID]
 											AND [TC].[TONE_AND_CALIBER_ID] > 0
 											)
-LEFT JOIN [wms].[OP_WMS_PROJECT] [P] ON [I].[PROJECT_ID] = [P].[ID];
+LEFT JOIN [wms].[OP_WMS_PROJECT] [P] WITH (NOLOCK) ON [I].[PROJECT_ID] = [P].[ID];

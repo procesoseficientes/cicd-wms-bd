@@ -6,14 +6,16 @@
 );
 
 
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de campaña', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'DESACT01', @level2type = N'COLUMN', @level2name = N'CVE_CAMPANIA';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de actividad', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'DESACT01', @level2type = N'COLUMN', @level2name = N'CVE_ACTIVIDAD';
+
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Descripción', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'DESACT01', @level2type = N'COLUMN', @level2name = N'DESCR';
+
+
+
+GO
+
 

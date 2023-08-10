@@ -1,0 +1,9 @@
+﻿CREATE TABLE [SONDA].[BULK_DATA_CONFIGURATION] (
+    [CONFIGURATION]             INT            IDENTITY (1, 1) NOT NULL,
+    [DESCRIPTION_CONFIGURATION] VARCHAR (250)  NOT NULL,
+    [SP]                        VARCHAR (1000) NOT NULL,
+    [ACTIVE]                    INT            NOT NULL,
+    [ORDER]                     INT            NOT NULL,
+    CONSTRAINT [PK_BULK_DATA_CONFIGURATION] PRIMARY KEY CLUSTERED ([CONFIGURATION] ASC)
+);
+

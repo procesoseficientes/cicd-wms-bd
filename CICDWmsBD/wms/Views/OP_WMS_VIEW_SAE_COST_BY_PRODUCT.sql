@@ -1,6 +1,5 @@
 ﻿
 
-
 -- =============================================
 -- Autor:	Elder Lucas
 -- Fecha de Creacion: 	2022.03.2022
@@ -21,7 +20,7 @@ SELECT  DISTINCT
 		[DESCR],
 		[COSTO_PROM],
 		[LIN_PROD]
-FROM [$(CICDSaeBD)].[dbo].[INVE01] [m]
+FROM [SAE70EMPRESA01].[dbo].[INVE01] [m]
     
 
 --INNER JOIN [wms].[OP_WMS_COMPANY] [c] ON [c].[CLIENT_CODE] = [m].[WERKS]

@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>BD_SWIFT_INTERFACES_ONLINE</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{44abf5e1-c441-419e-a014-dbc05880022e}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>BD_SWIFT_INTERFACES_ONLINE</RootNamespace>
+    <AssemblyName>BD_SWIFT_INTERFACES_ONLINE</AssemblyName>
+    <ModelCollation>1033,CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <DefaultCollation>SQL_Latin1_General_CP1_CI_AS</DefaultCollation>
+    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="SONDA\" />
+    <Folder Include="SONDA\Tables\" />
+    <Folder Include="SONDA\Views\" />
+    <Folder Include="Security\" />
+    <Folder Include="SONDA\Stored Procedures\" />
+    <Folder Include="SONDA\Synonyms\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="SONDA\Tables\ERP_TB_BONUS.sql" />
+    <Build Include="SONDA\Tables\ERP_TB_DISCOUNT.sql" />
+    <Build Include="SONDA\Tables\ERP_TB_DISCOUNT_PRUEBAS.sql" />
+    <Build Include="SONDA\Tables\ERP_TB_PRICE_LIST_BY_SKU.sql" />
+    <Build Include="SONDA\Tables\ERP_TB_PRICE_LIST_BY_SKU_PACK_SCALE.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_DISCOUNT.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_DOC_FOR_PICKING.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_SALES_OFFICE.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_SALES_ORGANIZATION.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_WAREHOUSE_BY_SALES_OFFICE.sql" />
+    <Build Include="SONDA\Views\ERP_ORDER_DETAIL.sql" />
+    <Build Include="SONDA\Views\ERP_ORDER_HEADER.sql" />
+    <Build Include="SONDA\Views\ERP_PACK_CONVERSION.sql" />
+    <Build Include="SONDA\Views\ERP_PACK_UNIT.sql" />
+    <Build Include="SONDA\Views\ERP_PRICE_LIST.sql" />
+    <Build Include="SONDA\Views\ERP_PRICE_LIST_BY_CUSTOMER.sql" />
+    <Build Include="SONDA\Views\ERP_PRICE_LIST_BY_SKU.sql" />
+    <Build Include="SONDA\Views\ERP_PRICE_LIST_BY_SKU_PACK_SCALE.sql" />
+    <Build Include="SONDA\Views\ERP_SKU_BASE_PRICE_BY_PACK.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_COMMITED_BY_WAREHOUSE.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_COST_CENTER_BY_WAREHOUSE.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_COSTUMER.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_CUSTOMER_PROPERTIES.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_CUSTOMER_SOURCE.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_INVENTORY_ONLINE.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_INVOICE_DETAIL.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_INVOICE_HEADER.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_ORDER_SERIE_DETAIL.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_PICKING.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_PROVIDERS.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_PURCHASE_ORDER_DETAIL.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_PURCHASE_ORDER_HEADER.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_PURCHASE_SERIE_DETAIL.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_RECEPTION.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_SELLER.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_SELLER_SOURCE.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_SKU.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_SKU_FAMILY.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_SKU_SOURCE.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_WAREHOUSE.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_INVENTORY.sql" />
+    <Build Include="SONDA\Views\ERP_VIEW_SKU_SUBFAMILY.sql" />
+    <Build Include="Security\ALZAHN.sql" />
+    <Build Include="Security\ALZAHN_1.sql" />
+    <Build Include="Security\wms.sql" />
+    <Build Include="Security\wms_1.sql" />
+    <Build Include="Security\RoleMemberships.sql" />
+    <Build Include="SONDA\Stored Procedures\SWIFT_SP_RECREATE_OBJECT.sql" />
+    <Build Include="SONDA\Stored Procedures\SWIFT_SP_REPLACE_TEXT_IN_OPENQUERY.sql" />
+    <Build Include="SONDA\Stored Procedures\ERP_SP_GENERATE_BONUS_LIST.sql" />
+    <Build Include="SONDA\Stored Procedures\ERP_SP_GENERATE_BONUS_LIST_BY_CUSTOMER_AND_SKU.sql" />
+    <Build Include="SONDA\Stored Procedures\ERP_SP_GENERATE_BONUS_LIST_BY_SKU.sql" />
+    <Build Include="SONDA\Stored Procedures\ERP_SP_GENERATE_DEFAULT_PRICE_LIST.sql" />
+    <Build Include="SONDA\Stored Procedures\ERP_SP_GENERATE_DISCOUNT_LIST.sql" />
+    <Build Include="SONDA\Stored Procedures\ERP_SP_GENERATE_DISCOUNT_LIST_BY_CUSTOMER.sql" />
+    <Build Include="SONDA\Stored Procedures\ERP_SP_GENERATE_DISCOUNT_LIST_BY_CUSTOMER_AND_SKU.sql" />
+    <Build Include="SONDA\Stored Procedures\ERP_SP_GENERATE_DISCOUNT_LIST_BY_SKU.sql" />
+    <Build Include="SONDA\Stored Procedures\ERP_SP_GENERATE_PRICE_LIST_BY_SKU.sql" />
+    <Build Include="SONDA\Stored Procedures\ERP_SP_GENERATE_PRICE_LIST_BY_SKU_SCALE.sql" />
+    <Build Include="SONDA\Stored Procedures\SWIFT_SP_GET_SAP_PICKING.sql" />
+    <Build Include="Security\SONDA.sql" />
+    <Build Include="SONDA\Synonyms\SWIFT_BONUS_PRIORITY.sql" />
+    <Build Include="SONDA\Synonyms\SWIFT_DISCOUNT_PRIORITY.sql" />
+  </ItemGroup>
+</Project>

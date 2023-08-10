@@ -1,0 +1,79 @@
+﻿-- =============================================
+-- Autor:				diego.as
+-- Fecha de Creacion: 	8/23/2017 @ Reborn-TEAM Sprint Bearbeitung
+-- Description:			SP que genera un cambio de cliente para actualizar el punto gps del mismo
+
+/*
+-- Ejemplo de Ejecucion:
+				EXEC [SONDA].[SWIFT_SP_GENERATE_CUSTOMER_GPS_CHANGE]
+				@CODE_CUSTOMER = 'D010'
+				,@GPS = '14.6426207,-90.5131314'
+				,@POSTED_BY = 'GERENTE@SONDA'
+				 
+*/
+-- =============================================
+CREATE PROCEDURE [SONDA].[SWIFT_SP_GENERATE_CUSTOMER_GPS_CHANGE](
+	@CODE_CUSTOMER VARCHAR(50)
+	,@GPS VARCHAR(MAX)
+	,@POSTED_BY VARCHAR(250)
+)
+AS
+BEGIN
+	BEGIN TRY
+		DECLARE @ID NUMERIC(18,0), @SERVER_POSTED_DATETIME DATETIME = GETDATE();
+		--
+		INSERT	INTO [SONDA].[SWIFT_CUSTOMER_CHANGE]
+			(
+				[CODE_CUSTOMER]
+				,[PHONE_CUSTOMER]
+				,[ADRESS_CUSTOMER]
+				,[CONTACT_CUSTOMER]
+				,[GPS]
+				,[POSTED_DATETIME]
+				,[POSTED_BY]
+				,[CODE_ROUTE]
+				,[STATUS]
+				,[TAX_ID]
+				,[INVOICE_NAME]
+				,[CUSTOMER_NAME]
+				,[NEW_CUSTOMER_NAME]
+				,[OWNER]
+				,[OWNER_ID]
+				,[SERVER_POSTED_DATETIME]
+				,[DEVICE_NETWORK_TYPE]
+				,[IS_POSTED_OFFLINE]
+			)
+		SELECT 
+			[VAC].[CODE_CUSTOMER]
+			,ISNULL([VAC].[PHONE_CUSTOMER],'...') [PHONE_CUSTOMER]
+			,ISNULL([VAC].[ADRESS_CUSTOMER],'...') [ADRESS_CUSTOMER]
+			,(CASE WHEN VAC.[CONTACT_CUSTOMER] IS NULL THEN VAC.NAME_CUSTOMER ELSE VAC.CONTACT_CUSTOMER END) [CONTACT_CUSTOMER]
+			,@GPS
+			,@SERVER_POSTED_DATETIME
+			,@POSTED_BY
+			,ISNULL(SR.[CODE_ROUTE], '...') [CODE_ROUTE]
+			,'NEW'
+			,VAC.[TAX_ID_NUMBER]
+			,VAC.[INVOICE_NAME]
+			,VAC.[NAME_CUSTOMER]
+			,VAC.[NAME_CUSTOMER]
+			,VAC.[OWNER]
+			,VAC.[OWNER_ID]
+			,@SERVER_POSTED_DATETIME
+			,'WIFI'
+			,0
+		FROM [SONDA].[SWIFT_VIEW_ALL_COSTUMER] AS VAC
+		LEFT JOIN [SONDA].[SWIFT_ROUTES] AS SR
+		ON(SR.[SELLER_CODE] = VAC.[SELLER_DEFAULT_CODE])
+		WHERE VAC.[CODE_CUSTOMER] = @CODE_CUSTOMER
+		--
+		SET @ID = SCOPE_IDENTITY()
+		--
+		SELECT  1 as Resultado , 'Proceso Exitoso' Mensaje ,  0 Codigo, CAST(@ID AS VARCHAR) DbData
+	END TRY
+	BEGIN CATCH
+		SELECT  -1 as Resultado
+		,ERROR_MESSAGE() Mensaje 
+		,@@ERROR Codigo 
+	END CATCH
+END

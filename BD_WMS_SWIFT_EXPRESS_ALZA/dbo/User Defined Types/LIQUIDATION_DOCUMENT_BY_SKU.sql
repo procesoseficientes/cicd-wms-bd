@@ -1,0 +1,11 @@
+﻿CREATE TYPE [dbo].[LIQUIDATION_DOCUMENT_BY_SKU] AS TABLE (
+    [DOCUMENT_TYPE]   VARCHAR (50)    NULL,
+    [DOC_RESOLUTION]  VARCHAR (250)   NULL,
+    [DOC_SERIE]       VARCHAR (50)    NULL,
+    [DOC_NUM]         INT             NULL,
+    [CODE_SKU]        VARCHAR (50)    NULL,
+    [SKU_DESCRIPTION] VARCHAR (MAX)   NULL,
+    [QTY]             NUMERIC (18, 2) NULL,
+    [PRICE]           NUMERIC (18, 6) NULL,
+    [TOTAL_LINE]      NUMERIC (18, 6) NULL);
+

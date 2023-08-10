@@ -1,4 +1,5 @@
-﻿-- =============================================
+﻿
+-- =============================================
 -- Autor:				alberto.ruiz
 -- Fecha de Creacion: 	17-Aug-17 @ Nexus Team Sprint Banjo-Kazooie 
 -- Description:			SP que obtiene las solicitudes de transferencia
@@ -9,10 +10,10 @@
 
 /*
 -- Ejemplo de Ejecucion:
-				EXEC [wms].[OP_WMS_SP_GET_TRANSFER_REQUEST_HEADER_BY_DATE]
-					@WAREHOUSE_ID = 'BODEGA_01' 
-					,@START_DATETIME = '2017-08-01 00:00:00.000'
-					,@END_DATETIME = '2017-12-18 00:00:00.000'
+exec wms.OP_WMS_SP_GET_TRANSFER_REQUEST_HEADER_BY_DATE 
+@WAREHOUSE_ID=N'BODEGA_SPS',
+@START_DATETIME='2023-02-01 00:00:00',
+@END_DATETIME='2023-03-08 23:00:00'
 */
 -- =============================================
 CREATE PROCEDURE [wms].[OP_WMS_SP_GET_TRANSFER_REQUEST_HEADER_BY_DATE] (
@@ -118,7 +119,7 @@ BEGIN
 			,0
 			,[TH].[IS_FROM_ERP]
 		FROM
-			[wms].[OP_WMS_TRANSFER_REQUEST_HEADER] [TH]
+			[wms].[OP_WMS_TRANSFER_REQUEST_HEADER] [TH] WITH (NOLOCK)
 		WHERE
 			[TH].[TRANSFER_REQUEST_ID] > 0
 			AND [TH].[STATUS] = @STATUS
@@ -126,6 +127,8 @@ BEGIN
 									AND		@END_DATETIME
 			AND [TH].[WAREHOUSE_FROM] = @WAREHOUSE_ID
 			--AND [TH].[IS_FROM_ERP] = 0;
+			--SELECT TOP 100000000 * FROM [wms].[OP_WMS_TRANSFER_REQUEST_HEADER] WHERE REQUEST_DATE > '2023-01-01 10:25:47.430' AND TRANSFER_REQUEST_ID = 14796
+			PRINT '1'
 
     -- ------------------------------------------------------------------------------------
     -- Se crean indice a [#PICKING_DOCUMENT]
@@ -154,7 +157,8 @@ BEGIN
 		, [FROM_WAREHOUSE_ID]
 		, [TO_WAREHOUSE_ID]
 		);
-
+					PRINT '2'
+			
     -- ------------------------------------------------------------------------------------
     -- Muestra el resultado
     -- ------------------------------------------------------------------------------------
@@ -186,8 +190,8 @@ BEGIN
 			,[PD].[TO_WAREHOUSE_ID]
 			,[PD].[TO_WAREHOUSE_ID] [ADDRESS_CUSTOMER]
 		FROM
-			[#PICKING_DOCUMENT] [PD]
-		LEFT JOIN [wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [P] ON (
+			[#PICKING_DOCUMENT] [PD] WITH (NOLOCK)
+		LEFT JOIN [wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [P] WITH (NOLOCK) ON (
 											[PD].[SALES_ORDER_ID] = [P].[DOC_NUM]  COLLATE DATABASE_DEFAULT
 											AND [PD].[EXTERNAL_SOURCE_ID] = [P].[EXTERNAL_SOURCE_ID]
 											)
@@ -219,14 +223,15 @@ BEGIN
 			,[PD].[FROM_WAREHOUSE_ID]
 			,[PD].[TO_WAREHOUSE_ID]
 		HAVING
-			ISNULL(MAX([P].[IS_COMPLETED]), 0) = 0;
+			MAX(ISNULL([P].[IS_COMPLETED], 0)) = 0;
+			PRINT '3'
+
 	END TRY
 	BEGIN CATCH
 		SELECT
 			-1 AS [Resultado]
 			,ERROR_MESSAGE() [Mensaje]
 			,@@ERROR [Codigo];
+			PRINT '4'
 	END CATCH;
-
-	PRINT 'HOLA MUNDO'
 END;

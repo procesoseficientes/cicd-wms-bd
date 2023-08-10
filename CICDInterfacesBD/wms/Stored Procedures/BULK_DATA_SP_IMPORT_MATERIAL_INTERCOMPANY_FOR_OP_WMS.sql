@@ -11,7 +11,7 @@
 -- Ejemplo de Ejecucion:
         EXEC [wms].[BULK_DATA_SP_IMPORT_MATERIAL_INTERCOMPANY_FOR_OP_WMS]
 		--
-		SELECT * FROM [wms].[OP_WMS_MATERIAL_INTERCOMPANY]
+		SELECT * FROM [OP_WMS_wms].[wms].[OP_WMS_MATERIAL_INTERCOMPANY]
 */
 -- =============================================
 CREATE PROCEDURE [wms].[BULK_DATA_SP_IMPORT_MATERIAL_INTERCOMPANY_FOR_OP_WMS]
@@ -45,11 +45,6 @@ BEGIN
 				,[ITEM_CODE]
 				,[SOURCE]
 			)
-	-- --------------------------------------------------------------------
-	-- inserta el item code ERP en la tabla materiales.
-	-- --------------------------------------------------------------------
-	
-
 	SELECT
 		[MASTER_ID]
 		,[ITEM_CODE]

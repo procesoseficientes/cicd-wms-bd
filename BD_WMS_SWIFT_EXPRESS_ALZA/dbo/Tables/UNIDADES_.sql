@@ -1,0 +1,7 @@
+﻿CREATE TABLE [dbo].[UNIDADES$] (
+    [0]           FLOAT (53)     NULL,
+    [DESCRIPCION] NVARCHAR (255) NULL,
+    [ABREVIATURA] NVARCHAR (255) NULL,
+    [TIPO]        NVARCHAR (255) NULL
+);
+

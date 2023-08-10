@@ -5,10 +5,12 @@
 );
 
 
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de observaciones', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'OCLI01', @level2type = N'COLUMN', @level2name = N'CVE_OBS';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Observaciones', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'OCLI01', @level2type = N'COLUMN', @level2name = N'STR_OBS';
+
+
+
+GO
+
 

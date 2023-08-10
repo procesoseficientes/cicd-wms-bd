@@ -10,6 +10,8 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IDX_DOCTOSIGF01]
     ON [dbo].[DOCTOSIGF01]([TIP_DOC] ASC, [CVE_DOC] ASC);
@@ -21,33 +23,33 @@ CREATE NONCLUSTERED INDEX [IDX_DOCTOSIGF201]
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Tipo de documento [F/R/P/C/D] .: F=Facturas, R=Remisiones, P=Pedidos, C=Cotizaciones, D=Devoluciones', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'DOCTOSIGF01', @level2type = N'COLUMN', @level2name = N'TIP_DOC';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de documento', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'DOCTOSIGF01', @level2type = N'COLUMN', @level2name = N'CVE_DOC';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Documento anterior/siguiente [A/S] .: A=Anterior, S=Siguiente', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'DOCTOSIGF01', @level2type = N'COLUMN', @level2name = N'ANT_SIG';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Tipo de documento enlazado [F/R/P/C/D] .: F=Facturas, R=Remisiones, P=Pedidos, C=Cotizaciones, D=Devoluciones', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'DOCTOSIGF01', @level2type = N'COLUMN', @level2name = N'TIP_DOC_E';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de documento enlazado', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'DOCTOSIGF01', @level2type = N'COLUMN', @level2name = N'CVE_DOC_E';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Número de partida', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'DOCTOSIGF01', @level2type = N'COLUMN', @level2name = N'PARTIDA';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Número de partida enlazada', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'DOCTOSIGF01', @level2type = N'COLUMN', @level2name = N'PART_E';
+
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Cantidad enlazada', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'DOCTOSIGF01', @level2type = N'COLUMN', @level2name = N'CANT_E';
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
 

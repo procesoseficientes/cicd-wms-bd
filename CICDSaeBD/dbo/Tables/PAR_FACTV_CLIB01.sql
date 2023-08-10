@@ -5,10 +5,12 @@
 );
 
 
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de nota de venta', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PAR_FACTV_CLIB01', @level2type = N'COLUMN', @level2name = N'CLAVE_DOC';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Número de partida', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PAR_FACTV_CLIB01', @level2type = N'COLUMN', @level2name = N'NUM_PART';
+
+
+
+GO
+
 

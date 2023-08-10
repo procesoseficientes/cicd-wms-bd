@@ -1,5 +1,4 @@
-
--- =============================================
+﻿-- =============================================
 -- Autor:	pablo.aguilar
 -- Fecha de Creacion: 	2017-05-02 @ Team ERGON - Sprint Ganondorf
 -- Description:	 Proceso para validar los maximos y minos para crear tareas de reabastecimiento
@@ -51,7 +50,7 @@ BEGIN
 		,@MASTERPACK_COMPONENT_TOTAL_QTY NUMERIC (18,6)
 		,@MAX_QTY INT;
 
-
+		DECLARE @MAT_MALO VARCHAR(MAX)
   ---------------------------------------------------------------------------------
   -- Consulta de maximos y minimos 
   ---------------------------------------------------------------------------------  
@@ -87,8 +86,6 @@ BEGIN
 			[#LOCATION_AND_MATERIAL_TO_REPLENISH]
 		ORDER BY
 			[RECEIVE_EXPLODED_MATERIALS] DESC;
-		PRINT 'INICIA ITERACION';
-
 
 		IF EXISTS(SELECT TOP 1 1 FROM WMS.OP_WMS_COMPONENTS_BY_MASTER_PACK WHERE MASTER_PACK_CODE = @MATERIAL_ID)
 			BEGIN
@@ -135,32 +132,22 @@ BEGIN
 		END
 
 		--REDONDEAMOS AL ENTERO INFERIOR MAS CERCANO
-		PRINT 'FINAL_QTY_TO_REPLENISH'
 
 		SET @QTY_TO_REPLENISH = CEILING(@QTY_TO_REPLENISH)
 
-		
 
-
-		SELECT
-			[Z].[ZONE]
+		SELECT DISTINCT
+			[DZ].[ZONE]
 		INTO
 		[#ZONES_FOR_REALLOC]
 		FROM
-			[wms].[OP_WMS_ZONE] [Z]
-		INNER JOIN [wms].[OP_WMS_ZONE_TO_REPLENISH_IN_ZONE] [ZR] ON [ZR].REPLENISH_ZONE_ID = [Z].[ZONE_ID]
-		INNER JOIN [wms].[OP_WMS_ZONE] [DZ] ON  [ZR].[ZONE_ID] = [DZ].[ZONE_ID]
+			[wms].[OP_WMS_ZONE] [Z] WITH (NOLOCK)
+		INNER JOIN [wms].[OP_WMS_ZONE_TO_REPLENISH_IN_ZONE] [ZR] WITH (NOLOCK) ON [ZR].REPLENISH_ZONE_ID = [Z].[ZONE_ID]
+		INNER JOIN [wms].[OP_WMS_ZONE] [DZ] WITH (NOLOCK) ON  [ZR].[ZONE_ID] = [DZ].[ZONE_ID]
 		WHERE
-			[DZ].[ZONE] = @ZONE;
+			[Z].[ZONE] = @ZONE;
 
-		PRINT '@RECEIVE_EXPLODED_MATERIALS '
-			+ CAST(@RECEIVE_EXPLODED_MATERIALS AS VARCHAR);
-		PRINT '@QTY_TO_REPLENISH '
-			+ CAST(@QTY_TO_REPLENISH AS VARCHAR);
-		PRINT '@MATERIAL_ID GH '
-			+ CAST(@MATERIAL_ID AS VARCHAR);
-		PRINT '@ZONE  '
-			+ CAST(@ZONE AS VARCHAR);
+
 		IF @RECEIVE_EXPLODED_MATERIALS = 0
 		BEGIN
       ---------------------------------------------------------------------------------
@@ -258,8 +245,6 @@ BEGIN
 					[LEVEL] ASC;
 
 
-				PRINT '@MATERIAL_ID'
-				PRINT @MATERIAL_ID
 				PRINT '@PARENT_MATERIAL_ID '
 					+ CAST(@PARENT_MATERIAL_ID AS VARCHAR);
 				PRINT '@@CONVERTION_TO_BASE_CHILD '
@@ -273,14 +258,16 @@ BEGIN
 					@QTY_AVAILABLE_TO_REPLENISH = SUM(ISNULL([V].[QTY],
 											0))
 				FROM
-					[wms].[OP_WMS_VIEW_REALLOC_AVAILABLE_GENERAL] [V]
+					[wms].[OP_WMS_VIEW_REALLOC_AVAILABLE_GENERAL] [V] WITH (NOLOCK)
 				INNER JOIN [#ZONES_FOR_REALLOC] [Z] ON [V].[ZONE] = [Z].[ZONE]
 				WHERE
 					[V].[MATERIAL_ID] = @PARENT_MATERIAL_ID;
 
-				PRINT '@QTY_AVAILABLE_TO_REPLENISH '
-					+ CAST( ISNULL(@QTY_AVAILABLE_TO_REPLENISH,-1) AS VARCHAR);
-		
+				
+				PRINT '@QTY_AVAILABLE_TO_REPLENISH ANTES DE CASE'
+				PRINT @QTY_AVAILABLE_TO_REPLENISH
+				PRINT '@ZONE'
+				PRINT @ZONE
 				SELECT
 					@QTY_AVAILABLE_TO_REPLENISH = CASE
 											WHEN (@QTY_TO_REPLENISH 
@@ -289,29 +276,25 @@ BEGIN
 											/ @CONVERTION_TO_BASE_CHILD)
 											ELSE @QTY_AVAILABLE_TO_REPLENISH
 											END;
-				PRINT '@QTY_TO_REPLENISH'
-				PRINT @QTY_TO_REPLENISH
-				PRINT '@QTY_AVAILABLE_TO_REPLENISH '
-					+ CAST( ISNULL(@QTY_AVAILABLE_TO_REPLENISH,-1) AS VARCHAR);
 
-				IF @QTY_AVAILABLE_TO_REPLENISH > 0
+				PRINT '@QTY_AVAILABLE_TO_REPLENISH LUEGO DE CASE'
+				PRINT @QTY_AVAILABLE_TO_REPLENISH
+
+				IF @QTY_AVAILABLE_TO_REPLENISH > 0 AND @QTY_TO_REPLENISH > 0
 				BEGIN
 
 					PRINT 'Crear reubicación de material ';
 					SELECT
 						@RESULT = 'OK';
 
-			PRINT 'CREAR TAREA----------'
-			PRINT '@ZONE'
-			PRINT @ZONE
-			PRINT '@LOCATION_SPOT'
-			PRINT '@MATERIAL_ID'
-			PRINT @MATERIAL_ID
-			PRINT '@QTY_AVAILABLE_TO_REPLENISH'
-			PRINT @QTY_AVAILABLE_TO_REPLENISH
           ---------------------------------------------------------------------------------
           -- Crear tarea
           ---------------------------------------------------------------------------------  
+					PRINT 'DATOS PARA CREAR LA TAREA'
+					PRINT @ZONE
+					PRINT @LOCATION_SPOT
+					PRINT @MATERIAL_ID
+					PRINT @QTY_AVAILABLE_TO_REPLENISH
 					EXEC [wms].[OP_WMS_SP_CREATE_REPLEANISH_TASK] @MATERIAL_ID = @PARENT_MATERIAL_ID,
 						@WAVE_PICKING_ID = @WAVE_PICKING_ID_BF OUTPUT,--Obtiene el valor del SP que crea la tarea y lo utiliza en todo el grupo
 						@TARGET_ZONE = @ZONE,
@@ -327,10 +310,19 @@ BEGIN
 						SELECT
 							@QTY_TO_REPLENISH = @QTY_TO_REPLENISH
 							- @QTY_AVAILABLE_TO_REPLENISH;
-							PRINT 'SS'
+							PRINT 'SI CREO LA TAREA'
 					END;
-					PRINT 'NN'
-				END;
+					ELSE
+					BEGIN
+					PRINT 'NO CREO LA TAREA'
+					END
+				END
+				ELSE 
+				BEGIN
+				SET @MAT_MALO = CONCAT(@MAT_MALO, ', ', @MATERIAL_ID)
+				PRINT 'EL MATERIAL NO TIENE INVENTARIO DISPONIBLE PARA REUBICAR '
+				PRINT @MATERIAL_ID
+				END
 
 				IF @QTY_TO_REPLENISH <= 0
 					DELETE
@@ -348,8 +340,6 @@ BEGIN
 
 		DROP TABLE [#ZONES_FOR_REALLOC];
 
-		PRINT 'DELETE @LOCATION_SPOT ' + @LOCATION_SPOT;
-		PRINT 'DELETE @@MATERIAL_ID ' + @MATERIAL_ID;
 		DELETE FROM
 			[#LOCATION_AND_MATERIAL_TO_REPLENISH]
 		WHERE
@@ -358,7 +348,7 @@ BEGIN
 
 	
 	END;
-
+	PRINT @MAT_MALO + 'FINAL'
   ---------------------------------------------------------------------------------
   -- Asignar tareas creadas 
   ---------------------------------------------------------------------------------  

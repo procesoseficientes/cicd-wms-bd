@@ -3,7 +3,8 @@
     [Folio]         VARCHAR (50) NULL,
     [Clasificacion] VARCHAR (50) NULL,
     [Bodega]        INT          NULL,
-    [Tipo]          VARCHAR (5)  NULL,
-    CONSTRAINT [PK_FOLIOSWMS] PRIMARY KEY CLUSTERED ([Id] ASC)
+    [Tipo]          VARCHAR (5)  NULL
 );
+
+
 

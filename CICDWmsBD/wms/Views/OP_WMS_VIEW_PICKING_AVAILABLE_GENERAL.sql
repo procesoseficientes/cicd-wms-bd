@@ -1,8 +1,4 @@
-﻿
-
-
-
--- =============================================
+﻿-- =============================================
 -- Autor:	--
 -- Fecha de Creacion: 	--
 -- Description:	 --
@@ -68,7 +64,7 @@ SELECT DISTINCT
 	,[SH].[ALLOW_FAST_PICKING] [ALLOW_FAST_PICKING]
 	,[IL].[STATUS_ID]
 	,[SML].[STATUS_CODE]
-
+	,[IL].[CREATED_DATE]
 FROM
 	[wms].[OP_WMS_INV_X_LICENSE] AS [IL]
 INNER JOIN [wms].[OP_WMS_MATERIALS] AS [M] ON ([IL].[MATERIAL_ID] = [M].[MATERIAL_ID])

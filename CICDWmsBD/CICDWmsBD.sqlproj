@@ -388,7 +388,6 @@
     <Build Include="wms\Views\OP_WMS_VIEW_INVENTORY_FOR_PICKING_BY_STATUS_MATERIAL.sql" />
     <Build Include="wms\Views\OP_WMS_VIEW_INVENTORY_TRANS_CURRENT_QUARTER.sql" />
     <Build Include="wms\Views\OP_WMS_VW_GET_TRANSIT_INVENTORY_WT.sql" />
-    <Build Include="wms\Views\WMS_DEMANDA_CREADA_DE_ERP.sql" />
     <Build Include="Security\wms.sql" />
     <Build Include="Security\Uwms.sql" />
     <Build Include="wms\Functions\OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA.sql" />
@@ -1311,6 +1310,37 @@
     <Build Include="Security\Loginwms.sql" />
     <Build Include="wms\Functions\OP_WMS_FN_GET_LICENSE_TO_PICK_PER_CHANNEL.sql" />
     <Build Include="wms\Stored Procedures\OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND_PER_CHANNEL.sql" />
+    <Build Include="wms\Tables\OP_WMS_SECURITY_LICENSE.sql" />
+    <Build Include="wms\Tables\OP_WMS_NEXT_PICKING_DEMAND_HEADER_BU.sql" />
+    <Build Include="wms\Tables\OP_WMS_MATERIALSGW.sql" />
+    <Build Include="wms\Tables\OP_WMS_MATERIALS_JOIN_SPOTS_vaci.sql" />
+    <Build Include="wms\Tables\OP_WMS_MATERIALS_JOIN_SPOTS_ORI.sql" />
+    <Build Include="wms\Tables\OP_WMS_LICENSES_HIST.sql" />
+    <Build Include="dbo\Tables\WAREHOUSES.sql" />
+    <Build Include="wms\Views\VIEW_SKU_UM.sql" />
+    <Build Include="wms\Views\ViEW_INVENTORY_ONLINE_GRUPED.sql" />
+    <Build Include="wms\Views\OP_WMS_VIEW_INVENTORY_GENERAL_DISCRETIONAL.sql" />
+    <Build Include="Security\Uferco.sql" />
+    <Build Include="Security\consultas.sql" />
+    <Build Include="Security\amesa.sql" />
+    <Build Include="Security\RoleMemberships.sql" />
+    <Build Include="wms\Functions\OP_WMS_FN_GET_LICENSE_TO_PICK_PER_CHANNEL_PRUEBA.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_SP_UPDATE_BOX_QTY.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_SP_SET_INDUCTION_ID_TO_DISTRIBUTED_TASK.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_SP_INSERT_TASK_EXPLOSION.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_SP_GET_SUGGESTED_PURCHASE_BK3.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_SP_GET_SUGGESTED_PURCHASE_BK2.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_SP_GET_SUGGESTED_PURCHASE_BK.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_SP_GET_RECEPTION_DETAILS_BY_SAP_R3.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_SP_GET_NEXT_PICKING_DEMAND_DETAIL_SERIES_RESERVE_DOCUMENT_FOR_R3.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_SP_GET_NEXT_PICKING_DEMAND_DETAIL_RESERVE_DOCUMENT_FOR_R3.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_SP_CREATE_DEMAND_3.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_GET_TASK_BASIC_VIEW_PRUEBA_OPTIMIZACION.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_GET_TASK_BASIC_VIEW_PERFORMANCE.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_GET_ERP_SALES_ORDER_HEADER_CHANNEL_MODERN2.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_GET_ERP_SALES_ORDER_DETAIL_BY_ORDERS_CHANNEL_MODERN2.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_GET_DETAIL_MASTERPACK_TASK.sql" />
+    <Build Include="wms\Stored Procedures\OP_WMS_DELETE_PICKING_REPLENISHMENTS_OLD.sql" />
   </ItemGroup>
   <ItemGroup>
     <SqlCmdVariable Include="CICDAspellInterfacesBD">

@@ -1,0 +1,57 @@
+﻿CREATE TABLE [SONDA].[SONDA_CUSTOMER_NEW] (
+    [CUSTOMER_ID]            INT            IDENTITY (1, 1) NOT NULL,
+    [CODE_CUSTOMER]          VARCHAR (50)   NOT NULL,
+    [DOC_SERIE]              VARCHAR (50)   NOT NULL,
+    [DOC_NUM]                INT            NOT NULL,
+    [CODE_ROUTE]             VARCHAR (50)   NOT NULL,
+    [POSTED_BY]              VARCHAR (50)   NOT NULL,
+    [POSTED_DATETIME]        DATETIME       NOT NULL,
+    [CUSTOMER_NAME]          VARCHAR (250)  NOT NULL,
+    [CUSTOMER_ADDRESS]       VARCHAR (250)  NULL,
+    [TAX_ID]                 VARCHAR (50)   NULL,
+    [BILLING_NAME]           VARCHAR (50)   NULL,
+    [BILLING_ADDRESS]        VARCHAR (100)  NULL,
+    [CONTACT_NAME]           VARCHAR (250)  NULL,
+    [CONTACT_PHONE]          VARCHAR (50)   NULL,
+    [GPS]                    VARCHAR (50)   NOT NULL,
+    [LATITUDE]               VARCHAR (50)   NOT NULL,
+    [LONGITUDE]              VARCHAR (50)   NOT NULL,
+    [IMAGE_1]                VARCHAR (MAX)  NULL,
+    [IMAGE_2]                VARCHAR (MAX)  NULL,
+    [IMAGE_3]                VARCHAR (MAX)  NULL,
+    [LAST_UPDATE]            DATETIME       NULL,
+    [LAST_UPDATE_BY]         NVARCHAR (50)  NULL,
+    [SYNC_ID]                VARCHAR (250)  NULL,
+    [IS_READY_TO_SEND]       INT            DEFAULT ((0)) NOT NULL,
+    [SALES_ORDER_ID_HH]      INT            NULL,
+    [ATTEMPTED_WITH_ERROR]   INT            DEFAULT ((0)) NULL,
+    [IS_POSTED_ERP]          INT            NULL,
+    [POSTED_ERP]             DATETIME       DEFAULT ((0)) NULL,
+    [POSTED_RESPONSE]        VARCHAR (4000) NULL,
+    [IS_SENDING]             INT            DEFAULT ((0)) NOT NULL,
+    [LAST_UPDATE_IS_SENDING] DATETIME       NULL,
+    [OWNER]                  VARCHAR (50)   NOT NULL,
+    [IS_FROM]                VARCHAR (50)   NOT NULL,
+    [JSON]                   VARCHAR (MAX)  NOT NULL,
+    [STATUS]                 VARCHAR (50)   DEFAULT ('NEW') NOT NULL,
+    [DEPARTAMENT]            VARCHAR (250)  DEFAULT ('NO ESPECIFICADO') NOT NULL,
+    [MUNICIPALITY]           VARCHAR (250)  DEFAULT ('NO ESPECIFICADO') NOT NULL,
+    [COLONY]                 VARCHAR (250)  DEFAULT ('NO ESPECIFICADO') NOT NULL,
+    [UPDATED_FROM_BO]        INT            DEFAULT ((0)) NOT NULL,
+    [IS_ACTIVE_ROUTE]        INT            DEFAULT ((0)) NULL,
+    PRIMARY KEY CLUSTERED ([CUSTOMER_ID] ASC),
+    UNIQUE NONCLUSTERED ([CODE_CUSTOMER] ASC)
+);
+
+
+GO
+CREATE NONCLUSTERED INDEX [IN_SONDA_SCOUTING_CODE_ROUTE]
+    ON [SONDA].[SONDA_CUSTOMER_NEW]([CODE_ROUTE] ASC)
+    INCLUDE([IS_ACTIVE_ROUTE], [IS_READY_TO_SEND]);
+
+
+GO
+CREATE NONCLUSTERED INDEX [IDX_DOC_SERIE_DOC_NUM_SYNC_ID_CUSTOMERS_NEW]
+    ON [SONDA].[SONDA_CUSTOMER_NEW]([DOC_SERIE] ASC, [DOC_NUM] ASC, [SYNC_ID] ASC, [IS_READY_TO_SEND] ASC)
+    INCLUDE([CODE_CUSTOMER]);
+

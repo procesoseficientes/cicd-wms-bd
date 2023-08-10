@@ -5,7 +5,7 @@
     [U_Serie]                            VARCHAR (50)    NULL,
     [U_NoDocto]                          VARCHAR (50)    NULL,
     [CardCode]                           VARCHAR (50)    NULL,
-    [CardName]                           VARCHAR (100)   NULL,
+    [CardName]                           VARCHAR (300)   NULL,
     [SlpName]                            VARCHAR (100)   NULL,
     [U_oper]                             VARCHAR (50)    NULL,
     [ItemCode]                           VARCHAR (50)    NOT NULL,
@@ -28,4 +28,12 @@
     [unitMsr]                            VARCHAR (250)   NULL,
     [statusOfMaterial]                   VARCHAR (100)   NULL
 );
+
+
+
+
+GO
+CREATE NONCLUSTERED INDEX [CHANELmODERN]
+    ON [wms].[ERP_SALES_ORDER_DETAIL_CHANNEL_MODERN]([Sequence] ASC, [WhsCode] ASC)
+    INCLUDE([DocDate], [DocNum], [U_Serie], [U_NoDocto], [Owner], [LINE_DISCOUNT], [unitMsr], [statusOfMaterial], [U_OwnerSKU], [Quantity], [PRECIO_CON_IVA], [TOTAL_LINEA_SIN_DESCUENTO], [TOTAL_LINEA_CON_DESCUENTO_APLICADO], [NUMERO_LINEA], [CardCode], [CardName], [SlpName], [U_oper], [ItemCode], [U_MasterIdSKU]);
 

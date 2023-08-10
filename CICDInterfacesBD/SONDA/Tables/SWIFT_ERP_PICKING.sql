@@ -1,0 +1,10 @@
+﻿CREATE TABLE [SONDA].[SWIFT_ERP_PICKING] (
+    [SAP_PICKING_ID]  VARCHAR (60)    NULL,
+    [ERP_DOC]         INT             NOT NULL,
+    [CUSTOMER_ID]     NVARCHAR (15)   NULL,
+    [CUSTOMER_NAME]   NVARCHAR (100)  NULL,
+    [SKU]             NVARCHAR (20)   NULL,
+    [SKU_DESCRIPTION] NVARCHAR (100)  NULL,
+    [QTY]             NUMERIC (19, 6) NULL
+);
+

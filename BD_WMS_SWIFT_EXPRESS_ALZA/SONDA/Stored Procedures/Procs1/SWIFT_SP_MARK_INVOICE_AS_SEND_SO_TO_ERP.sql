@@ -1,0 +1,27 @@
+﻿CREATE PROCEDURE [SONDA].[SWIFT_SP_MARK_INVOICE_AS_SEND_SO_TO_ERP]
+              
+	@INVOICE_ID	INT,
+	@POSTED_RESPONSE varchar(150)
+
+AS
+BEGIN TRY
+DECLARE @ID NUMERIC(18, 0)
+			UPDATE [SONDA].SONDA_POS_INVOICE_HEADER 
+			SET 
+			[IS_POSTED_ERP] =  1
+           ,[POSTED_ERP]= GETDATE()
+		   ,[POSTED_RESPONSE] =@POSTED_RESPONSE
+			 WHERE 
+			 INVOICE_ID= @INVOICE_ID
+IF @@error = 0 BEGIN		
+		SELECT  1 as Resultado , 'Proceso Exitoso' Mensaje ,  0 Codigo, CONVERT(VARCHAR(50),@ID) DbData
+	END		
+	ELSE BEGIN
+		
+		SELECT  -1 as Resultado , ERROR_MESSAGE() Mensaje ,  @@ERROR Codigo
+	END
+
+END TRY
+BEGIN CATCH     
+	 SELECT  -1 as Resultado , ERROR_MESSAGE() Mensaje ,  @@ERROR Codigo 
+END CATCH

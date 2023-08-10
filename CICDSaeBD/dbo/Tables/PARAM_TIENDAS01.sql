@@ -1,0 +1,20 @@
+﻿CREATE TABLE [dbo].[PARAM_TIENDAS01] (
+    [ID_USUARIO]       INT           NOT NULL,
+    [NUM_EMP]          INT           NOT NULL,
+    [CVE_TIENDA]       VARCHAR (3)   NOT NULL,
+    [ID_USER_TIEND]    VARCHAR (30)  NULL,
+    [INICIAR_AUTO]     VARCHAR (1)   NULL,
+    [EXPIRACION_TOKEN] DATETIME      NULL,
+    [REFRESH_TOKEN]    VARCHAR (512) NULL,
+    [ACCES_TOKEN]      VARCHAR (512) NULL,
+    [CVE_PV_CS]        VARCHAR (255) NULL,
+    [PARAM_DEFAULT]    TEXT          NULL,
+    [CVE_ALM]          INT           NULL,
+    [LISTA_PREC]       INT           NULL,
+    [LISTA_PREC_OFER]  INT           NULL,
+    [SERIE]            VARCHAR (10)  NULL,
+    [MODO_EXIST]       VARCHAR (1)   NULL,
+    [CVE_CLIE]         VARCHAR (10)  NULL,
+    CONSTRAINT [PK_PARAM_TIENDAS01] PRIMARY KEY CLUSTERED ([ID_USUARIO] ASC, [NUM_EMP] ASC, [CVE_TIENDA] ASC)
+);
+

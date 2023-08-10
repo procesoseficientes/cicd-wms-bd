@@ -1,6 +1,4 @@
 ﻿
-
-
 -- =============================================
 -- Autor:	pablo.aguilar
 -- Fecha de Creacion: 	2017-01-13 Team ERGON - Sprint ERGON 1
@@ -31,8 +29,11 @@
 CREATE VIEW [wms].[ERP_VIEW_RECEPTION_DOCUMENT]
 AS
 
+--SELECT * FROM [ERP_SERVER].[SAE70EMPRESA01].dbo.
+
+
 SELECT LTRIM([P].[CVE_DOC]) [SAP_REFERENCE],
-        'OC' [DOC_TYPE],
+       'OC' [DOC_TYPE],
        'Orden de Compra SAE' [DESCRIPTION_TYPE],
        LTRIM([P].[CVE_CLPV]) [CUSTOMER_ID],
        --,NULL COD_WAREHOUSE
@@ -50,13 +51,18 @@ SELECT LTRIM([P].[CVE_DOC]) [SAP_REFERENCE],
        '1' AS [UFacserie],
        1 AS [UFacnum],
        -1 AS [Series]
-FROM [$(CICDSaeBD)].[dbo].[COMPO01] [P]
-    LEFT JOIN [$(CICDSaeBD)].[dbo].[PROV01] [PROV]
+FROM [SAE70EMPRESA01].[dbo].[COMPO01] [P]
+    LEFT JOIN [SAE70EMPRESA01].[dbo].[PROV01] [PROV]
         ON [PROV].[CLAVE] = [P].[CVE_CLPV]
 WHERE [P].[STATUS] = 'E'
 AND [P].[BLOQ] = 'N' 
 --AND P.[DOC_SIG] IS NULL
 AND ENLAZADO <> 'T'
+
+
+	 --select * from  [SAE70EMPRESA01].[dbo].[COMPO01] where CVE_DOC like '%5647' or CVE_DOC like '%5648'
+
+--	WHERE P.DocStatus = 'O'
 
 
 

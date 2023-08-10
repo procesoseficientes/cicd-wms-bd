@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.1.32414.318
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.33027.164
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "CICDWmsBD", "CICDWmsBD.sqlproj", "{44C85AAE-1E92-47D2-A1F6-9AFA4E9BCDB5}"
 EndProject
@@ -10,6 +10,10 @@ EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "CICDAspellInterfacesBD", "..\CICDAspelInterfacesBD\CICDAspellInterfacesBD.sqlproj", "{4BC5AA83-1FC2-4ADA-976A-F744F648F3AA}"
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "CICDSaeBD", "..\CICDSaeBD\CICDSaeBD.sqlproj", "{2648A545-D441-4AF9-B19D-B841ED2D8A90}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "BD_WMS_SWIFT_EXPRESS", "..\BD_WMS_SWIFT_EXPRESS_ALZA\BD_WMS_SWIFT_EXPRESS.sqlproj", "{0F4B25CD-A0D8-4E3F-B0A8-EB40BDF51E90}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "BD_SWIFT_INTERFACES_ONLINE", "..\BD_SWIFT_INTERFACES_ONLINE\BD_SWIFT_INTERFACES_ONLINE.sqlproj", "{44ABF5E1-C441-419E-A014-DBC05880022E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +45,18 @@ Global
 		{2648A545-D441-4AF9-B19D-B841ED2D8A90}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2648A545-D441-4AF9-B19D-B841ED2D8A90}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2648A545-D441-4AF9-B19D-B841ED2D8A90}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{0F4B25CD-A0D8-4E3F-B0A8-EB40BDF51E90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F4B25CD-A0D8-4E3F-B0A8-EB40BDF51E90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F4B25CD-A0D8-4E3F-B0A8-EB40BDF51E90}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{0F4B25CD-A0D8-4E3F-B0A8-EB40BDF51E90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F4B25CD-A0D8-4E3F-B0A8-EB40BDF51E90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F4B25CD-A0D8-4E3F-B0A8-EB40BDF51E90}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{44ABF5E1-C441-419E-A014-DBC05880022E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44ABF5E1-C441-419E-A014-DBC05880022E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44ABF5E1-C441-419E-A014-DBC05880022E}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{44ABF5E1-C441-419E-A014-DBC05880022E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44ABF5E1-C441-419E-A014-DBC05880022E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44ABF5E1-C441-419E-A014-DBC05880022E}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

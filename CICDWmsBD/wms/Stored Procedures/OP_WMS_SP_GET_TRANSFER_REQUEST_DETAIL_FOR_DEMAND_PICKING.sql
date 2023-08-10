@@ -1,4 +1,5 @@
-﻿-- =============================================
+﻿
+-- =============================================
 -- Autor:					alberto.ruiz
 -- Fecha de Creacion: 		17-Aug-17 @ Nexus Team Sprint Banjo-Kazooie
 -- Description:			    SP que obtiene el detalle de las solicitudes de transferencia solicitadas del ERP
@@ -13,11 +14,15 @@
 
 /*
 -- Ejemplo de Ejecucion:
-				EXEC [wms].[OP_WMS_SP_GET_TRANSFER_REQUEST_DETAIL_FOR_DEMAND_PICKING]
-					@XML = N'<?xml version="1.0" encoding="utf-16"?>
-<ArrayOfDocumento xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+exec wms.OP_WMS_SP_GET_TRANSFER_REQUEST_DETAIL_FOR_DEMAND_PICKING @XML=N'<?xml version="1.0" encoding="utf-16"?>
+<ArrayOfDocumento xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Documento>
-    <DocumentId>3137</DocumentId>
+    <DocumentId>14789</DocumentId>
+    <ExternalSourceId>0</ExternalSourceId>
+    <Owner>ALZA</Owner>
+  </Documento>
+  <Documento>
+    <DocumentId>14796</DocumentId>
     <ExternalSourceId>0</ExternalSourceId>
     <Owner>ALZA</Owner>
   </Documento>
@@ -60,8 +65,7 @@ BEGIN
 		,[SOURCE] VARCHAR(50)
 		,[USE_PICKING_LINE] INT
 		,[STATUS_CODE] VARCHAR(50)
-		,PRIMARY KEY
-			([SALES_ORDER_ID], [EXTERNAL_SOURCE_ID], [SKU], [STATUS_CODE])
+		,PRIMARY KEY ([SALES_ORDER_ID], [EXTERNAL_SOURCE_ID], [SKU])
 	);
 	--
 	DECLARE	@PICKING_DOCUMENT TABLE (
@@ -102,6 +106,8 @@ BEGIN
 	FROM
 		@XML.[nodes]('/ArrayOfDocumento/Documento') AS [x] ([Rec]);
 
+
+
 	INSERT INTO @ALREADY_CREATED_PICKINGS
 			(
 				DOC_NUM,
@@ -120,6 +126,8 @@ BEGIN
 	INNER JOIN wms.OP_WMS_NEXT_PICKING_DEMAND_DETAIL PDD ON PDH.PICKING_DEMAND_HEADER_ID = PDD.PICKING_DEMAND_HEADER_ID
 	--INNER JOIN wms.OP_WMS_TASK_LIST TL ON TL.TASK_SUBTYPE = 'RECEPCION_TRASLADO' AND TL.IS_COMPLETED = 1 AND PD.PICKING_DOCUMENT_ID = TL.TRANSFER_REQUEST_ID
 	GROUP BY PDD.MATERIAL_ID, PDD.STATUS_CODE, PDH.DOC_NUM, PDH.IS_COMPLETED
+	
+
 
 
 	--SELECT * FROM @ALREADY_CREATED_PICKINGS
@@ -131,6 +139,7 @@ BEGIN
 		SELECT TRH.WAREHOUSE_FROM FROM 
 		[wms].[OP_WMS_TRANSFER_REQUEST_HEADER] [TRH]			
 		INNER JOIN @PICKING_DOCUMENT [PD] ON ([PD].[PICKING_DOCUMENT_ID] = [TRH].[TRANSFER_REQUEST_ID]);
+
 
 	BEGIN TRY
 		-- ------------------------------------------------------------------------------------
@@ -228,7 +237,7 @@ BEGIN
 											)
 		WHERE
 			[C].[COMPANY_ID] > 0
-			AND [TRD].[TRANSFER_REQUEST_ID] > 0
+			AND ([TRD].[TRANSFER_REQUEST_ID] > 0 AND [TRD].[TRANSFER_REQUEST_ID] NOT IN (14882))
 		GROUP BY
 			[MI].[MASTER_ID]
 			,[TRD].[TRANSFER_REQUEST_ID]
@@ -245,8 +254,6 @@ BEGIN
 			[TRD].[TRANSFER_REQUEST_ID]
 			,[TRD].[MATERIAL_ID];
 
-		
-		
 		-- ------------------------------------------------------------------------------------
 		-- Muestra el resultado
 		-- ------------------------------------------------------------------------------------
@@ -297,6 +304,7 @@ BEGIN
 			AND ([PDD].QTY_ORIGINAL - ISNULL(ACP.QYT, 0)) > 0
 			--AND ACP.IS_COMPLETED IS NULL OR ACP.IS_COMPLETED = 1
 			--AND ACP.DOC_NUM IS NOT NULL;
+
 	END TRY
 	BEGIN CATCH
 		SELECT

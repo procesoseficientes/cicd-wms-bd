@@ -1,0 +1,18 @@
+﻿CREATE TABLE [dbo].[SWIFT_ENTERPRISE] (
+    [ENTERPRISE]               INT           IDENTITY (1, 1) NOT NULL,
+    [CODE_ENTERPRISE]          NVARCHAR (50) NULL,
+    [NAME_ENTERPRISE]          NVARCHAR (50) NULL,
+    [CONTACT_NAME]             NVARCHAR (50) NULL,
+    [PHONE_CONTACT]            NVARCHAR (50) NULL,
+    [PHONE_ENTERPRISE]         NVARCHAR (50) NULL,
+    [LAST_UPDATE]              DATETIME      NULL,
+    [LAST_UPDATE_BY]           NVARCHAR (50) NULL,
+    [NIT]                      VARCHAR (10)  NULL,
+    [ADDRESS_ENTERPRISE]       VARCHAR (150) NULL,
+    [URL_WS_INTERFACE]         VARCHAR (MAX) NULL,
+    [DEFAULT_GPS]              VARCHAR (100) NULL,
+    [LOGO_IMG]                 VARCHAR (MAX) NULL,
+    [ENTERPRISE_EMAIL_ADDRESS] VARCHAR (250) NULL,
+    [PHONE_NUMBER]             VARCHAR (25)  NULL
+);
+

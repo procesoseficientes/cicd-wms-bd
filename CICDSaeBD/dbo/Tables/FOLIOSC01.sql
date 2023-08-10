@@ -10,30 +10,32 @@
 );
 
 
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Tipo de documento [c/d/o/q/r] .: c=Compras, d=Devoluciones, o=Ordenes, q=Requisiciones, r=Recepciones', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FOLIOSC01', @level2type = N'COLUMN', @level2name = N'TIP_DOC';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Folio inicial', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FOLIOSC01', @level2type = N'COLUMN', @level2name = N'FOLIODESDE';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Folio Final', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FOLIOSC01', @level2type = N'COLUMN', @level2name = N'FOLIOHASTA';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Serie del folio', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FOLIOSC01', @level2type = N'COLUMN', @level2name = N'SERIE';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Último documento', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FOLIOSC01', @level2type = N'COLUMN', @level2name = N'ULT_DOC';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Fecha de último documento', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FOLIOSC01', @level2type = N'COLUMN', @level2name = N'FECH_ULT_DOC';
+
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Estatus [A/B] .: A=Activo, B=Baja', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FOLIOSC01', @level2type = N'COLUMN', @level2name = N'STATUS';
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
 

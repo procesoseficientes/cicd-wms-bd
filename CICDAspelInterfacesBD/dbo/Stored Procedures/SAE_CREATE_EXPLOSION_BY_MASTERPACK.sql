@@ -8,6 +8,14 @@
 -- Fecha de Creacion: 	16-Jul-2022  
 -- Description:			Correccion de costos en desarmado de master pack 
 
+--Modificación:			Elder Lucas
+--Fecha:				18 de noviembre 2022
+--Descripción:			Se cambia @TABLA_DOCUMENTO_COMENTARIO a 57 (valor anterior: 56) para tomar el mismo correlativo que las ordenes de venta y los traslados
+
+--Modificación:			Elder Lucas
+--Fecha:				21 de noviembre 2022
+--Descripción:			[OBS_DOCF01] ID correlativo 56, [OBS_DOCC01] ID Correlativo 57
+
 /*
 -- Ejemplo de Ejecucion:
 				EXEC [dbo].[SAE_CREATE_EXPLOSION_BY_MASTERPACK] @MATERPACK_ID = 4491 -- numeric
@@ -23,7 +31,6 @@ AS
 BEGIN
    SET NOCOUNT ON;
     --
-
     -- ------------------------------------------------------------------------------------
     -- Declaramos variables
     -- ------------------------------------------------------------------------------------
@@ -39,7 +46,7 @@ BEGIN
             @FOLIO_DESDE INT,
             @NUM_MONEDA INT = 1,
             @TIPO_CAMBIO INT = 1,
-            @TABLA_DOCUMENTO_COMENTARIO INT = 56,
+            @TABLA_DOCUMENTO_COMENTARIO INT = 57,
             @ULTIMO_DOCUMENTO_COMENTARIO INT = 0,
             @FECHA_SYNC DATETIME = GETDATE(),
             @DOCUMENTO_ERP_FORMATEADO VARCHAR(25),
@@ -237,9 +244,7 @@ BEGIN
                 GROUP BY [T].[CVE_ART]
                 HAVING SUM([EXIST]) <
                 (
-                    SELECT SUM(@QTY_DETAIL)
-                    FROM [#DETALLE]
-                    WHERE [CVE_ART] = @ERP_MATERIAL_CODE
+					SELECT @QTY_DETAIL
                 )
             )
             BEGIN
@@ -249,6 +254,7 @@ BEGIN
 				 @pRESULT1
                     = 'La cantidad es mayor a la existencia de los siguientes productos: ' + @ERP_MATERIAL_CODE;
 				PRINT @pRESULT1;
+				PRINT  @MATERPACK_ID
 				BREAK;
 		
             END;
@@ -295,13 +301,13 @@ BEGIN
 
         SELECT @ULTIMO_DOCUMENTO_COMENTARIO = [ULT_CVE]
         FROM [SAE70EMPRESA01].[dbo].[TBLCONTROL01]
-        WHERE [ID_TABLA] = @TABLA_DOCUMENTO_COMENTARIO;
+        WHERE [ID_TABLA] = 56 --ID Correlativo;
 		PRINT 'G2'
 		print @TABLA_DOCUMENTO_COMENTARIO;
 		print @ULTIMO_DOCUMENTO_COMENTARIO
         UPDATE [SAE70EMPRESA01].[dbo].[TBLCONTROL01]
         SET [ULT_CVE] = @ULTIMO_DOCUMENTO_COMENTARIO + 1
-        WHERE [ID_TABLA] = @TABLA_DOCUMENTO_COMENTARIO
+        WHERE [ID_TABLA] = 56
               AND [ULT_CVE] = @ULTIMO_DOCUMENTO_COMENTARIO;
 		PRINT 'G3'
         SELECT TOP (1)
@@ -590,8 +596,8 @@ BEGIN
 
     END TRY
     BEGIN CATCH
-        --IF @@TRANCOUNT > 0
-        --    ROLLBACK TRANSACTION;
+        IF @@TRANCOUNT > 0
+         --   ROLLBACK TRANSACTION;
         DECLARE @MENSAJE_ERROR VARCHAR(500) = ERROR_MESSAGE();
 		print 'ERROR: ' + @MENSAJE_ERROR
         --
@@ -697,12 +703,12 @@ BEGIN
 
         SELECT @ULTIMO_DOCUMENTO_COMENTARIO = [ULT_CVE]
         FROM [SAE70EMPRESA01].[dbo].[TBLCONTROL01]
-        WHERE [ID_TABLA] = @TABLA_DOCUMENTO_COMENTARIO;
+        WHERE [ID_TABLA] = 57 --ID Correlativo;
 
 
         UPDATE [SAE70EMPRESA01].[dbo].[TBLCONTROL01]
         SET [ULT_CVE] = @ULTIMO_DOCUMENTO_COMENTARIO + 1
-        WHERE [ID_TABLA] = @TABLA_DOCUMENTO_COMENTARIO
+        WHERE [ID_TABLA] = 57
               AND [ULT_CVE] = @ULTIMO_DOCUMENTO_COMENTARIO;
 
         --SELECT TOP (1)
@@ -904,7 +910,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0
-            --ROLLBACK TRANSACTION;
+           ROLLBACK TRANSACTION;
 
         DECLARE @MENSAJE_ERROR2 VARCHAR(500) = ERROR_MESSAGE();
 		print 'ERROR3: ' + @MENSAJE_ERROR2
