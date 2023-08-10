@@ -1,0 +1,3 @@
+﻿CREATE LOGIN [wms]
+    WITH PASSWORD = N'M{q1wsyoq{fjgCswrzcvu?pvmsFT7_&#$!~<po}xq|8Hs;rl', SID = 0x2F045337ACF72842BB73FC3C9F06DBFB, DEFAULT_LANGUAGE = [us_english], CHECK_POLICY = OFF;
+

@@ -5,10 +5,12 @@
 );
 
 
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de la lista', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'LISTPRODSUST01', @level2type = N'COLUMN', @level2name = N'CVE_LISTA';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Descripción', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'LISTPRODSUST01', @level2type = N'COLUMN', @level2name = N'DESCRIPCION';
+
+
+
+GO
+
 

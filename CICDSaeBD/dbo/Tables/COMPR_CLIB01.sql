@@ -1,8 +1,8 @@
 ﻿CREATE TABLE [dbo].[COMPR_CLIB01] (
     [CLAVE_DOC] VARCHAR (20) NOT NULL,
     [CAMPLIB1]  VARCHAR (50) NULL,
-    [CAMPLIB2]  VARCHAR (1)  NULL,
-    [CAMPLIB3]  VARCHAR (1)  NULL,
+    [CAMPLIB2]  DATETIME     NULL,
+    [CAMPLIB3]  VARCHAR (50) NULL,
     [CAMPLIB4]  VARCHAR (1)  NULL,
     [CAMPLIB5]  VARCHAR (1)  NULL,
     [CAMPLIB6]  VARCHAR (1)  NULL,
@@ -14,10 +14,18 @@
     [CAMPLIB12] VARCHAR (50) NULL,
     [CAMPLIB13] DATETIME     NULL,
     [CAMPLIB14] VARCHAR (1)  NULL,
+    [CAMPLIB15] VARCHAR (20) NULL,
+    [CAMPLIB16] FLOAT (53)   NULL,
+    [CAMPLIB17] FLOAT (53)   NULL,
+    [CAMPLIB18] FLOAT (53)   NULL,
+    [CAMPLIB19] FLOAT (53)   NULL,
+    [CAMPLIB20] FLOAT (53)   NULL,
     CONSTRAINT [PK_COMPR_CLIB01] PRIMARY KEY CLUSTERED ([CLAVE_DOC] ASC)
 );
 
 
+
+
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de recepciones', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'COMPR_CLIB01', @level2type = N'COLUMN', @level2name = N'CLAVE_DOC';
+
 

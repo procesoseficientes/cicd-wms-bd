@@ -140,7 +140,6 @@
     <Build Include="dbo\Tables\CONTAC01.sql" />
     <Build Include="dbo\Tables\FOTO_INVE01.sql" />
     <Build Include="dbo\Tables\CITAS01.sql" />
-    <Build Include="dbo\Tables\PreciosNuevos.sql" />
     <Build Include="dbo\Tables\CUENTA_ORD01.sql" />
     <Build Include="dbo\Tables\CLICAM01.sql" />
     <Build Include="dbo\Tables\CUENTA_BENEF01.sql" />
@@ -180,11 +179,9 @@
     <Build Include="dbo\Tables\PAR_FACTR01.sql" />
     <Build Include="dbo\Tables\FACTP01.sql" />
     <Build Include="dbo\Tables\PAR_FACTP01.sql" />
-    <Build Include="dbo\Tables\MINVE01x.sql" />
     <Build Include="dbo\Tables\FACTC01.sql" />
     <Build Include="dbo\Tables\ALERTA_USUARIO01.sql" />
     <Build Include="dbo\Tables\PAR_FACTC01.sql" />
-    <Build Include="dbo\Tables\Clientess.sql" />
     <Build Include="dbo\Tables\FACTD01.sql" />
     <Build Include="dbo\Tables\PAR_FACTD01.sql" />
     <Build Include="dbo\Tables\INFENVIO01.sql" />
@@ -247,8 +244,33 @@
     <Build Include="dbo\Tables\FOLIOSCXC01.sql" />
     <Build Include="dbo\Tables\CAMPFIL01.sql" />
     <Build Include="dbo\Views\vConsumoPromedio.sql" />
-    <Build Include="dbo\Functions\FxConsumoPromedio.sql" />
-    <Build Include="dbo\Stored Procedures\Proc_FIN_ProductosPrecioCero.sql" />
+    <Build Include="dbo\Tables\PED_TIEND01.sql" />
+    <Build Include="dbo\Tables\PED_CLARO01.sql" />
+    <Build Include="dbo\Tables\PED_AMAZON01.sql" />
+    <Build Include="dbo\Tables\PARAM_TIENDAS01.sql" />
+    <Build Include="dbo\Tables\PARAM_CODI01.sql" />
+    <Build Include="dbo\Tables\PAR_PED_TIEND01.sql" />
+    <Build Include="dbo\Tables\PAR_PED_CLARO01.sql" />
+    <Build Include="dbo\Tables\PAR_PED_AMAZON01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTT01.sql" />
+    <Build Include="dbo\Tables\PAR_FACTT_CLIB01.sql" />
+    <Build Include="dbo\Tables\PAGOS_PED_TIENDA01.sql" />
+    <Build Include="dbo\Tables\PAGOCODI01.sql" />
+    <Build Include="dbo\Tables\OPERADOR01.sql" />
+    <Build Include="dbo\Tables\INVEN_CLARO01.sql" />
+    <Build Include="dbo\Tables\INVE_MELI01.sql" />
+    <Build Include="dbo\Tables\INVE_AMAZON01.sql" />
+    <Build Include="dbo\Tables\IMG_ARTICULO01.sql" />
+    <Build Include="dbo\Tables\FOLIOSRWMS.sql" />
+    <Build Include="dbo\Tables\FACTT01.sql" />
+    <Build Include="dbo\Tables\FACTT_CLIB01.sql" />
+    <Build Include="dbo\Tables\FACT_GLOBAL01.sql" />
+    <Build Include="dbo\Tables\CONTROL_DOCUMENTOS.sql" />
+    <Build Include="dbo\Tables\CONFIG_ENVIOS01.sql" />
+    <Build Include="dbo\Tables\CLIE_TIENDA01.sql" />
+    <Build Include="dbo\Tables\CARTAPORTE01.sql" />
+    <Build Include="Security\wms.sql" />
+    <Build Include="Security\RoleMemberships.sql" />
   </ItemGroup>
   <ItemGroup>
     <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\msdb.dacpac">

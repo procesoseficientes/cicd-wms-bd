@@ -1,0 +1,26 @@
+﻿CREATE TABLE [SONDA].[SWIFT_CUSTOMER_NEW_DETAIL] (
+    [CUSTOMER]                           INT             NOT NULL,
+    [SALE_ROUTE]                         VARCHAR (50)    NULL,
+    [REFERENCE_CBC]                      VARCHAR (50)    NULL,
+    [VISIT_DAY]                          VARCHAR (50)    NULL,
+    [VISIT_FRECUENCY]                    VARCHAR (50)    NULL,
+    [TIME_DELIVER_DAYS]                  NUMERIC (8)     NULL,
+    [BRANCH]                             VARCHAR (50)    NULL,
+    [SERVICE_WINDOW]                     VARCHAR (50)    NULL,
+    [SALE_POINT_COMPLEMENT_DIRECTION]    VARCHAR (50)    NULL,
+    [INVOICE_ADRESS_COMPLEMENT]          VARCHAR (50)    NULL,
+    [MUNICIPALITY]                       VARCHAR (50)    NULL,
+    [DEPARTMENT]                         VARCHAR (50)    NULL,
+    [CREDIT_LIMIT]                       NUMERIC (18, 2) NULL,
+    [CODE_BUSINESS_GYRE]                 VARCHAR (50)    NULL,
+    [BUSINESS_GYRE_DENOMINATION]         VARCHAR (50)    NULL,
+    [CREDIT_CONTROL_AREA]                VARCHAR (50)    NULL,
+    [FORM_PAY_AUTHORIZATION]             VARCHAR (50)    NULL,
+    [CURRENCY]                           VARCHAR (20)    NULL,
+    [ASSOCIATED_ACCOUNTANT_CREDIT_COUNT] VARCHAR (50)    NULL,
+    [PAY_CONDITION]                      VARCHAR (MAX)   NULL,
+    [CREDIT_BLOCKADE]                    VARCHAR (50)    NULL,
+    CONSTRAINT [PK_SWIFT_CUSTOMER_NEW_DETAIL] PRIMARY KEY CLUSTERED ([CUSTOMER] ASC),
+    CONSTRAINT [FK_SONDA_SWIFT_CUSTOMER_NEW_DETAIL_SWIFT_CUSTOMERS_NEW] FOREIGN KEY ([CUSTOMER]) REFERENCES [SONDA].[SWIFT_CUSTOMERS_NEW] ([CUSTOMER])
+);
+

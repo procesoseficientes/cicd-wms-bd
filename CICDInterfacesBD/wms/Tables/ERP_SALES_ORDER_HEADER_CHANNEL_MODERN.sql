@@ -5,7 +5,7 @@
     [U_Serie]                  VARCHAR (50)    NULL,
     [U_NoDocto]                VARCHAR (50)    NULL,
     [CardCode]                 VARCHAR (50)    NULL,
-    [CardName]                 VARCHAR (200)   NULL,
+    [CardName]                 VARCHAR (300)   NULL,
     [U_MasterIDCustomer]       VARCHAR (50)    NULL,
     [U_OwnerCustomer]          VARCHAR (50)    NULL,
     [SlpName]                  VARCHAR (100)   NULL,
@@ -34,7 +34,9 @@
     [TYPE_DEMAND_CODE]         INT             NULL,
     [TYPE_DEMAND_NAME]         VARCHAR (50)    NULL,
     [PROJECT]                  VARCHAR (50)    NULL,
-    [MIN_DAYS_EXPIRATION_DATE] INT             DEFAULT ((0)) NOT NULL,
+    [MIN_DAYS_EXPIRATION_DATE] INT             CONSTRAINT [DF__ERP_SALES__MIN_D__336AA144] DEFAULT ((0)) NOT NULL,
     CONSTRAINT [PK_ERP_SALES_ORDER_HEADER_CHANNEL_MODERN] PRIMARY KEY CLUSTERED ([Sequence] ASC, [DocNum] ASC, [Owner] ASC)
 );
+
+
 

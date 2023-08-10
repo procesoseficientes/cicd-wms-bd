@@ -1,4 +1,4 @@
-﻿CREATE TABLE [dbo].[CFDI01] (
+CREATE TABLE [dbo].[CFDI01] (
     [TIPO_DOC]        VARCHAR (1)  NOT NULL,
     [CVE_DOC]         VARCHAR (20) NOT NULL,
     [VERSION]         VARCHAR (5)  NULL,
@@ -15,8 +15,12 @@
     [MSJ_CANC]        VARCHAR (80) NULL,
     [PENDIENTE]       VARCHAR (2)  NULL,
     [CVE_USUARIO]     INT          NULL,
+    [MOTIVO_CANC]     VARCHAR (3)  NULL,
+    [UUID_REL]        VARCHAR (36) NULL,
     CONSTRAINT [PK_CFDI01] PRIMARY KEY CLUSTERED ([TIPO_DOC] ASC, [CVE_DOC] ASC)
 );
+
+
 
 
 GO
@@ -40,53 +44,54 @@ CREATE NONCLUSTERED INDEX [IDX_CFDI_CVE_DOC01]
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Tipo del documento [F/D/A] .: F=Facturas, D=Devoluciones, A=Parcialidades', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFDI01', @level2type = N'COLUMN', @level2name = N'TIPO_DOC';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave del documento', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFDI01', @level2type = N'COLUMN', @level2name = N'CVE_DOC';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Versión del timbre', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFDI01', @level2type = N'COLUMN', @level2name = N'VERSION';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Identificador del timbre', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFDI01', @level2type = N'COLUMN', @level2name = N'UUID';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Número de serie del timbre', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFDI01', @level2type = N'COLUMN', @level2name = N'NO_SERIE';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Fecha de timbrado del documento', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFDI01', @level2type = N'COLUMN', @level2name = N'FECHA_CERT';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Fecha de cancelación del documento', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFDI01', @level2type = N'COLUMN', @level2name = N'FECHA_CANCELA';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Documento XML', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFDI01', @level2type = N'COLUMN', @level2name = N'XML_DOC';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Documento XML de acuse de cancelación', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFDI01', @level2type = N'COLUMN', @level2name = N'XML_DOC_CANCELA';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Desgloce impuesto 1 [S/N] .: S = Si, N= No', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFDI01', @level2type = N'COLUMN', @level2name = N'DESGLOCEIMP1';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Desgloce impuesto 2 [S/N] .: S = Si, N= No', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFDI01', @level2type = N'COLUMN', @level2name = N'DESGLOCEIMP2';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Desgloce impuesto 3 [S/N] .: S = Si, N= No', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFDI01', @level2type = N'COLUMN', @level2name = N'DESGLOCEIMP3';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Desgloce impuesto 4 [S/N] .: S = Si, N= No', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFDI01', @level2type = N'COLUMN', @level2name = N'DESGLOCEIMP4';
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+CREATE NONCLUSTERED INDEX [IDX_CFDI_PAGOS01]
+    ON [dbo].[CFDI01]([CVE_DOC] ASC, [TIPO_DOC] ASC, [UUID] ASC, [VERSION] ASC);
 

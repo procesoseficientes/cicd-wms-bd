@@ -26,3 +26,9 @@ END;
 
 
 
+
+GO
+GRANT EXECUTE
+    ON OBJECT::[dbo].[FUNC_REMOVE_SPECIAL_CHARS] TO [ALZAHN]
+    AS [dbo];
+

@@ -101,18 +101,17 @@ BEGIN
     -- Obtiene todas las bodegas asociadas a un usuario
     -- ------------------------------------------------------------------------------------
     INSERT INTO @WAREHOUSES
-    EXEC [wms].[OP_WMS_SP_GET_WAREHOUSE_ASSOCIATED_WITH_USER] @LOGIN_ID = @LOGIN;
+		EXEC [wms].[OP_WMS_SP_GET_WAREHOUSE_ASSOCIATED_WITH_USER] @LOGIN_ID = @LOGIN;
 
     -- ------------------------------------------------------------------------------------
     -- Obtiene la valorizacion
     -- ------------------------------------------------------------------------------------
     INSERT INTO @VALORIZACION
-    SELECT [V].[LICENSE_ID],
-           [V].[VALOR_UNITARIO],
-           [V].[TOTAL_VALOR],
-           [V].[MATERIAL_ID]
-    FROM [wms].[OP_WMS_VIEW_VALORIZACION] [V]
-    WHERE [V].[QTY] > 0;
+		SELECT [V].[LICENSE_ID],
+			   [V].[VALOR_UNITARIO],
+			   [V].[TOTAL_VALOR],
+			   [V].[MATERIAL_ID]
+				FROM [wms].[OP_WMS_VIEW_VALORIZACION] [V] WHERE V.QTY > 0;
 
     -- ------------------------------------------------------------------------------------
     -- Se muestra el resultado
@@ -137,14 +136,14 @@ BEGIN
            [ID].[MATERIAL_NAME],
            [ID].[QTY],
 		   ISNULL([CI].[COMMITED_QTY], 0) AS COMMITED_QTY,
-           [ID].[CLIENT_OWNER],
-           [ID].[REGIMEN],
-           [ID].[CODIGO_POLIZA],
-           [ID].[CURRENT_LOCATION],
-           [ID].[VOLUMEN],
+		   [ID].[CLIENT_OWNER],
+		   [ID].[REGIMEN],
+		   [ID].[CODIGO_POLIZA],
+		   [ID].[CURRENT_LOCATION],
+		   [ID].[VOLUMEN],
            [ID].[TOTAL_VOLUMEN],
-           [ID].[LAST_UPDATED_BY],
-           [ID].[SERIAL_NUMBER],
+		   [ID].[LAST_UPDATED_BY],
+		   [ID].[SERIAL_NUMBER],
            [ID].[SKU_SERIE],
            [ID].[DATE_EXPIRATION],
            [ID].[BATCH],
@@ -183,55 +182,40 @@ BEGIN
            CASE
                WHEN ISNULL([ID].[LOCKED_BY_INTERFACES], 0) = 1 THEN
                    0
-               ELSE
-           ([ID].[QTY] - ISNULL([CI].[COMMITED_QTY], 0))
+               ELSE ([ID].[QTY] - ISNULL([CI].[COMMITED_QTY], 0))
            END AS [AVAILABLE_QTY],
            [V].[VALOR_UNITARIO],
            [V].[TOTAL_VALOR],
            CASE [ID].[HANDLE_SERIAL]
-               WHEN 1 THEN
-                   'Si'
-               WHEN 0 THEN
-                   'No'
-               ELSE
-                   'No'
+               WHEN 1 THEN 'Si'
+               ELSE 'No'
            END [HANDLE_SERIAL],
            CASE [ID].[IS_EXTERNAL_INVENTORY]
-               WHEN 1 THEN
-                   'SI'
-               ELSE
-                   'NO'
+               WHEN 1 THEN 'SI'
+               ELSE 'NO'
            END AS [IS_EXTERNAL_INVENTORY],
            [PH].[FECHA_DOCUMENTO],
            CASE [PH].[WAREHOUSE_REGIMEN]
-               WHEN @WAREHOUSE_REGIMEN THEN
-                   [wms].[OP_WMS_FN_GET_DAYS_BY_REGIMEN]([PH].[REGIMEN])
-               ELSE
-                   NULL
-           END [DIAS_REGIMEN],
+               WHEN @WAREHOUSE_REGIMEN THEN [wms].[OP_WMS_FN_GET_DAYS_BY_REGIMEN]([PH].[REGIMEN])
+               ELSE NULL
+           END AS [DIAS_REGIMEN],
            CASE [PH].[WAREHOUSE_REGIMEN]
-               WHEN @WAREHOUSE_REGIMEN THEN
-                   DATEDIFF(DAY, GETDATE(), [wms].[OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA]([PH].[CODIGO_POLIZA]))
-               ELSE
-                   NULL
-           END [DIAS_PARA_VENCER],
+               WHEN @WAREHOUSE_REGIMEN THEN DATEDIFF(DAY, GETDATE(), [wms].[OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA]([PH].[CODIGO_POLIZA]))
+               ELSE NULL
+           END AS [DIAS_PARA_VENCER],
            CASE [PH].[WAREHOUSE_REGIMEN]
-               WHEN @WAREHOUSE_REGIMEN THEN
-                   [wms].[OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA]([PH].[CODIGO_POLIZA])
-               ELSE
-                   NULL
+               WHEN @WAREHOUSE_REGIMEN THEN [wms].[OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA]([PH].[CODIGO_POLIZA])
+               ELSE NULL
            END [FECHA_VENCIMIENTO],
            CASE
-               WHEN [PH].[WAREHOUSE_REGIMEN] = 'FISCAL'
-                    AND DATEDIFF(
-                                    DAY,
-                                    GETDATE(),
-                                    [wms].[OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA]([PH].[CODIGO_POLIZA])
-                                ) < 1 THEN
-                   'Bloqueado'
-               ELSE
-                   'Libre'
-           END [ESTADO_REGIMEN],
+               WHEN [PH].[WAREHOUSE_REGIMEN] = 'FISCAL' AND DATEDIFF
+					(
+					DAY,
+					GETDATE(),
+					[wms].[OP_WMS_FN_GET_EXPIRATION_DATE_FOR_POLIZA]([PH].[CODIGO_POLIZA])
+                    ) < 1 THEN 'Bloqueado'
+               ELSE 'Libre'
+           END AS [ESTADO_REGIMEN],
            [ID].[STATUS_NAME],
            [ID].[STATUS_CODE],
            [ID].[BLOCKS_INVENTORY],
@@ -242,10 +226,8 @@ BEGIN
            [DH].[PROJECT],
            [DH].[CLIENT_NAME] AS [CUSTOMER_NAME],
            CASE
-               WHEN [ID].[LOCKED_BY_INTERFACES] = 1 THEN
-                   'Si'
-               WHEN [ID].[LOCKED_BY_INTERFACES] = 0 THEN
-                   'No'
+               WHEN [ID].[LOCKED_BY_INTERFACES] = 1 THEN 'Si'
+               WHEN [ID].[LOCKED_BY_INTERFACES] = 0 THEN 'No'
            END [LOCKED_BY_INTERFACES],
            [ID].[WEIGTH],
            [ID].[WEIGHT_MEASUREMENT],

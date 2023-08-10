@@ -8,22 +8,24 @@
 );
 
 
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de artículo', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'INVFIS01', @level2type = N'COLUMN', @level2name = N'CVE_ART';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de almacén', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'INVFIS01', @level2type = N'COLUMN', @level2name = N'CVE_ALM';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Existencias congeladas', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'INVFIS01', @level2type = N'COLUMN', @level2name = N'EXISTCONG';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Se capturó', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'INVFIS01', @level2type = N'COLUMN', @level2name = N'SECAPTURO';
+
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Existencia real', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'INVFIS01', @level2type = N'COLUMN', @level2name = N'EXISTREAL';
+
+
+
+GO
+
+
+
+GO
+
 

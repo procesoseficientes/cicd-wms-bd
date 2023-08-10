@@ -50,7 +50,7 @@ BEGIN
           AND ISNULL([RDH].[IS_POSTED_ERP], 0) = 0
           AND ISNULL([RDH].[ATTEMPTED_WITH_ERROR], 0) = 0
           AND ISNULL([RDH].[IS_AUTHORIZED], 0) = 1
-		  AND ISNULL([RDH].[IS_COMPLETE],0)=1
+		  --AND ISNULL([RDH].[IS_COMPLETE],0)=1 se quita por documentos incompletos
           AND ISNULL([RDH].[SOURCE],'') <> 'INVOICE'
           AND [RDH].[OWNER] = @OWNER
           AND [RDH].[IS_VOID] = 0
@@ -87,7 +87,7 @@ BEGIN
                 [Codigo],
                 [DbData]
             )
-            EXEC [ERP_SERVER].[ASPEL_INTERFACES].[dbo].[SAE_CREATE_INVENTORY_INCOME_BY_TRANSFER_SAE] @RECEPTION_DOCUMENT_HEADER = @HEADER_ID;
+            EXEC [ASPEL_INTERFACES].[dbo].[SAE_CREATE_INVENTORY_INCOME_BY_TRANSFER_SAE] @RECEPTION_DOCUMENT_HEADER = @HEADER_ID;
 
             SELECT TOP 1
                    @RESPONSE = [Mensaje],

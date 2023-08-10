@@ -1,4 +1,4 @@
-﻿CREATE TABLE [dbo].[MINVE01] (
+CREATE TABLE [dbo].[MINVE01] (
     [CVE_ART]         VARCHAR (16) NOT NULL,
     [ALMACEN]         INT          NOT NULL,
     [NUM_MOV]         INT          NOT NULL,
@@ -34,6 +34,8 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IDX_MINVE101]
     ON [dbo].[MINVE01]([CVE_ART] ASC, [ALMACEN] ASC, [NUM_MOV] ASC, [CVE_CPTO] ASC);
@@ -65,129 +67,245 @@ CREATE NONCLUSTERED INDEX [IDX_MINVE601]
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de artículo', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'CVE_ART';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de almacén', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'ALMACEN';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Número de movimiento', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'NUM_MOV';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de concepto', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'CVE_CPTO';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Fecha', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'FECHA_DOCU';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Tipo de documento [F/R/D/c/r/d/N/M] .: F=Factura, R=Remisión, D=Devolución de facturas, c = Compra, r=Recepción, d=Devolución de compras,N = Ninguno (Proviene de traducción), M = Movimiento al inventario', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'TIPO_DOC';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Documento', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'REFER';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave cliente/proveedor', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'CLAVE_CLPV';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de vendedor', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'VEND';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Cantidad {mayor a 0.0}', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'CANT';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Cantidad a costear', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'CANT_COST';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Precio', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'PRECIO';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Costo {mayor  0.0}', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'COSTO';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Afecta a COI [S/N] .: S=Si, N=No', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'AFEC_COI';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de observaciones', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'CVE_OBS';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Registro de serie', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'REG_SERIE';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Unidad de venta', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'UNI_VENTA';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Enlace de lotes y pedimentos', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'E_LTPD';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Existencia por producto', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'EXIST_G';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Existencia', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'EXISTENCIA';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Tipo de producto [P]', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'TIPO_PROD';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Factor de conversión {mayor a 0.0}', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'FACTOR_CON';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Fecha de elaboración', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'FECHAELAB';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Control de póliza', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'CTLPOL';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Folio', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'CVE_FOLIO';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Signo [1/-1]', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'SIGNO';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Movimiento Costeado [S/N] .: S=Si, N=No', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'COSTEADO';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Costo promedio inicial', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'COSTO_PROM_INI';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Costo promedio final', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'COSTO_PROM_FIN';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Costo promedio total', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'COSTO_PROM_GRAL';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Origen del movimiento [S/N] .: S=Si, N=No .: S=Desde Movimientos al inventario, N=Otro módulo', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'DESDE_INVE';
+
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Movimiento enlazado', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'MINVE01', @level2type = N'COLUMN', @level2name = N'MOV_ENLAZADO';
 
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+CREATE NONCLUSTERED INDEX [IDX_MINVE701]
+    ON [dbo].[MINVE01]([CVE_CPTO] ASC, [REFER] ASC, [CVE_ART] ASC, [REG_SERIE] ASC);
+
+
+GO
+-- =============================================
+-- Author:		<Author,		Brayan Isidro>
+-- Create date: <Create Date,	Octubre 10 -2019>
+-- Description:	<Description,	Para bloquear Pedidos de Estado Revision
+--				 Req. by Diego E., Ricardo M., Joel V.>
+--				 Al ingresar un pedido desde SONDA Bloqueado, CAMPLIB23 = 'REVISION', se actualizara campo en FACTP01
+--				 Para que no permita remitir hasta que se apruebe.
+-- =============================================
+CREATE TRIGGER [dbo].[Tri_Control_DocumentoSAR] 
+   ON [dbo].[MINVE01]
+   AFTER INSERT	
+AS 
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+    -- Insert statements for trigger here
+	DECLARE @Recepcion		  VARCHAR(30)
+	DECLARE @Cuerpo			  VARCHAR(2500)
+	DECLARE @Inserta		  INT = 0
+	--
+	DECLARE	@CorreoDestinatario  VARCHAR(50)= 'brayan.isidro@grupoalza.com;nestor.oliva@grupoalza.com;alex.gonzalez@grupoalza.com'
+	DECLARE	@NombreDestinatario VARCHAR(50)= 'BRAYAN'
+	DECLARE @Asunto  VARCHAR(50) = 'Reporte de Documento de la SAR Proximos a Vencer'
+	DECLARE @Cabecera VARCHAR(50) = @Asunto
+
+	SELECT  @Recepcion = TRIM(REFER)
+	FROM INSERTED
+
+	--SET @Cuerpo = 'Se ha ingresado el Pedido: ' + @Recepcion + '. Por favor ingresar al modulo de Cobranza para revisar. '
+		
+
+			--	SELECT * FROM Reportes.dbo.vControl_Documentos_SAR_Alza WHERE DisponibilidadDeDocumentos <= 1000 OR DiasDisponible <= 300
+	
+              IF( (SELECT COUNT(*) FROM Reportes.dbo.vControl_Documentos_SAR_Alza WHERE DisponibilidadDeDocumentos <= 5 OR DiasDisponible <= 5 AND Estado = 1) > 0   )
+              BEGIN
+
+			  
+				  IF((SELECT COUNT(1) FROM AlzaWeb.dbo.NotificacionesCAI WHERE Empresa = 'Alza' ) = 0)	
+					BEGIN
+						SELECT @Inserta = 1	
+					END
+				  IF((SELECT TOP(1)IIF(DATEDIFF(HOUR,FechaEnvio,GETDATE())>2,0,1)FechaEnvio FROM AlzaWeb.dbo.NotificacionesCAI WHERE Empresa = 'Alza' ORDER BY Id DESC) = 0 )	
+					BEGIN
+						SELECT @Inserta = 1		
+					END
+				  Else
+					BEGIN
+						SELECT @Inserta = 0
+					END
+				
+
+				  IF (@Inserta = 1)
+					BEGIN
+						INSERT INTO AlzaWeb.dbo.NotificacionesCai (FechaEnvio, Empresa) VALUES(GETDATE(), 'Alza')
+						SET @Cuerpo = '</br>' + 
+									N'<H3>Reporte de Documento de la SAR Proximos a Vencer Grupo Alimenticio</H3>' +
+									N'<table border="1" style="background-color: #E6E6E6; border-color: #43AFDF; text-align: center; font-size: smaller;">' +
+									N'<tr><th>Empresa</th><th>TipoDocumento</th><th>Serie</th><th>FolioInicial</th><th>FolioFinal</th><th>FechaLimiteEmision</th><th>UltimoDocumentoSAE</th><th>UltimoDocumentoIT</th><th>DisponibilidadDeDocumentos</th><th>DiasDisponible</th>' +
+
+						CAST (
+								 (
+										SELECT 
+										TD = Empresa, '',
+										TD = TipoDocumento, '',
+										TD = Serie, '',
+										TD = FolioInicial, '',
+										TD = FolioFinal, '',
+										TD = FechaLimiteEmision, '',
+										TD = UltimoDocumentoSAE, '',
+										TD = UltimoDocumentoIT, '',
+										TD = DisponibilidadDeDocumentos, '',
+										TD = DiasDisponible,''
+										FROM Reportes.dbo.vControl_Documentos_SAR_Alza WHERE DisponibilidadDeDocumentos <= 5 OR DiasDisponible <= 5 AND Estado = 1
+
+									FOR XML PATH('tr'), TYPE
+									) AS NVARCHAR(MAX)
+							   )+ '</b>' +
+									N'</table>' +
+								  N'<H3>El presente mail solo indica CAI Vencidos</H3>';
+						---ENVIO DEL EMAIL	
+							 EXEC msdb.dbo.sp_send_dbmail     
+							 @recipients = 'brayan.isidro@grupoalza.com;nestor.oliva@grupoalza.com;alex.gonzalez@grupoalza.com;evelin.hernandez@grupoalza.com;maria.reyes@grupoalza.com',  
+							 @subject = @Asunto,  
+							 @body = @Cuerpo,  
+							 @body_format = 'HTML',  
+							 @profile_name = 'sqlAlert';	
+					  END
+					ELSE
+					 BEGIN
+					   PRINT('YA SE ENVIO UNA NOTIFICACION')
+					 END
+
+              END
+			  ELSE IF((SELECT COUNT(*) FROM Reportes.dbo.vControl_Documentos_SAR_Alza WHERE DisponibilidadDeDocumentos <= 5 OR DiasDisponible <= 5 AND Estado = 1 ) = 0 )
+			  BEGIN
+
+
+
+					PRINT('NO SE ENCONTRARON DOCUMENTOS VENCIDOS')
+
+			  END
+
+			  	 DECLARE @NumeroCAI INT = (SELECT Id FROM Reportes.dbo.vControl_Documentos_SAR_Alza WHERE DisponibilidadDeDocumentos < 0 OR DiasDisponible < 0 AND Estado = 1);
+				 PRINT @NumeroCAI
+
+				UPDATE CONTROL_DOCUMENTOS
+				SET    Estado = 0 , FechaBaja = GETDATE()
+				WHERE  (Id = @NumeroCAI AND Estado = 1)
+			   
+
+END

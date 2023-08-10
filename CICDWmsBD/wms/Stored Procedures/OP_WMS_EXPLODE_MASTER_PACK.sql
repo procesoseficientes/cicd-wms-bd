@@ -134,6 +134,12 @@ BEGIN
   -- Validación de datos 
   ---------------------------------------------------------------------------------  
 
+   IF ((SELECT COUNT(*) FROM wms.OP_WMS_INV_X_LICENSE WHERE LICENSE_ID = @LICENSE_ID) > 1)
+	BEGIN
+		RAISERROR ('Debe tener solo un material para ser explotada, reubique el que desea explotar', 16, 101);
+		RETURN;
+	END
+
 	IF NOT EXISTS ( SELECT TOP 1
 						1
 					FROM

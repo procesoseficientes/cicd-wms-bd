@@ -388,12 +388,12 @@ BEGIN
 						WHERE
 							[H].[TASK_ID] = @pTASK_ID;
 
-						UPDATE [$(CICDSaeBD)].[dbo].[FACTF01]
+						UPDATE [SAE70EMPRESA01].[dbo].[FACTF01]
 						SET [BLOQ] = 'N', [ENLAZADO]='O'
 						WHERE  LTRIM(RTRIM([CVE_DOC])) collate database_default in (select  [DOC_NUM]  collate database_default 
 						from [wms].[OP_WMS_ERP_RECEPTION_DOCUMENT_HEADER] 
 						where [TASK_ID] = @pTASK_ID)
-						UPDATE [$(CICDSaeBD)].[dbo].[COMPO01]
+						UPDATE [SAE70EMPRESA01].[dbo].[COMPO01]
 						SET [BLOQ] = 'N', [ENLAZADO]='O'
 						WHERE  LTRIM(RTRIM([CVE_DOC])) collate database_default in (select  [DOC_NUM]  collate database_default 
 						from [wms].[OP_WMS_ERP_RECEPTION_DOCUMENT_HEADER] 

@@ -1,0 +1,7 @@
+﻿CREATE TABLE [SONDA].[ERP_TB_DISCOUNT] (
+    [CODE_ROUTE]    VARCHAR (50)    NULL,
+    [CODE_CUSTOMER] VARCHAR (50)    NULL,
+    [SKU]           VARCHAR (50)    NULL,
+    [DISCOUNT]      NUMERIC (18, 6) NULL
+);
+

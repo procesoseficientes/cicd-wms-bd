@@ -48,6 +48,10 @@
 -- Fecha de Creacion: 	08-Mayo-2020
 -- Descripcion:			MasterPack ahora es completamente recursivo.
 
+--Modificación:			Elder Lucas
+--Fecha modificación:	10 de noviembre 2022
+--Descripción:			Manejo de tareas que superan el techo del material para que sean procesadas como picking por canal
+
 /*
 -- Ejemplo de Ejecucion:
        
@@ -85,6 +89,14 @@ CREATE PROCEDURE [wms].[OP_WMS_SP_INSERT_TASKS_GENERAL] (
 	)
 AS
 BEGIN
+
+	DECLARE	@OPERACION TABLE (
+			[Resultado] INT
+			,[Mensaje] VARCHAR(MAX)
+			,[Codigo] INT
+			,[DbData] VARCHAR(MAX)
+		);
+
 	DECLARE
 		@WPI NUMERIC(18, 0)
 		,@ASSIGNED_DATE DATETIME
@@ -104,8 +116,14 @@ BEGIN
 		,@PROJECT_NAME AS VARCHAR(150)
 		,@PROJECT_CODE AS VARCHAR(50)
 		,@PROJECT_SHORT_NAME AS VARCHAR(25)
-		,@ORDER_NUMBER VARCHAR(25);
-	DECLARE	@QUERY NVARCHAR(MAX);
+		,@ORDER_NUMBER VARCHAR(25)
+		,@HANDLED_PER_CHANNEL INT = 0
+		,@Resultado INT = -1
+		,@Mensaje VARCHAR(MAX)
+		,@ASSEMBLED_QTY INT = 0
+		,@QUERY NVARCHAR(MAX)
+		,@ROOF_QTY INT
+		,@ES_MEZCLA INT;
 
 	SET NOCOUNT ON;
 
@@ -147,6 +165,71 @@ BEGIN
 		WHERE
 			[CODIGO_POLIZA] = @CODIGO_POLIZA_TARGET;
 
+		SELECT @ROOF_QTY = (SELECT ISNULL(ROOF_QUANTITY, 0) FROM WMS.OP_WMS_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID)
+
+		IF((SELECT IS_MASTER_PACK FROM wms.OP_WMS_MATERIALS WHERE MATERIAL_ID = @MATERIAL_ID) = 1 AND @MATERIAL_NAME LIKE '%M') SET @ES_MEZCLA = 1
+
+		-- ------------------------------------------------------------------------------------
+        -- Verificamos si la cantidad solicitada sobrepasa el techo del material, si es así, se procesa como picking por canal
+        -- ------------------------------------------------------------------------------------
+		IF(@ES_MEZCLA = 0)
+		BEGIN
+			SET @HANDLED_PER_CHANNEL = 1
+			print 'Inicia procesos por canal'
+			INSERT	INTO @OPERACION
+						(
+							[Resultado]
+							,[Mensaje]
+							,[Codigo]
+							,[DbData]
+						)
+						EXEC [wms].[OP_WMS_SP_INSERT_TASKS_GENERAL_PICKING_DEMAND_PER_CHANNEL] @TASK_OWNER = @TASK_OWNER, -- varchar(25)
+							@TASK_ASSIGNEDTO = @TASK_ASSIGNEDTO, -- varchar(25)
+							@QUANTITY_ASSIGNED = @QUANTITY_ASSIGNED, -- numeric
+							@CODIGO_POLIZA_TARGET = @CODIGO_POLIZA_TARGET, -- varchar(25)
+							@MATERIAL_ID = @MATERIAL_ID, -- varchar(50)
+							@BARCODE_ID = @BARCODE_ID, -- varchar(50)
+							@ALTERNATE_BARCODE = @ALTERNATE_BARCODE, -- varchar(50)
+							@MATERIAL_NAME = @MATERIAL_NAME, -- varchar(200)
+							@CLIENT_OWNER = @CLIENT_OWNER, -- varchar(25)
+							@CLIENT_NAME = @CLIENT_NAME, -- varchar(150)
+							@IS_FROM_SONDA = @IS_FROM_SONDA, -- int
+							@CODE_WAREHOUSE = @WAREHOUSE, -- varchar(50)
+							@IS_FROM_ERP = @SEND_ERP, -- int
+							@WAVE_PICKING_ID = @WAVE_PICKING_ID, -- numeric
+							@DOC_ID_TARGET = 0, -- int
+							@LOCATION_SPOT_TARGET = @LOCATION_SPOT_TARGET, -- varchar(25)
+							@IS_CONSOLIDATED = 0, -- int
+							@SOURCE_TYPE = 'EGRESO_GENERAL', -- varchar(50)
+							@TRANSFER_REQUEST_ID = 0, -- int
+							@TONE = NULL, -- varchar(20)
+							@CALIBER = NULL, -- varchar(20)
+							@IN_PICKING_LINE = 0, -- int
+							@IS_FOR_DELIVERY_IMMEDIATE = 1,
+							@PRIORITY = @PRIORITY,
+							@PICKING_HEADER_ID = 0,
+							@STATUS_CODE = @STATUS_CODE,
+							@ORDER_NUMBER = @ORDER_NUMBER,
+							@MIN_DAYS_EXPIRATION_DATE = 0,
+							@DOC_NUM = NULL,
+							@DOCS_AND_QTYS = NULL;
+			SELECT
+				@Resultado = [O].[Resultado]
+				,@Mensaje = [O].[Mensaje]
+				,@WAVE_PICKING_ID = CAST([wms].[OP_WMS_FN_SPLIT_COLUMNS]([O].[DbData],
+											1, '|') AS INT)
+				,@ASSEMBLED_QTY = ISNULL(CAST([wms].[OP_WMS_FN_SPLIT_COLUMNS]([O].[DbData],
+											2, '|') AS INT),
+											0)
+			FROM
+				@OPERACION [O];
+
+			IF @Resultado = -1
+			BEGIN
+				RAISERROR (@Mensaje, 16, 1);
+				RETURN;
+			END;
+		END
         -- ------------------------------------------------------------------------------------
         -- Obtiene el inventario disponible para el material, luego verifica que sea suficiente para el picking.
         -- Si no lo es verifica que sea un masterpack y no venga de una explosion de masterpack, de ser asi obtiene la cantidad disponible a armar y 
@@ -162,8 +245,14 @@ BEGIN
 			AND [CLIENT_OWNER] = @CLIENT_OWNER;
 
 
-		IF @PROJECT_ID IS NULL
+		IF @PROJECT_ID IS NULL AND @HANDLED_PER_CHANNEL = 0
 		BEGIN
+
+		print @CLIENT_OWNER
+		print @MATERIAL_ID
+		print @WAREHOUSE
+		print @LICENSE_ID_TO_EXCLUDE
+		print @AVAILABLE_QTY
 			SELECT
 				@AVAILABLE_QTY = ISNULL(SUM([QTY]), 0)
 			FROM
@@ -172,7 +261,7 @@ BEGIN
 				[CLIENT_OWNER] = @CLIENT_OWNER
 				AND [MATERIAL_ID] = @MATERIAL_ID
 				AND [CURRENT_WAREHOUSE] = @WAREHOUSE
-				-- AND [STATUS_CODE] = @STATUS_CODE
+				AND [STATUS_CODE] = @STATUS_CODE
 				AND [LICENSE_ID] <> @LICENSE_ID_TO_EXCLUDE;
 		END;
 		ELSE
@@ -207,7 +296,7 @@ BEGIN
 				[ID] = @PROJECT_ID;
 		END;
 
-		IF (@QUANTITY_ASSIGNED > @AVAILABLE_QTY)
+		IF (@QUANTITY_ASSIGNED > @AVAILABLE_QTY AND @HANDLED_PER_CHANNEL = 0)
 		BEGIN
 			IF @PROJECT_ID IS NULL
 				AND @IS_MASTER_PACK = 1
@@ -312,68 +401,69 @@ BEGIN
 		PRINT '@@QUANTITY_ASSIGNED'
 			+ CAST(@QUANTITY_ASSIGNED AS VARCHAR);
 
-
-		IF @PROJECT_ID IS NULL
+		IF(@HANDLED_PER_CHANNEL = 0)
 		BEGIN
-			INSERT	INTO [#LICENCIAS]
-					(
-						[CURRENT_LOCATION]
-						,[CURRENT_WAREHOUSE]
-						,[LICENSE_ID]
-						,[CODIGO_POLIZA]
-						,[QTY]
-						,[DATE_BASE]
-						,[ROW]
-					)
-			SELECT
-				[CURRENT_LOCATION]
-				,[CURRENT_WAREHOUSE]
-				,[LICENSE_ID]
-				,[CODIGO_POLIZA]
-				,[QTY]
-				,[FECHA_DOCUMENTO]
-				,[ORDER]
-			FROM
-				[wms].[OP_WMS_FN_GET_LICENSE_TO_PICK](@MATERIAL_ID,
-											@WAREHOUSE,
-											@QUANTITY_ASSIGNED,
-											@HAVBATCH, NULL,
-											NULL,
-											@STATUS_CODE, 0, /*no valido tolerancia por lote*/
-											@LICENSE_ID_TO_EXCLUDE);
-		END;
-		ELSE
-		BEGIN
-			INSERT	INTO [#LICENCIAS]
-					(
-						[CURRENT_LOCATION]
-						,[CURRENT_WAREHOUSE]
-						,[LICENSE_ID]
-						,[CODIGO_POLIZA]
-						,[QTY]
-						,[DATE_BASE]
-						,[ROW]
-					)
-			SELECT
-				[CURRENT_LOCATION]
-				,[CURRENT_WAREHOUSE]
-				,[LICENSE_ID]
-				,[CODIGO_POLIZA]
-				,[QTY]
-				,[FECHA_DOCUMENTO]
-				,[ORDER]
-			FROM
-				[wms].[OP_WMS_FN_GET_LICENSE_TO_PICK_FOR_PROYECT](@MATERIAL_ID,
-											@WAREHOUSE,
-											@QUANTITY_ASSIGNED,
-											@HAVBATCH, NULL,
-											NULL,
-											@STATUS_CODE, 0,
-											@PROJECT_ID, 0, /*no valido tolerancia por lote*/
-											@LICENSE_ID_TO_EXCLUDE);
+			IF @PROJECT_ID IS NULL
+			BEGIN
+				INSERT	INTO [#LICENCIAS]
+						(
+							[CURRENT_LOCATION]
+							,[CURRENT_WAREHOUSE]
+							,[LICENSE_ID]
+							,[CODIGO_POLIZA]
+							,[QTY]
+							,[DATE_BASE]
+							,[ROW]
+						)
+				SELECT
+					[CURRENT_LOCATION]
+					,[CURRENT_WAREHOUSE]
+					,[LICENSE_ID]
+					,[CODIGO_POLIZA]
+					,[QTY]
+					,[FECHA_DOCUMENTO]
+					,[ORDER]
+				FROM
+					[wms].[OP_WMS_FN_GET_LICENSE_TO_PICK](@MATERIAL_ID,
+												@WAREHOUSE,
+												@QUANTITY_ASSIGNED,
+												@HAVBATCH, NULL,
+												NULL,
+												@STATUS_CODE, 0, /*no valido tolerancia por lote*/
+												@LICENSE_ID_TO_EXCLUDE);
+			END;
+			ELSE
+			BEGIN
+				INSERT	INTO [#LICENCIAS]
+						(
+							[CURRENT_LOCATION]
+							,[CURRENT_WAREHOUSE]
+							,[LICENSE_ID]
+							,[CODIGO_POLIZA]
+							,[QTY]
+							,[DATE_BASE]
+							,[ROW]
+						)
+				SELECT
+					[CURRENT_LOCATION]
+					,[CURRENT_WAREHOUSE]
+					,[LICENSE_ID]
+					,[CODIGO_POLIZA]
+					,[QTY]
+					,[FECHA_DOCUMENTO]
+					,[ORDER]
+				FROM
+					[wms].[OP_WMS_FN_GET_LICENSE_TO_PICK_FOR_PROYECT](@MATERIAL_ID,
+												@WAREHOUSE,
+												@QUANTITY_ASSIGNED,
+												@HAVBATCH, NULL,
+												NULL,
+												@STATUS_CODE, 0,
+												@PROJECT_ID, 0, /*no valido tolerancia por lote*/
+												@LICENSE_ID_TO_EXCLUDE);
 
+			END;
 		END;
-
 
 		WHILE (EXISTS ( SELECT TOP 1
 							1
@@ -557,7 +647,7 @@ BEGIN
         -- ------------------------------------------------------------------------------------
         -- Explota el masterpack mandando a llamarse a si mismo por cada componente.
         -- ------------------------------------------------------------------------------------
-		IF @PROJECT_ID IS NULL
+		IF @PROJECT_ID IS NULL AND @HANDLED_PER_CHANNEL = 0
 			--AND @FROM_MASTERPACK = 0
 		BEGIN
 			PRINT 'MASTERPACK EXPLOTADO';

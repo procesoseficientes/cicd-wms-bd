@@ -31,7 +31,7 @@ BEGIN
 	-- Se obtiene el inventario fisico que se tiene del masterpack
 	-- ------------------------------------------------------------------------------------
 	SELECT @QTYMP = SUM(ISNULL([QTY],0))
-	FROM [wms].[OP_WMS_VIEW_INVENTORY_FOR_PICKING]
+	FROM [wms].[OP_WMS_VIEW_INVENTORY_FOR_PICKING] WITH (NOLOCK)
 	WHERE [MATERIAL_ID] = @MASTER_PACK_CODE AND @WAREHOUSE_ID = [CURRENT_WAREHOUSE]
 	-- ------------------------------------------------------------------------------------
 	-- Se insertan todos los componentes en una tabla temporal.
@@ -48,10 +48,10 @@ BEGIN
 		, SUM(ISNULL([IXW].[QTY],0))
 		, [CXMP].[QTY] [QTY_NEEDED]
 		, CAST(SUM(ISNULL([IXW].[QTY], 0)) / [CXMP].[QTY] AS INT)  REAL_QTY
-	FROM [wms].[OP_WMS_COMPONENTS_BY_MASTER_PACK] [CXMP]
-	LEFT JOIN [wms].[OP_WMS_VIEW_INVENTORY_FOR_PICKING] [IXW] 
+	FROM [wms].[OP_WMS_COMPONENTS_BY_MASTER_PACK] [CXMP] WITH (NOLOCK)
+	LEFT JOIN [wms].[OP_WMS_VIEW_INVENTORY_FOR_PICKING] [IXW]  WITH (NOLOCK)
 	ON [IXW].[MATERIAL_ID] = [CXMP].[COMPONENT_MATERIAL] 
-	AND [IXW].[CURRENT_WAREHOUSE] = @WAREHOUSE_ID
+	AND [IXW].[CURRENT_WAREHOUSE] = @WAREHOUSE_ID 
 	
 	WHERE [CXMP].[MASTER_PACK_CODE] = @MASTER_PACK_CODE 
 	GROUP BY [CXMP].[COMPONENT_MATERIAL]

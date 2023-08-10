@@ -1,0 +1,34 @@
+﻿CREATE PROC [SONDA].[SWIFT_SP_INSERT_TXN_X_DOC_ERP]
+@DOC_ENTRY NUMERIC(18,0),
+@ERP_DOC NUMERIC(18,0),
+@CODE_SKU VARCHAR(50),
+@QTY NUMERIC(18,0),
+@LINE_NUM INT,
+@pResult VARCHAR(250) OUTPUT
+AS
+BEGIN
+	BEGIN TRAN t1
+		BEGIN
+			INSERT INTO [SONDA].[SWIFT_TXN_X_DOC_ERP]
+					   ([DOC_ENTRY]
+					   ,[ERP_DOC]
+					   ,[CODE_SKU]
+					   ,[QTY]
+					   ,[LINE_NUM])
+				 VALUES
+					   (@DOC_ENTRY
+					   ,@ERP_DOC
+					   ,@CODE_SKU
+					   ,@QTY
+					   ,@LINE_NUM)
+		END	
+	
+		IF @@error = 0 BEGIN
+			SELECT @pResult = ''
+			COMMIT TRAN t1
+		END		
+		ELSE BEGIN
+			ROLLBACK TRAN t1
+			SELECT	@pResult	= ERROR_MESSAGE()
+	END
+END

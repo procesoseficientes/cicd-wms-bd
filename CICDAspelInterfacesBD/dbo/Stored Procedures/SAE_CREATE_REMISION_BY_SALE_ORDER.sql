@@ -28,6 +28,11 @@
 -- Modificación:		Nelson Cifuentes
 -- Fecha: 				27  de octubre 2022
 -- Description:			Envío de cantidades incorrectas a ERP
+
+
+-- Modificación:		Elder Lucas
+-- Fecha: 				17 de febrero 2023
+-- Description:			Envio de cantidad null cuando un mater ial tiene detalle en demand_detail pero no en task list DES-1926
 /*
 -- Ejemplo de Ejecucion:
 				EXEC [dbo].[SAE_CREATE_REMISION_BY_SALE_ORDER] @NEXT_PICKING_DEMAND_HEADER = 75286 -- numeric
@@ -108,179 +113,180 @@ BEGIN
         -- obtiene datos de Wms
         -- ------------------------------------------------------------------------------------
 		print 1
-SELECT [D].[PICKING_DEMAND_DETAIL_ID],
-               [D].[PICKING_DEMAND_HEADER_ID],
-               [D].[MATERIAL_ID],
-               SUM([TL].[QUANTITY_ASSIGNED] - [TL].[QUANTITY_PENDING]) AS QTY,
-               [D].[LINE_NUM],
-               [D].[ERP_OBJECT_TYPE],
-               [D].[PRICE],
-               [D].[WAS_IMPLODED],
-               [D].[QTY_IMPLODED],
-               [D].[MASTER_ID_MATERIAL],
-               [D].[MATERIAL_OWNER],
-               [D].[ATTEMPTED_WITH_ERROR],
-               [D].[IS_POSTED_ERP],
-               [D].[POSTED_ERP],
-               [D].[ERP_REFERENCE],
-               [D].[POSTED_STATUS],
-               [D].[POSTED_RESPONSE],
-               [D].[INNER_SALE_STATUS],
-               [D].[INNER_SALE_RESPONSE],
-               [D].[TONE],
-               [D].[CALIBER],
-               [D].[DISCOUNT],
-               [D].[IS_BONUS],
-               [D].[DISCOUNT_TYPE],
-               [D].[UNIT_MEASUREMENT],
-               [D].[STATUS_CODE],
-               [DF].[CVE_DOC],
-               [DF].[NUM_PAR],
-               [DF].[CVE_ART],
-               [DF].[CANT],
-               [DF].[PXS],
-               [DF].[PREC],
-               [DF].[COST],
-               [DF].[IMPU1],
-               [DF].[IMPU2],
-               [DF].[IMPU3],
-               [DF].[IMPU4],
-               [DF].[IMP1APLA],
-               [DF].[IMP2APLA],
-               [DF].[IMP3APLA],
-               [DF].[IMP4APLA],
-               [DF].[TOTIMP1],
-               [DF].[TOTIMP2],
-               [DF].[TOTIMP3],
-               [DF].[TOTIMP4],
-               [DF].[DESC1],
-               [DF].[DESC2],
-               [DF].[DESC3],
-               [DF].[COMI],
-               [DF].[APAR],
-               [DF].[ACT_INV],
-               (SELECT ERP_WAREHOUSE AS [NUM_ALM] FROM  [OP_WMS_ALZA].[wms].OP_WMS_WAREHOUSES WHERE WAREHOUSE_ID=H.CODE_WAREHOUSE) [NUM_ALM],
-               [DF].[POLIT_APLI],
-               [DF].[TIP_CAM],
-               [DF].[UNI_VENTA],
-               [DF].[TIPO_PROD],
-               [DF].[CVE_OBS],
-               [DF].[REG_SERIE],
-               [DF].[E_LTPD],
-               [DF].[TIPO_ELEM],
-               [DF].[NUM_MOV],
-               [DF].[TOT_PARTIDA],
-               [DF].[IMPRIMIR],
-               [DF].[UUID],
-               [DF].[VERSION_SINC],
-               [DF].[MAN_IEPS],
-               [DF].[APL_MAN_IMP],
-               [DF].[CUOTA_IEPS],
-               [DF].[APL_MAN_IEPS],
-               [DF].[MTO_PORC],
-               [DF].[MTO_CUOTA],
-               [DF].[CVE_ESQ],
-               [DF].[DESCR_ART],
-               [M].[MATERIAL_NAME],
-               [M].[ITEM_CODE_ERP],
-               [M].[BASE_MEASUREMENT_UNIT],
-               CAST(0 AS INT) [ENVIADO],
-               CAST(0 AS INT) [NUMERO_MOVIMIENTO],
-			   [DF].[PREC]-[DF].[PREC]*isnull([DF].[DESC1],0)/100 UNITARIO_CON_DESCUENTO
-        INTO [#DETALLE]
-        FROM [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_DETAIL] [D]
-            INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H]
-                ON [H].[PICKING_DEMAND_HEADER_ID] = [D].[PICKING_DEMAND_HEADER_ID]
-			LEFT JOIN [OP_WMS_ALZA].[wms].OP_WMS_TASK_LIST TL
-				ON TL.WAVE_PICKING_ID = H.WAVE_PICKING_ID AND TL.MATERIAL_ID = D.MATERIAL_ID AND TL.STATUS_CODE = D.STATUS_CODE AND TL.DOC_ID_SOURCE = H.DOC_ENTRY
-            INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_MATERIALS] [M]
-                ON [M].[MATERIAL_ID] = [D].[MATERIAL_ID]
-            LEFT JOIN [SAE70EMPRESA01].[dbo].[PAR_FACTP01] [DF]
-                ON LTRIM(RTRIM([DF].[CVE_DOC])) COLLATE DATABASE_DEFAULT = [H].[DOC_NUM] COLLATE DATABASE_DEFAULT
-                   AND [DF].[NUM_PAR] = [D].[LINE_NUM]
-        WHERE [H].[PICKING_DEMAND_HEADER_ID] = @NEXT_PICKING_DEMAND_HEADER
-              AND [H].[IS_AUTHORIZED] > 0
-              AND [D].[QTY] > 0
-			  GROUP BY
-			  [D].[PICKING_DEMAND_DETAIL_ID],
-               [D].[PICKING_DEMAND_HEADER_ID],
-               [D].[MATERIAL_ID],
-			   [D].[QTY],
-              -- SUM(TL.QUANTITY_ASSIGNED - TL.QUANTITY_PENDING) AS QTY,
-               [D].[LINE_NUM],
-               [D].[ERP_OBJECT_TYPE],
-               [D].[PRICE],
-               [D].[WAS_IMPLODED],
-               [D].[QTY_IMPLODED],
-               [D].[MASTER_ID_MATERIAL],
-               [D].[MATERIAL_OWNER],
-               [D].[ATTEMPTED_WITH_ERROR],
-               [D].[IS_POSTED_ERP],
-               [D].[POSTED_ERP],
-               [D].[ERP_REFERENCE],
-               [D].[POSTED_STATUS],
-               [D].[POSTED_RESPONSE],
-               [D].[INNER_SALE_STATUS],
-               [D].[INNER_SALE_RESPONSE],
-               [D].[TONE],
-               [D].[CALIBER],
-               [D].[DISCOUNT],
-               [D].[IS_BONUS],
-               [D].[DISCOUNT_TYPE],
-               [D].[UNIT_MEASUREMENT],
-               [D].[STATUS_CODE],
-               [DF].[CVE_DOC],
-               [DF].[NUM_PAR],
-               [DF].[CVE_ART],
-               [DF].[CANT],
-               [DF].[PXS],
-               [DF].[PREC],
-               [DF].[COST],
-               [DF].[IMPU1],
-               [DF].[IMPU2],
-               [DF].[IMPU3],
-               [DF].[IMPU4],
-               [DF].[IMP1APLA],
-               [DF].[IMP2APLA],
-               [DF].[IMP3APLA],
-               [DF].[IMP4APLA],
-               [DF].[TOTIMP1],
-               [DF].[TOTIMP2],
-               [DF].[TOTIMP3],
-               [DF].[TOTIMP4],
-               [DF].[DESC1],
-               [DF].[DESC2],
-               [DF].[DESC3],
-               [DF].[COMI],
-               [DF].[APAR],
-               [DF].[ACT_INV],
-              -- ISNULL([DF].[NUM_ALM],(SELECT ERP_WAREHOUSE AS [NUM_ALM] FROM  [OP_WMS_ALZA].[wms].OP_WMS_WAREHOUSES WHERE WAREHOUSE_ID=H.CODE_WAREHOUSE)) [NUM_ALM],
-               [DF].[POLIT_APLI],
-               [DF].[TIP_CAM],
-               [DF].[UNI_VENTA],
-               [DF].[TIPO_PROD],
-               [DF].[CVE_OBS],
-               [DF].[REG_SERIE],
-               [DF].[E_LTPD],
-               [DF].[TIPO_ELEM],
-               [DF].[NUM_MOV],
-               [DF].[TOT_PARTIDA],
-               [DF].[IMPRIMIR],
-               [DF].[UUID],
-               [DF].[VERSION_SINC],
-               [DF].[MAN_IEPS],
-               [DF].[APL_MAN_IMP],
-               [DF].[CUOTA_IEPS],
-               [DF].[APL_MAN_IEPS],
-               [DF].[MTO_PORC],
-               [DF].[MTO_CUOTA],
-               [DF].[CVE_ESQ],
-               [DF].[DESCR_ART],
-               [M].[MATERIAL_NAME],
-               [M].[ITEM_CODE_ERP],
-               [M].[BASE_MEASUREMENT_UNIT],
-			   H.CODE_WAREHOUSE,
-			   DF.NUM_ALM
+	SELECT [D].[PICKING_DEMAND_DETAIL_ID],
+				   [D].[PICKING_DEMAND_HEADER_ID],
+				   [D].[MATERIAL_ID],
+				   SUM([TL].[QUANTITY_ASSIGNED] - [TL].[QUANTITY_PENDING]) AS QTY,
+				   [D].[LINE_NUM],
+				   [D].[ERP_OBJECT_TYPE],
+				   [D].[PRICE],
+				   [D].[WAS_IMPLODED],
+				   [D].[QTY_IMPLODED],
+				   [D].[MASTER_ID_MATERIAL],
+				   [D].[MATERIAL_OWNER],
+				   [D].[ATTEMPTED_WITH_ERROR],
+				   [D].[IS_POSTED_ERP],
+				   [D].[POSTED_ERP],
+				   [D].[ERP_REFERENCE],
+				   [D].[POSTED_STATUS],
+				   [D].[POSTED_RESPONSE],
+				   [D].[INNER_SALE_STATUS],
+				   [D].[INNER_SALE_RESPONSE],
+				   [D].[TONE],
+				   [D].[CALIBER],
+				   [D].[DISCOUNT],
+				   [D].[IS_BONUS],
+				   [D].[DISCOUNT_TYPE],
+				   [D].[UNIT_MEASUREMENT],
+				   [D].[STATUS_CODE],
+				   [DF].[CVE_DOC],
+				   [DF].[NUM_PAR],
+				   [DF].[CVE_ART],
+				   [DF].[CANT],
+				   [DF].[PXS],
+				   [DF].[PREC],
+				   [DF].[COST],
+				   [DF].[IMPU1],
+				   [DF].[IMPU2],
+				   [DF].[IMPU3],
+				   [DF].[IMPU4],
+				   [DF].[IMP1APLA],
+				   [DF].[IMP2APLA],
+				   [DF].[IMP3APLA],
+				   [DF].[IMP4APLA],
+				   [DF].[TOTIMP1],
+				   [DF].[TOTIMP2],
+				   [DF].[TOTIMP3],
+				   [DF].[TOTIMP4],
+				   [DF].[DESC1],
+				   [DF].[DESC2],
+				   [DF].[DESC3],
+				   [DF].[COMI],
+				   [DF].[APAR],
+				   [DF].[ACT_INV],
+				   (SELECT ERP_WAREHOUSE AS [NUM_ALM] FROM  [OP_WMS_ALZA].[wms].OP_WMS_WAREHOUSES WHERE WAREHOUSE_ID=H.CODE_WAREHOUSE) [NUM_ALM],
+				   [DF].[POLIT_APLI],
+				   [DF].[TIP_CAM],
+				   [DF].[UNI_VENTA],
+				   [DF].[TIPO_PROD],
+				   [DF].[CVE_OBS],
+				   [DF].[REG_SERIE],
+				   [DF].[E_LTPD],
+				   [DF].[TIPO_ELEM],
+				   [DF].[NUM_MOV],
+				   [DF].[TOT_PARTIDA],
+				   [DF].[IMPRIMIR],
+				   [DF].[UUID],
+				   [DF].[VERSION_SINC],
+				   [DF].[MAN_IEPS],
+				   [DF].[APL_MAN_IMP],
+				   [DF].[CUOTA_IEPS],
+				   [DF].[APL_MAN_IEPS],
+				   [DF].[MTO_PORC],
+				   [DF].[MTO_CUOTA],
+				   [DF].[CVE_ESQ],
+				   [DF].[DESCR_ART],
+				   [M].[MATERIAL_NAME],
+				   [M].[ITEM_CODE_ERP],
+				   [M].[BASE_MEASUREMENT_UNIT],
+				   CAST(0 AS INT) [ENVIADO],
+				   CAST(0 AS INT) [NUMERO_MOVIMIENTO],
+				   [DF].[PREC]-[DF].[PREC]*isnull([DF].[DESC1],0)/100 UNITARIO_CON_DESCUENTO
+			INTO [#DETALLE]
+			FROM [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_DETAIL] [D]
+				INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H] WITH (NOLOCK)
+					ON [H].[PICKING_DEMAND_HEADER_ID] = [D].[PICKING_DEMAND_HEADER_ID]
+				LEFT JOIN [OP_WMS_ALZA].[wms].OP_WMS_TASK_LIST TL WITH (NOLOCK)
+					ON TL.WAVE_PICKING_ID = H.WAVE_PICKING_ID AND TL.MATERIAL_ID = D.MATERIAL_ID AND TL.STATUS_CODE = D.STATUS_CODE AND ISNULL(TL.DOC_ID_SOURCE, 1) = IIF(TL.DOC_ID_SOURCE IS NOT NULL , H.DOC_ENTRY, 1)
+				INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_MATERIALS] [M] WITH (NOLOCK)
+					ON [M].[MATERIAL_ID] = [D].[MATERIAL_ID]
+				LEFT JOIN [SAE70EMPRESA01].[dbo].[PAR_FACTP01] [DF] WITH (NOLOCK)
+					ON LTRIM(RTRIM([DF].[CVE_DOC])) COLLATE DATABASE_DEFAULT = [H].[DOC_NUM] COLLATE DATABASE_DEFAULT
+					   AND [DF].[NUM_PAR] = [D].[LINE_NUM]
+			WHERE [H].[PICKING_DEMAND_HEADER_ID] = @NEXT_PICKING_DEMAND_HEADER
+				  AND [H].[IS_AUTHORIZED] > 0
+				  AND [D].[QTY] > 0
+				  GROUP BY
+				  [D].[PICKING_DEMAND_DETAIL_ID],
+				   [D].[PICKING_DEMAND_HEADER_ID],
+				   [D].[MATERIAL_ID],
+				   [D].[QTY],
+				  -- SUM(TL.QUANTITY_ASSIGNED - TL.QUANTITY_PENDING) AS QTY,
+				   [D].[LINE_NUM],
+				   [D].[ERP_OBJECT_TYPE],
+				   [D].[PRICE],
+				   [D].[WAS_IMPLODED],
+				   [D].[QTY_IMPLODED],
+				   [D].[MASTER_ID_MATERIAL],
+				   [D].[MATERIAL_OWNER],
+				   [D].[ATTEMPTED_WITH_ERROR],
+				   [D].[IS_POSTED_ERP],
+				   [D].[POSTED_ERP],
+				   [D].[ERP_REFERENCE],
+				   [D].[POSTED_STATUS],
+				   [D].[POSTED_RESPONSE],
+				   [D].[INNER_SALE_STATUS],
+				   [D].[INNER_SALE_RESPONSE],
+				   [D].[TONE],
+				   [D].[CALIBER],
+				   [D].[DISCOUNT],
+				   [D].[IS_BONUS],
+				   [D].[DISCOUNT_TYPE],
+				   [D].[UNIT_MEASUREMENT],
+				   [D].[STATUS_CODE],
+				   [DF].[CVE_DOC],
+				   [DF].[NUM_PAR],
+				   [DF].[CVE_ART],
+				   [DF].[CANT],
+				   [DF].[PXS],
+				   [DF].[PREC],
+				   [DF].[COST],
+				   [DF].[IMPU1],
+				   [DF].[IMPU2],
+				   [DF].[IMPU3],
+				   [DF].[IMPU4],
+				   [DF].[IMP1APLA],
+				   [DF].[IMP2APLA],
+				   [DF].[IMP3APLA],
+				   [DF].[IMP4APLA],
+				   [DF].[TOTIMP1],
+				   [DF].[TOTIMP2],
+				   [DF].[TOTIMP3],
+				   [DF].[TOTIMP4],
+				   [DF].[DESC1],
+				   [DF].[DESC2],
+				   [DF].[DESC3],
+				   [DF].[COMI],
+				   [DF].[APAR],
+				   [DF].[ACT_INV],
+				  -- ISNULL([DF].[NUM_ALM],(SELECT ERP_WAREHOUSE AS [NUM_ALM] FROM  [OP_WMS_ALZA].[wms].OP_WMS_WAREHOUSES WHERE WAREHOUSE_ID=H.CODE_WAREHOUSE)) [NUM_ALM],
+				   [DF].[POLIT_APLI],
+				   [DF].[TIP_CAM],
+				   [DF].[UNI_VENTA],
+				   [DF].[TIPO_PROD],
+				   [DF].[CVE_OBS],
+				   [DF].[REG_SERIE],
+				   [DF].[E_LTPD],
+				   [DF].[TIPO_ELEM],
+				   [DF].[NUM_MOV],
+				   [DF].[TOT_PARTIDA],
+				   [DF].[IMPRIMIR],
+				   [DF].[UUID],
+				   [DF].[VERSION_SINC],
+				   [DF].[MAN_IEPS],
+				   [DF].[APL_MAN_IMP],
+				   [DF].[CUOTA_IEPS],
+				   [DF].[APL_MAN_IEPS],
+				   [DF].[MTO_PORC],
+				   [DF].[MTO_CUOTA],
+				   [DF].[CVE_ESQ],
+				   [DF].[DESCR_ART],
+				   [M].[MATERIAL_NAME],
+				   [M].[ITEM_CODE_ERP],
+				   [M].[BASE_MEASUREMENT_UNIT],
+				   H.CODE_WAREHOUSE,
+				   DF.NUM_ALM
+				   HAVING SUM([TL].[QUANTITY_ASSIGNED] - [TL].[QUANTITY_PENDING]) > 0 --https://devprocesoseficientes.atlassian.net/browse/DES-1926
              --  CAST(0 AS INT) [ENVIADO],
             --   CAST(0 AS INT) [NUMERO_MOVIMIENTO],
 			--   [DF].[PREC]-[DF].[PREC]*[DF].[DESC1]/100 UNITARIO_CON_DESCUENTO
@@ -423,16 +429,16 @@ SELECT [D].[PICKING_DEMAND_DETAIL_ID],
                [VEND].[NOMBRE] [NOMBRE_VENDEDOR],
                [C].[STR_OBS] [COMENTARIO_PEDIDO]
         INTO [#ENCABEZADO]
-        FROM [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H]
-            LEFT JOIN [SAE70EMPRESA01].[dbo].[FACTP01] [FACT]
+        FROM [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H] WITH (NOLOCK)
+            LEFT JOIN [SAE70EMPRESA01].[dbo].[FACTP01] [FACT] WITH (NOLOCK)
                 ON LTRIM(RTRIM([FACT].[CVE_DOC])) COLLATE DATABASE_DEFAULT = [H].[DOC_NUM] COLLATE DATABASE_DEFAULT
-            LEFT JOIN [SAE70EMPRESA01].[dbo].[FACTP_CLIB01] [FACTCLIB]
+            LEFT JOIN [SAE70EMPRESA01].[dbo].[FACTP_CLIB01] [FACTCLIB] WITH (NOLOCK)
                 ON ([FACT].[CVE_DOC] = [FACTCLIB].[CLAVE_DOC])
-            LEFT JOIN [SAE70EMPRESA01].[dbo].[CLIE01] [CLIE]
+            LEFT JOIN [SAE70EMPRESA01].[dbo].[CLIE01] [CLIE] WITH (NOLOCK)
                 ON [CLIE].[CLAVE] = [FACT].[CVE_CLPV]
-            LEFT JOIN [SAE70EMPRESA01].[dbo].[VEND01] [VEND]
+            LEFT JOIN [SAE70EMPRESA01].[dbo].[VEND01] [VEND] WITH (NOLOCK)
                 ON ([FACT].[CVE_VEND] = [VEND].[CVE_VEND])
-            LEFT JOIN [SAE70EMPRESA01].[dbo].[OBS_DOCF01] [C]
+            LEFT JOIN [SAE70EMPRESA01].[dbo].[OBS_DOCF01] [C] WITH (NOLOCK)
                 ON [C].[CVE_OBS] = [FACT].[CVE_OBS]
         WHERE [H].[PICKING_DEMAND_HEADER_ID] = @NEXT_PICKING_DEMAND_HEADER
               AND [H].[IS_AUTHORIZED] > 0;
@@ -519,9 +525,9 @@ SELECT [D].[PICKING_DEMAND_DETAIL_ID],
                 GROUP BY [T].[CVE_ART]
                 HAVING SUM([EXIST]) <
                 (
-                    SELECT SUM(@QTY_DETAIL)
-                    FROM [#DETALLE]
-                    WHERE [CVE_ART] = @ERP_MATERIAL_CODE
+                    SELECT @QTY_DETAIL
+                    --SELECT SUM(@QTY_DETAIL)
+
                 )
             )
             BEGIN
@@ -728,9 +734,9 @@ SELECT [D].[PICKING_DEMAND_DETAIL_ID],
                 GROUP BY [T].[CVE_ART]
                 HAVING SUM([EXIST]) <
                 (
-                    SELECT SUM(@QTY_DETAIL)
-                    FROM [#DETALLE]
-                    WHERE [CVE_ART] = @ERP_MATERIAL_CODE
+                    SELECT @QTY_DETAIL
+                    --SELECT SUM(@QTY_DETAIL)
+
                 )
             )
             BEGIN
@@ -1003,7 +1009,7 @@ SELECT [D].[PICKING_DEMAND_DETAIL_ID],
                [H].[CVE_VEND] [CVE_VEND],
                [H].[CVE_PEDI] [CVE_PEDI],
                @FECHA_HOY [FECHA_DOC],
-               @FECHA_HOY [FECHA_ENT],
+               H.FECHA_ENT [FECHA_ENT], -- tenia @fecha_hoy pidieron la fecha original
                [H].[FECHA_DOC] [FECHA_VEN],
                @TOTAL_DOCUMENTO [CAN_TOT],--valor bruto de todo lo que es la suma
                @TOTAL_IMPUESTO_01 [IMP_TOT1],

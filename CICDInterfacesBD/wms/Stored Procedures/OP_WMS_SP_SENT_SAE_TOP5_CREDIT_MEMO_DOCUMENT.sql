@@ -1,4 +1,5 @@
-﻿-- =============================================
+﻿
+-- =============================================
 -- Autor:	            Pablo.aguilar
 -- Fecha de Creacion: 	17/07/2019
 -- Description:	        Sp que trae el top 5 de los documentos de recepcion y envia a SAE
@@ -6,8 +7,7 @@
 
 /*
 -- Ejemplo de Ejecucion:
-			EXEC [wms].[OP_WMS_SP_SENT_SAE_TOP5_CREDIT_MEMO_DOCUMENT]
-				@OWNER = 'ALZA'
+	EXEC [SWIFT_INTERFACES].[wms].[OP_WMS_SP_SENT_SAE_TOP5_CREDIT_MEMO_DOCUMENT] @OWNER = 'alza';
 */
 -- =============================================
 CREATE PROCEDURE [wms].[OP_WMS_SP_SENT_SAE_TOP5_CREDIT_MEMO_DOCUMENT]
@@ -45,7 +45,7 @@ BEGIN
            [RDH].[EXTERNAL_SOURCE_ID],
            0 [ENVIADA]
     INTO [#RECEPTION_DOCUMENT]
-    FROM [OP_WMS_ALZA].[wms].[OP_WMS_ERP_RECEPTION_DOCUMENT_HEADER] [RDH]
+    FROM [OP_WMS_ALZA].[wms].[OP_WMS_ERP_RECEPTION_DOCUMENT_HEADER] [RDH] WITH (NOLOCK)
     WHERE [RDH].[ERP_RECEPTION_DOCUMENT_HEADER_ID] > 0
           AND ISNULL([RDH].[IS_POSTED_ERP], 0) = 0
           AND ISNULL([RDH].[ATTEMPTED_WITH_ERROR], 0) = 0
@@ -85,7 +85,7 @@ BEGIN
                 [Codigo],
                 [DbData]
             )
-            EXEC [ERP_SERVER].[ASPEL_INTERFACES].[dbo].[SAE_CREATE_INVENTORY_INCOME_BY_CREDIT_MEMO] @RECEPTION_DOCUMENT_HEADER = @HEADER_ID;
+            EXEC [ASPEL_INTERFACES].[dbo].[SAE_CREATE_INVENTORY_INCOME_BY_CREDIT_MEMO] @RECEPTION_DOCUMENT_HEADER = @HEADER_ID;
 
             SELECT TOP 1
                    @RESPONSE = [Mensaje],
@@ -118,6 +118,11 @@ BEGIN
 
         END TRY
         BEGIN CATCH
+			
+			UPDATE [#RECEPTION_DOCUMENT]
+            SET [ENVIADA] = 1
+            WHERE [DocNum] = @HEADER_ID;
+            DELETE @OPERACION;
 
 
             DECLARE @MENSAJE_ERROR VARCHAR(500) = ERROR_MESSAGE();

@@ -271,18 +271,13 @@ BEGIN
             @ID
            ,[MD].[MATERIAL_ID]
            ,[MD].[QTY]
-           ,[DD].[LINE_NUM]
+           ,[MD].[LINE_NUM]
 		   ,ISNULL([W].[ERP_WAREHOUSE], NULL)
-		   ,[DD].[STATUS_CODE]
+		   ,[MD].[STATUS_CODE]
 		   ,[MD].[CURRENT_COST_BY_PRODUCT]
         FROM
             [wms].[OP_WMS_MANIFEST_DETAIL] [MD]
         INNER JOIN [wms].[OP_WMS_MANIFEST_HEADER] [MH] ON [MH].[MANIFEST_HEADER_ID] = [MD].[MANIFEST_HEADER_ID]
-        INNER JOIN [wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [DH] ON [MH].[TRANSFER_REQUEST_ID] = [DH].[TRANSFER_REQUEST_ID]
-                                                              AND [DH].[DEMAND_TYPE] = 'TRANSFER_REQUEST'
-        INNER JOIN [wms].[OP_WMS_NEXT_PICKING_DEMAND_DETAIL] [DD] ON [DD].[PICKING_DEMAND_HEADER_ID] = [DH].[PICKING_DEMAND_HEADER_ID]
-                                                              AND [DD].[MATERIAL_ID] = [MD].[MATERIAL_ID]
-															  AND [MD].[STATUS_CODE] = [DD].[STATUS_CODE]
         INNER JOIN [wms].[OP_WMS_TRANSFER_REQUEST_HEADER] [TRH] ON [TRH].[TRANSFER_REQUEST_ID] = [MH].[TRANSFER_REQUEST_ID]
 		INNER JOIN [wms].[OP_WMS_WAREHOUSES] [W] ON [W].[WAREHOUSE_ID] = [TRH].[WAREHOUSE_TO] 
 

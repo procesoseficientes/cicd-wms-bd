@@ -23,78 +23,80 @@
 );
 
 
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Número de empresa', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'NUM_EMP';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Ventas', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'VENTAS';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Cuenta contable', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'DESCFINANVTAS';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Impuesto por pagar', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'IMPXPAGAR';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Devolución ventas', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'DEVOLVENTAS';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Ventas Servicio', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'VENTASERVICIOS';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Cliente', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'CLIENTES';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Almacén', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'ALMACEN';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Desc Finan Comp', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'DESCFINANCOMP';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Impuesto x acreditar', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'IMPXACREDITAR';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Devolución de compras', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'DEVOLCOMPRAS';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Compras servicio', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'COMPRASERVICIOS';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'proveedores', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'PROVEEDORES';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Bancos', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'BANCOS';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Otros impuestos', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'OTROSIMPUESTOS';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Impuestos venta 1', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'IMPUESTOVENTA1';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Impuestos venta 2', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'IMPUESTOVENTA2';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Impuestos venta 3', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'IMPUESTOVENTA3';
+
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Diferencia Costo Compra', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'PARAM_CTACONTABLE01', @level2type = N'COLUMN', @level2name = N'DIFCOSTOCOMPRA';
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
 

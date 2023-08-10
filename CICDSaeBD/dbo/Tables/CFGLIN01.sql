@@ -9,26 +9,28 @@
 );
 
 
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de línea', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFGLIN01', @level2type = N'COLUMN', @level2name = N'CVE_LIN';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'longitud1', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFGLIN01', @level2type = N'COLUMN', @level2name = N'LONG1';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Separador1', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFGLIN01', @level2type = N'COLUMN', @level2name = N'SEP1';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Longitud2', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFGLIN01', @level2type = N'COLUMN', @level2name = N'LONG2';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Separador2', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFGLIN01', @level2type = N'COLUMN', @level2name = N'SEP2';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Longitud3', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CFGLIN01', @level2type = N'COLUMN', @level2name = N'LONG3';
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
 

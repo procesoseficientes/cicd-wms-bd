@@ -43,6 +43,10 @@ BEGIN
 		INTO #EXTERNAL_SOURCE
 		FROM [wms].[OP_SETUP_EXTERNAL_SOURCE] [ES]
 
+		--SELECT * FROM [wms].[OP_SETUP_EXTERNAL_SOURCE] [ES]
+		--SELECT * FROM [SWIFT_EXPRESS].[SONDA].[USERS]
+		--UPDATE [wms].[OP_SETUP_EXTERNAL_SOURCE] SET [SCHEMA_NAME] = 'SONDA'
+		--wms
 		-- ------------------------------------------------------------------------------------
 		-- Ciclo para obtener las rutas
 		-- ------------------------------------------------------------------------------------

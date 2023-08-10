@@ -1,6 +1,4 @@
 ﻿
-
-
 -- =============================================
 -- Autor:				gustavo.garcía
 -- Fecha de Creacion: 	11-Feb-2021  
@@ -174,15 +172,15 @@ BEGIN
                CAST(0 AS INT) [ENVIADO],
                CAST(0 AS INT) [NUMERO_MOVIMIENTO]
         INTO [#DETALLE]
-        FROM [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_DETAIL] [D]
-            INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H]
+        FROM [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_DETAIL] [D] WITH (NOLOCK)
+            INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H] WITH (NOLOCK)
                 ON [H].[PICKING_DEMAND_HEADER_ID] = [D].[PICKING_DEMAND_HEADER_ID]
-            INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_MATERIALS] [M]
+            INNER JOIN [OP_WMS_ALZA].[wms].[OP_WMS_MATERIALS] [M] WITH (NOLOCK)
                 ON [M].[MATERIAL_ID] = [D].[MATERIAL_ID]
-            LEFT JOIN [SAE70EMPRESA01].[dbo].[PAR_FACTP01] [DF]
+            LEFT JOIN [SAE70EMPRESA01].[dbo].[PAR_FACTP01] [DF] WITH (NOLOCK)
                 ON LTRIM(RTRIM([DF].[CVE_DOC])) COLLATE DATABASE_DEFAULT = [H].[DOC_NUM] COLLATE DATABASE_DEFAULT
                    AND [DF].[NUM_PAR] = [D].[LINE_NUM]
-			LEFT JOIN [OP_WMS_ALZA].[wms].OP_WMS_WAREHOUSES W 
+			LEFT JOIN [OP_WMS_ALZA].[wms].OP_WMS_WAREHOUSES W  WITH (NOLOCK)
 				ON W.WAREHOUSE_ID=H.CODE_WAREHOUSE
         WHERE [H].[PICKING_DEMAND_HEADER_ID] = @NEXT_PICKING_DEMAND_HEADER
               AND [H].[IS_AUTHORIZED] > 0
@@ -310,16 +308,16 @@ BEGIN
                [VEND].[NOMBRE] [NOMBRE_VENDEDOR],
                [C].[STR_OBS] [COMENTARIO_PEDIDO]
         INTO [#ENCABEZADO]
-        FROM [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H]
-            LEFT JOIN [SAE70EMPRESA01].[dbo].[FACTP01] [FACT]
+        FROM [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H] WITH (NOLOCK)
+            LEFT JOIN [SAE70EMPRESA01].[dbo].[FACTP01] [FACT] WITH (NOLOCK)
                 ON LTRIM(RTRIM([FACT].[CVE_DOC])) COLLATE DATABASE_DEFAULT = [H].[DOC_NUM] COLLATE DATABASE_DEFAULT
-            LEFT JOIN [SAE70EMPRESA01].[dbo].[FACTP_CLIB01] [FACTCLIB]
+            LEFT JOIN [SAE70EMPRESA01].[dbo].[FACTP_CLIB01] [FACTCLIB] WITH (NOLOCK)
                 ON ([FACT].[CVE_DOC] = [FACTCLIB].[CLAVE_DOC])
-            LEFT JOIN [SAE70EMPRESA01].[dbo].[CLIE01] [CLIE]
+            LEFT JOIN [SAE70EMPRESA01].[dbo].[CLIE01] [CLIE] WITH (NOLOCK)
                 ON [CLIE].[CLAVE] = [FACT].[CVE_CLPV]
-            LEFT JOIN [SAE70EMPRESA01].[dbo].[VEND01] [VEND]
+            LEFT JOIN [SAE70EMPRESA01].[dbo].[VEND01] [VEND] WITH (NOLOCK)
                 ON ([FACT].[CVE_VEND] = [VEND].[CVE_VEND])
-            LEFT JOIN [SAE70EMPRESA01].[dbo].[OBS_DOCF01] [C]
+            LEFT JOIN [SAE70EMPRESA01].[dbo].[OBS_DOCF01] [C] WITH (NOLOCK)
                 ON [C].[CVE_OBS] = [FACT].[CVE_OBS]
         WHERE [H].[PICKING_DEMAND_HEADER_ID] = @NEXT_PICKING_DEMAND_HEADER
               AND [H].[IS_AUTHORIZED] > 0;
@@ -411,7 +409,7 @@ BEGIN
 			begin
 				
 
-            PRINT 'Ciclo detalle line: V:  ' + CAST(@LINE_NUM_DETAIL AS VARCHAR);
+            PRINT 'Ciclo detalle line: V:  ' + CAST(@LINE_NUM_DETAIL AS VARCHAR) +' det: '+ CAST(@QTY_DETAIL AS VARCHAR) ;
 			select @DEMAND_TYPE =demand_type 
 				from [OP_WMS_ALZA].[wms].[OP_WMS_NEXT_PICKING_DEMAND_HEADER] [H] 
 				where h.PICKING_DEMAND_HEADER_ID=@NEXT_PICKING_DEMAND_HEADER
@@ -461,11 +459,10 @@ BEGIN
                           AND [CA].[CVE_ALTER] = @ERP_MATERIAL_CODE
                 ) AS [T]
                 GROUP BY [T].[CVE_ART]
-                HAVING SUM([EXIST]) <
+                HAVING SUM(CAST([EXIST] AS DECIMAL(12,6))) <
                 (
-                    SELECT SUM(@QTY_DETAIL)
-                    FROM [#DETALLE]
-                    WHERE [ITEM_CODE_ERP] = @ERP_MATERIAL_CODE
+                    SELECT @QTY_DETAIL
+     
                 )
             )
             BEGIN
@@ -654,11 +651,10 @@ BEGIN
                           AND [CA].[CVE_ALTER] = @ERP_MATERIAL_CODE
                 ) AS [T]
                 GROUP BY [T].[CVE_ART]
-                HAVING SUM([EXIST]) <
+                HAVING SUM(CAST([EXIST] AS DECIMAL(12,6))) <
                 (
-                    SELECT SUM(@QTY_DETAIL)
-                    FROM [#DETALLE]
-                    WHERE [CVE_ART] = @ERP_MATERIAL_CODE
+                    SELECT @QTY_DETAIL
+        
                 )
             )
             BEGIN

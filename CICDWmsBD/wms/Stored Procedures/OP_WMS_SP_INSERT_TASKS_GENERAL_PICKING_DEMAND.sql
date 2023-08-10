@@ -793,7 +793,8 @@ BEGIN
 						WHERE
 							[WAVE_PICKING_ID] = @WAVE_PICKING_ID
 							AND [LICENSE_ID_SOURCE] = @LICENSE_ID
-							AND [MATERIAL_ID] = @MATERIAL_ID )
+							AND [MATERIAL_ID] = @MATERIAL_ID
+							AND ISNULL([DOC_ID_SOURCE], 0) = ISNULL(@DOC_NUM, 0))
 			BEGIN
                 ---------------------------------------------------------------------------------
                 -- Existe el material en la misma ola y hay disponible de la licencia se actualiza el registro. 

@@ -1,0 +1,53 @@
+﻿-- =============================================
+-- Autor:				diego.as
+-- Fecha de Creacion: 	11/13/2017 @ Reborn-TEAM Sprint Eberhard
+-- Description:			SP que agrega la relacion de Nota De Entrega Por Factura
+
+/*
+-- Ejemplo de Ejecucion:
+		--
+		DECLARE @ID_OUTPUT INT;
+		--
+				EXEC [SONDA].[SONDA_SP_ADD_DELIVERY_NOTE_BY_INVOICE]
+				@DELIVERY_NOTE_DOC_SERIE = 'SERIE_DIEGO_PRUEBA'
+				,@DELIVERY_NOTE_DOC_NUM = 1
+				,@INVOICE_ID = 10
+				,@DELIVERY_NOTE_BY_INVOICE_ID = @ID_OUTPUT OUTPUT
+		--
+		SELECT @ID_OUTPUT AS DELIVERY_NOTE_BY_INVOICE_ID
+		--
+*/
+-- =============================================
+CREATE PROCEDURE [SONDA].[SONDA_SP_ADD_DELIVERY_NOTE_BY_INVOICE](
+	@DELIVERY_NOTE_DOC_SERIE VARCHAR(250)
+	,@DELIVERY_NOTE_DOC_NUM INT
+	,@INVOICE_ID INT
+	,@DELIVERY_NOTE_BY_INVOICE_ID INT OUTPUT
+)
+AS
+BEGIN
+	BEGIN TRY
+		--
+		INSERT INTO [SONDA].[SONDA_DELIVERY_NOTE_BY_INVOICE]
+				(
+					[DELIVERY_NOTE_DOC_NUM]
+					,[DELIVERY_NOTE_SERIE]
+					,[INVOICE_ID]
+					,[LAST_UPDATE]
+				)
+		VALUES
+				(
+					@DELIVERY_NOTE_DOC_NUM  -- DELIVERY_NOTE_DOC_NUM - int
+					,@DELIVERY_NOTE_DOC_SERIE -- DELIVERY_NOTE_SERIE - varchar(250)
+					,@INVOICE_ID  -- INVOICE_ID - int
+					,GETDATE()  -- LAST_UPDATE - datetime
+				)
+		--
+		SET @DELIVERY_NOTE_BY_INVOICE_ID =  SCOPE_IDENTITY();
+		--
+	END TRY
+	BEGIN CATCH
+		DECLARE @MESSAGE_ERROR VARCHAR(MAX) = ERROR_MESSAGE();
+		RAISERROR(@MESSAGE_ERROR,16,1);
+	END CATCH
+END

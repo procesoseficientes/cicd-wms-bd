@@ -1,4 +1,4 @@
-﻿CREATE TABLE [dbo].[FACTR01] (
+CREATE TABLE [dbo].[FACTR01] (
     [TIP_DOC]        VARCHAR (1)   NULL,
     [CVE_DOC]        VARCHAR (20)  NOT NULL,
     [CVE_CLPV]       VARCHAR (10)  NOT NULL,
@@ -56,8 +56,12 @@
     [VERSION_SINC]   DATETIME      NULL,
     [FORMADEPAGOSAT] VARCHAR (5)   NULL,
     [USO_CFDI]       VARCHAR (5)   NULL,
+    [NUM_ALM_DES]    INT           NULL,
+    [TIP_TRASLADO]   VARCHAR (1)   NULL,
     CONSTRAINT [PK_FACTR01] PRIMARY KEY CLUSTERED ([CVE_DOC] ASC)
 );
+
+
 
 
 GO
@@ -71,221 +75,222 @@ CREATE UNIQUE NONCLUSTERED INDEX [IDX_FACTR_FECHA01]
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Tipo de documento [R] .: R=Remisiones', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'TIP_DOC';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de documento', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'CVE_DOC';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de cliente', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'CVE_CLPV';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Estatus [O/C/E] O=Original, C=Cancelada, E=Emitida', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'STATUS';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Datos de mostrador', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'DAT_MOSTR';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de vendedor', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'CVE_VEND';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Su pedido', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'CVE_PEDI';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Fecha elaboración', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'FECHA_DOC';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Fecha entrega', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'FECHA_ENT';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Fecha vigencia', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'FECHA_VEN';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Fecha de cancelación', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'FECHA_CANCELA';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Subtotal', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'CAN_TOT';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Total impuesto uno', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'IMP_TOT1';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Total impuesto dos', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'IMP_TOT2';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Total impuesto tres', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'IMP_TOT3';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Total impuesto cuatro', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'IMP_TOT4';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Descuento total', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'DES_TOT';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Descuento financiero', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'DES_FIN';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Total de comisiones', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'COM_TOT';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Condición', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'CONDICION';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de observaciones', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'CVE_OBS';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de almacén', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'NUM_ALMA';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Actualiza CxC [A/OtroValor] .: A=Si, OtroValor=No', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'ACT_CXC';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Actualiza COI [A/OtroValor] .: A=Si, OtroValor=No', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'ACT_COI';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Enlazado [S/N] .: S=Si, N=No', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'ENLAZADO';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Tipo de documento enlazado [F/P/C/O] .: F=Facturas, P=Pedidos, C=Cotizaciones O=Original', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'TIP_DOC_E';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de moneda', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'NUM_MONED';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Tipo de cambio', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'TIPCAMB';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Número de pagos', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'NUM_PAGOS';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Fecha de creación', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'FECHAELAB';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Monto de primer pago', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'PRIMERPAGO';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'RFC', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'RFC';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Control póliza', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'CTLPOL';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Es factura digital [S/N] .: S=Si, N=No', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'ESCFD';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Número de autorización del CFD', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'AUTORIZA';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Serie', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'SERIE';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Folio', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'FOLIO';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Año de autorización', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'AUTOANIO';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Datos de envío', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'DAT_ENVIO';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Pago de contado [S/N] .: S=Si, N=No', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'CONTADO';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de bitácora', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'CVE_BITA';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Bloqueado [S/N] .: S=Si, N=No', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'BLOQ';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Forma de envío del documento [I/C/A/null] .: I=Impresa, C=Correo, A=Impreso y Correo, null=Ninguno', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'FORMAENVIO';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Porcentaje de descuento financiero', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'DES_FIN_PORC';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Porcentaje de descuento total', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'DES_TOT_PORC';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Importe total', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'IMPORTE';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Porcentaje de comision', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'COM_TOT_PORC';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Método de pago', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'METODODEPAGO';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Número de cuenta de pago', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'NUMCTAPAGO';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Tipo de documento anterior [C/P] .: C=Cotización, P=Pedido', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'TIP_DOC_ANT';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de documento anterior', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'DOC_ANT';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Tipo de documento siguiente [F] .: F=Facturas', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'TIP_DOC_SIG';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de documento siguiente', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'DOC_SIG';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'ID para sincronisación con SAE Movil', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'UUID';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Fecha y hora para sincronisación con SAE Movil', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'FACTR01', @level2type = N'COLUMN', @level2name = N'VERSION_SINC';
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+CREATE NONCLUSTERED INDEX [IDX_CVEPEDI_STATUS_R01]
+    ON [dbo].[FACTR01]([CVE_PEDI] ASC, [STATUS] ASC);
 

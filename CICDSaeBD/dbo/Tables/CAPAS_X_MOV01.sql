@@ -8,22 +8,24 @@
 );
 
 
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de artículo', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CAPAS_X_MOV01', @level2type = N'COLUMN', @level2name = N'CVE_ART';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Número de movimiento', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CAPAS_X_MOV01', @level2type = N'COLUMN', @level2name = N'NUM_MOV';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Número de movimiento afectado', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CAPAS_X_MOV01', @level2type = N'COLUMN', @level2name = N'NUM_MOV_AFT';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Cantidad afectada', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CAPAS_X_MOV01', @level2type = N'COLUMN', @level2name = N'CANT_AFT';
+
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Costo afectado', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CAPAS_X_MOV01', @level2type = N'COLUMN', @level2name = N'COSTO_AFT';
+
+
+
+GO
+
+
+
+GO
+
 

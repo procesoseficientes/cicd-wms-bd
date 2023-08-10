@@ -7,18 +7,20 @@
 );
 
 
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave del artículo', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CVES_ALTER01', @level2type = N'COLUMN', @level2name = N'CVE_ART';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave alterna', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CVES_ALTER01', @level2type = N'COLUMN', @level2name = N'CVE_ALTER';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Tipo de clave [C/P/N] .: C=Cliente, P=Proveedor, N=Ninguno ', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CVES_ALTER01', @level2type = N'COLUMN', @level2name = N'TIPO';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave del cliente/proveedor', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'CVES_ALTER01', @level2type = N'COLUMN', @level2name = N'CVE_CLPV';
+
+
+
+GO
+
+
+
+GO
+
 

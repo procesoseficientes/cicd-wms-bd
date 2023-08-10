@@ -41,7 +41,7 @@ BEGIN
 		,@QUANTITY_PENDING NUMERIC(18, 4)
 		,@TASK_TYPE VARCHAR(25)
 		,@ASSIGNED_DATE DATETIME
-		,@CURRENT_ASSIGNED NUMERIC(18, 2)
+		,@CURRENT_ASSIGNED NUMERIC(18, 4)
 		,@LICENSE_ID NUMERIC(18, 0)
 		,@BARCODE_ID VARCHAR(50)
 		,@ALTERNATE_BARCODE VARCHAR(50) = ''
@@ -66,15 +66,15 @@ BEGIN
 		PRINT '@TARGET_ZONE: '+@TARGET_ZONE
 
 		SELECT
-			[Z].[ZONE]
+			[DZ].[ZONE]
 		INTO
 			[#ZONES_FOR_REALLOC]
 		FROM
-			[wms].[OP_WMS_ZONE] [Z]
+			[wms].[OP_WMS_ZONE] [Z] WITH (NOLOCK)
 		INNER JOIN [wms].[OP_WMS_ZONE_TO_REPLENISH_IN_ZONE] [ZR] ON [ZR].REPLENISH_ZONE_ID = [Z].[ZONE_ID]
-		INNER JOIN [wms].[OP_WMS_ZONE] [DZ] ON  [ZR].[ZONE_ID] = [DZ].[ZONE_ID]
+		INNER JOIN [wms].[OP_WMS_ZONE] [DZ] WITH (NOLOCK) ON [ZR].[ZONE_ID] = [DZ].[ZONE_ID]
 		WHERE
-			[DZ].[ZONE] = @TARGET_ZONE;
+			[Z].[ZONE] = @TARGET_ZONE;
 
 
 
@@ -147,53 +147,50 @@ BEGIN
 		PRINT ('@HAVBATCH')
 		PRINT @HAVBATCH 
 		IF @HAVBATCH = 0
-		BEGIN
-      ---------------------------------------------------------------------------------
-      -- No maneja lote 
-      ---------------------------------------------------------------------------------  
-			INSERT	INTO @LICENCIAS
-			SELECT
-				[RAG].[CURRENT_LOCATION]
-				,[RAG].[CURRENT_WAREHOUSE]
-				,[RAG].[LICENSE_ID]
-				,[RAG].[CODIGO_POLIZA]
-				,[RAG].[QTY]
-				,[RAG].[FECHA_DOCUMENTO]
-			FROM
-				[wms].[OP_WMS_VIEW_REALLOC_AVAILABLE_GENERAL] [RAG]
-			INNER JOIN [#ZONES_FOR_REALLOC] [ZFR] ON [RAG].[ZONE] = [ZFR].[ZONE]
-			WHERE
-				[RAG].[MATERIAL_ID] = @MATERIAL_ID
-				AND [RAG].[QTY] > 0;
-
-
-		END;
+			BEGIN
+		  ---------------------------------------------------------------------------------
+		  -- No maneja lote 
+		  ---------------------------------------------------------------------------------  
+				INSERT	INTO @LICENCIAS
+				SELECT
+					[RAG].[CURRENT_LOCATION]
+					,[RAG].[CURRENT_WAREHOUSE]
+					,[RAG].[LICENSE_ID]
+					,[RAG].[CODIGO_POLIZA]
+					,[RAG].[QTY]
+					,[RAG].[FECHA_DOCUMENTO]
+				FROM
+					[wms].[OP_WMS_VIEW_REALLOC_AVAILABLE_GENERAL] [RAG] WITH (NOLOCK)
+				INNER JOIN [#ZONES_FOR_REALLOC] [ZFR] ON [RAG].[ZONE] = [ZFR].[ZONE]
+				WHERE
+					[RAG].[MATERIAL_ID] = @MATERIAL_ID
+					AND [RAG].[QTY] >= @QUANTITY_PENDING;
+			END;
 		ELSE
-		BEGIN
-      ---------------------------------------------------------------------------------
-      -- Maneja lote 
-      ---------------------------------------------------------------------------------
-	  PRINT '1'
-			INSERT	INTO @LICENCIAS
-			SELECT
-				[RAGB].[CURRENT_LOCATION]
-				,[RAGB].[CURRENT_WAREHOUSE]
-				,[RAGB].[LICENSE_ID]
-				,[RAGB].[CODIGO_POLIZA]
-				,[RAGB].[QTY]
-				,[RAGB].[DATE_EXPIRATION_FOR_PICKING]
-			FROM
-				[wms].[OP_WMS_VIEW_REALLOC_AVAILABLE_GENERAL_BATCH] [RAGB]
-			INNER JOIN [#ZONES_FOR_REALLOC] [ZFR] ON [RAGB].[ZONE] = [ZFR].[ZONE]
-			WHERE
-				[RAGB].[MATERIAL_ID] = @MATERIAL_ID
-				AND [RAGB].[QTY] > 0;
+			BEGIN
+		---------------------------------------------------------------------------------
+		-- Maneja lote 
+		---------------------------------------------------------------------------------
+			PRINT '1'
+				INSERT	INTO @LICENCIAS
+				SELECT
+					[RAGB].[CURRENT_LOCATION]
+					,[RAGB].[CURRENT_WAREHOUSE]
+					,[RAGB].[LICENSE_ID]
+					,[RAGB].[CODIGO_POLIZA]
+					,[RAGB].[QTY]
+					,[RAGB].[DATE_EXPIRATION_FOR_PICKING]
+				FROM
+					[wms].[OP_WMS_VIEW_REALLOC_AVAILABLE_GENERAL_BATCH] [RAGB] WITH (NOLOCK)
+				INNER JOIN [#ZONES_FOR_REALLOC] [ZFR] ON [RAGB].[ZONE] = [ZFR].[ZONE]
+				WHERE
+					[RAGB].[MATERIAL_ID] = @MATERIAL_ID
+					AND [RAGB].[QTY] >= @QUANTITY_PENDING;
+			END;
 
-		END;
-
-    ---------------------------------------------------------------------------------
-    -- Recorrer por licencias el material
-    ---------------------------------------------------------------------------------  
+		---------------------------------------------------------------------------------
+		-- Recorrer por licencias el material
+		---------------------------------------------------------------------------------  
 
 		WHILE (EXISTS ( SELECT TOP 1
 							1
@@ -250,8 +247,9 @@ BEGIN
 			--Obtenemos usuario por defecto
 
 			DECLARE @DEFAULT_USER VARCHAR(25) = (SELECT TEXT_VALUE FROM wms.OP_WMS_CONFIGURATIONS WHERE PARAM_TYPE = 'SISTEMA' AND PARAM_GROUP = 'DEFAULT_USER_REPLANISH' AND PARAM_NAME = @WAREHOUSE_TARGET)
-
-			INSERT	INTO [wms].[OP_WMS_TASK_LIST]
+			IF(@CURRENT_ASSIGNED > 0)
+			BEGIN
+			INSERT INTO [wms].[OP_WMS_TASK_LIST]
 					(
 						[WAVE_PICKING_ID]
 						,[TASK_TYPE]
@@ -281,6 +279,7 @@ BEGIN
 						,[IS_COMPLETED]
 						,[MATERIAL_SHORT_NAME]
 						,[REPLENISH_MATERIAL_ID_TARGET]
+						,[PROJECT_NAME]
 					)
 			VALUES
 					(
@@ -312,8 +311,13 @@ BEGIN
 						,0
 						,@MATERIAL_NAME
 						,@MATERIAL_ID_TARGET
+						,@TARGET_ZONE
 					);
-
+			END
+			ELSE
+			BEGIN
+			PRINT '@CURRENT_ASSIGNED = 0'
+			END
 			SELECT
 				@QUANTITY_PENDING = @QUANTITY_PENDING
 				- @CURRENT_ASSIGNED;

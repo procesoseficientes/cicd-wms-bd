@@ -1,4 +1,5 @@
-﻿-- =============================================
+﻿
+-- =============================================
 -- Autor:	            Pablo.aguilar
 -- Fecha de Creacion: 	17/07/2019
 -- Description:	        Sp que trae el top 5 de los documentos de recepcion y envia a SAE
@@ -47,8 +48,8 @@ BEGIN
     INTO [#RECEPTION_DOCUMENT]
    FROM [OP_WMS_ALZA].[wms].[OP_WMS_ERP_RECEPTION_DOCUMENT_HEADER] [RDH]
     WHERE [RDH].[ERP_RECEPTION_DOCUMENT_HEADER_ID] > 0
-          AND ISNULL([RDH].[IS_POSTED_ERP], 0) = 0
-          AND ISNULL([RDH].[ATTEMPTED_WITH_ERROR], 0) = 0
+          AND ISNULL([RDH].[IS_POSTED_ERP], 0) <> 1
+          AND ISNULL([RDH].[ATTEMPTED_WITH_ERROR], 0) < 2
           AND ISNULL([RDH].[IS_AUTHORIZED], 0) = 1
 		  --AND ISNULL([RDH].[IS_COMPLETE],0)=1 se elimina por ordenes de compra parciales
           AND ISNULL([RDH].[SOURCE],'') <> 'INVOICE'
@@ -86,7 +87,7 @@ BEGIN
                 [Codigo],
                 [DbData]
             )
-            EXEC [ERP_SERVER].[ASPEL_INTERFACES].[dbo].[SAE_CREATE_INVENTORY_INCOME_BY_PURCHASE_ORDER] @RECEPTION_DOCUMENT_HEADER = @HEADER_ID;
+            EXEC [ASPEL_INTERFACES].[dbo].[SAE_CREATE_INVENTORY_INCOME_BY_PURCHASE_ORDER] @RECEPTION_DOCUMENT_HEADER = @HEADER_ID;
 
             SELECT TOP 1
                    @RESPONSE = [Mensaje],

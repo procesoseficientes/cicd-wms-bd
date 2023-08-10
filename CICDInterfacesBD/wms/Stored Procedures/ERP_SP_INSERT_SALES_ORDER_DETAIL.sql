@@ -13,7 +13,7 @@
 
 /*
 -- Ejemplo de Ejecucion:
-				DECLARE @START_DATE DATETIME = GETDATE()-1
+				DECLARE @START_DATE DATETIME = '2022-04-26'
 					,@END_DATE DATETIME = GETDATE()
 					,@ID INT
 				
@@ -24,7 +24,7 @@
 					@WAREHOUSE ='1'
 
 				SELECT @ID
-				SELECT * FROM [wms].[ERP_SALES_ORDER_DETAIL_CHANNEL_MODERN]  WHERE SEQUENCE = @ID 
+				SELECT * FROM [wms].[ERP_SALES_ORDER_DETAIL_CHANNEL_MODERN] WHERE SEQUENCE = @ID 
 				DELETE [wms].[ERP_SALES_ORDER_DETAIL_CHANNEL_MODERN] WHERE SEQUENCE = @ID 
 
 */
@@ -58,8 +58,6 @@ BEGIN
     DECLARE @START_DATE_SAE DATETIME = CAST(@START_DATE AS DATETIME),
             @END_DATE_SAE DATETIME = CAST(@END_DATE AS DATETIME);
 
-    SELECT @SQL
-        = '
 		INSERT INTO [wms].[ERP_SALES_ORDER_DETAIL_CHANNEL_MODERN]
 
 			(
@@ -94,14 +92,7 @@ BEGIN
 			)
 
 		SELECT
-			' + CAST(@ID AS VARCHAR)
-          + '
-		  ,*
-		
-		FROM OPENQUERY
-     ([ERP_SERVER],
-      ''
-SELECT DISTINCT
+       @ID  [Sequence],
        [FACT].[FECHA_DOC] [DocDate],
        ltrim(rtrim([FACT].[CVE_DOC])) [DocNum],
        [FACT].[SERIE] [U_Serie],   --[T0].[U_Serie]
@@ -112,7 +103,7 @@ SELECT DISTINCT
        [FACT].[CVE_VEND] [U_oper],
        [D].[CVE_ART] [ItemCode],
        [D].[CVE_ART] [U_MasterIdSKU],
-       ''''alza'''' [U_OwnerSKU],
+       'alza' [U_OwnerSKU],
        [m].[DESCR] [Dscription],
        [D].[CANT] AS [Quantity],
        [D].[PREC] AS [PRECIO_CON_IVA],
@@ -123,12 +114,12 @@ SELECT DISTINCT
        [FACT].[STATUS] AS [STATUS],
        [D].[NUM_PAR] AS [NUMERO_LINEA],
       ltrim(rtrim( [FACT].[CVE_CLPV])) [U_MasterIDCustomer],
-       ''''alza'''' [U_OwnerCustomer],
-       ''''alza'''' [Owner],
+       'alza' [U_OwnerCustomer],
+       'alza' [Owner],
        [D].[CANT] [OpenQty],
        [D].[DESC1] [LineDiscPrcnt],
        [D].[UNI_VENTA] [unitMsr],
-       '''''''' [statusOfMaterial]
+       '' [statusOfMaterial]
 FROM [SAE70EMPRESA01].[dbo].[FACTP01] [FACT]
     INNER JOIN [SAE70EMPRESA01].[dbo].[PAR_FACTP01] [D]
         ON [D].[CVE_DOC] = [FACT].[CVE_DOC] COLLATE DATABASE_DEFAULT
@@ -143,19 +134,9 @@ FROM [SAE70EMPRESA01].[dbo].[FACTP01] [FACT]
 		WHERE
 			[FACT].[FECHA_ENT]
       
-	    BETWEEN  CONVERT( DATETIME ,''''' + CONVERT(VARCHAR, @START_DATE_SAE, 121)
-          + ''''', 121) AND CONVERT( DATETIME ,''''' + CONVERT(VARCHAR, @END_DATE_SAE, 121)
-          + ''''' , 121)	
-		  AND [FACT].[NUM_ALMA] = ''''' + @WAREHOUSE COLLATE DATABASE_DEFAULT + '''''
-   AND [FACT].[STATUS] <> ''''C'''' '' )	';
-    --
-    PRINT (@SQL);
-    --
-    EXEC (@SQL);
-    --
-
-
-
+	    BETWEEN   @START_DATE_SAE AND @END_DATE_SAE
+		  AND [FACT].[NUM_ALMA] = @WAREHOUSE COLLATE DATABASE_DEFAULT 
+   AND [FACT].[STATUS] <> 'C';
 
 
     RETURN;

@@ -10,6 +10,8 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IDX_SERIE101]
     ON [dbo].[NUMSER01]([ALMACEN] ASC);
@@ -21,29 +23,29 @@ CREATE NONCLUSTERED INDEX [IDX_SERIE201]
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave del artículo', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'NUMSER01', @level2type = N'COLUMN', @level2name = N'CVE_ART';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Número de serie', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'NUMSER01', @level2type = N'COLUMN', @level2name = N'NUM_SER';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Estatus [V/D/N/F/B] .: V= Vendido, D=Disponible, N= No disponible, F= Defectuoso, B=Baja', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'NUMSER01', @level2type = N'COLUMN', @level2name = N'STATUS';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Clave de almacén', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'NUMSER01', @level2type = N'COLUMN', @level2name = N'ALMACEN';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Costo', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'NUMSER01', @level2type = N'COLUMN', @level2name = N'COSTO';
 
-
-GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Documento de entrada', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'NUMSER01', @level2type = N'COLUMN', @level2name = N'DOCTO_ENT';
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = 'Fecha de entrada', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'NUMSER01', @level2type = N'COLUMN', @level2name = N'FECHA_ENT';
+
+
+
+GO
+
+
+
+GO
+
+
+
+GO
+
 

@@ -1,4 +1,5 @@
-﻿-- =============================================
+﻿
+-- =============================================
 -- Autor:	            Gustavo Garcia
 -- Fecha de Creacion: 	12/02/2021
 -- Description:	        Sp que trae el top 5 de los documentos de recepcion y envia a SAE
@@ -10,7 +11,7 @@
 				@OWNER = 'ALZA'
 */
 -- =============================================
-create PROCEDURE [wms].[OP_WMS_SP_SENT_SAE_TOP5_RECEPTION_GENERAL_DOCUMENT]
+CREATE PROCEDURE [wms].[OP_WMS_SP_SENT_SAE_TOP5_RECEPTION_GENERAL_DOCUMENT]
 (@OWNER VARCHAR(50))
 AS
 BEGIN
@@ -87,7 +88,7 @@ BEGIN
                 [Codigo],
                 [DbData]
             )
-            EXEC [ERP_SERVER].[ASPEL_INTERFACES].[dbo].[SAE_CREATE_INVENTORY_INCOME_GENERAL] @RECEPTION_DOCUMENT_HEADER = @HEADER_ID;
+            EXEC [ASPEL_INTERFACES].[dbo].[SAE_CREATE_INVENTORY_INCOME_GENERAL] @RECEPTION_DOCUMENT_HEADER = @HEADER_ID;
 
             SELECT TOP 1
                    @RESPONSE = [Mensaje],

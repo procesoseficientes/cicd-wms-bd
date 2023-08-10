@@ -1,4 +1,5 @@
-﻿-- =============================================
+﻿
+-- =============================================
 -- Autor:	pablo.aguilar
 -- Fecha de Creacion: 	2017-01-31 @ Team G-FORCE LANGOSTA
 -- Description:	 NA
@@ -15,7 +16,7 @@ AS
 SELECT [LIN_PROD] [FAMILY_CODE],
        [LIN_PROD] [FAMILY_NAME],
        ROW_NUMBER() OVER (ORDER BY [LIN_PROD]) AS [PRIORITY]
-FROM [$(CICDSaeBD)].[dbo].[INVE01]
+FROM [SAE70EMPRESA01].[dbo].[INVE01]
 WHERE [LIN_PROD] IS NOT NULL AND [LIN_PROD] <> ''
 GROUP BY [LIN_PROD]
 

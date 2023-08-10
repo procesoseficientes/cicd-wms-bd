@@ -1,0 +1,9 @@
+﻿CREATE TABLE [SONDA].[ERP_TB_PRICE_LIST_BY_SKU] (
+    [CODE_ROUTE]     VARCHAR (50)    NULL,
+    [CODE_CUSTOMER]  VARCHAR (50)    NULL,
+    [CODE_SKU]       VARCHAR (50)    NULL,
+    [COST]           NUMERIC (18, 6) NULL,
+    [CODE_PACK_UNIT] VARCHAR (50)    NULL,
+    [UM_ENTRY]       VARCHAR (50)    NULL
+);
+

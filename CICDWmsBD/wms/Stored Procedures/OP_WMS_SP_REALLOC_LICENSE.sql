@@ -31,15 +31,14 @@
 
 /*
 -- Ejemplo de Ejecucion: 
-			SELECT * FROM [wms].[OP_WMS_LICENSES] WHERE [LICENSE_ID] =  23434
-  EXEC [wms].[OP_WMS_SP_REALLOC_LICENSE] @pLICENCIA_ID = 23434
-                                           ,@pNEW_LOCATION_SPOT = 'B04-TA-C13-NU'
-                                           ,@pLOGIN_ID = 'BCORADO'
-                                           ,@pMt2 = 42
-                                           ,@pResult = ''
-										   ,@pTOTAL_POSITION = 3
-  SELECT * FROM [wms].[OP_WMS_LICENSES] WHERE [LICENSE_ID] =  23434
-  SELECT * FROM [wms].[OP_WMS_TRANS] [OWT] WHERE [OWT]. = 23434
+exec sp_executesql @statement=N'OP_WMS_SP_REALLOC_LICENSE 
+@pLICENCIA_ID = 658192, 
+@pNEW_LOCATION_SPOT = N''P07-01B-N1-C'', 
+@pLOGIN_ID = N''BGOMEZ'', 
+@pMt2 = 0, 
+@pResult = N'''',
+@PARAM_NAME = NULL, 
+@pTOTAL_POSITION = 1'
 */
 -- =============================================
 CREATE PROCEDURE [wms].[OP_WMS_SP_REALLOC_LICENSE]
@@ -364,6 +363,18 @@ BEGIN
 					,[CODIGO_POLIZA]
 					,[LICENSE_ID]
 					,[STATUS]
+					,[WAVE_PICKING_ID]
+				    ,[TRANS_MT2]
+					,[TASK_ID]
+					,[BATCH]
+					,[DATE_EXPIRATION]
+					,[SERIAL]
+					,[ORIGINAL_LICENSE]
+					,[STATUS_CODE]
+					,[PROJECT_ID]
+					,[PROJECT_CODE]
+					,[PROJECT_NAME]
+				    ,[PROJECT_SHORT_NAME]
 				)
 		SELECT TOP 1
 			MAX([IL].[TERMS_OF_TRADE]) [TERMS_OF_TRADE]
@@ -394,15 +405,26 @@ BEGIN
 			,MAX([L].[CODIGO_POLIZA]) [CODIGO_POLIZA]
 			,@pLICENCIA_ID [LICENSE_ID]
 			,'PROCESSED' [STATUS]
-		FROM
-			[wms].[OP_WMS_LICENSES] [L]
+			,NULL
+			,NULL
+			,NULL
+			,IL.BATCH
+			,IL.DATE_EXPIRATION
+			,NULL
+			,L.LICENSE_ID
+			,SML.STATUS_CODE
+			,IL.PROJECT_ID
+			,NULL
+			,NULL
+			,NULL
+		FROM [wms].[OP_WMS_LICENSES] [L]
 		INNER JOIN [wms].[OP_WMS_INV_X_LICENSE] [IL] ON [L].[LICENSE_ID] = [IL].[LICENSE_ID]
 		INNER JOIN [wms].[OP_WMS_VIEW_CLIENTS] [C] ON [L].[CLIENT_OWNER] = [C].[CLIENT_CODE]
+		INNER JOIN wms.OP_WMS_STATUS_OF_MATERIAL_BY_LICENSE SML ON (IL.LICENSE_ID = SML.LICENSE_ID AND IL.STATUS_ID = SML.STATUS_ID)
 		WHERE
 			[L].[LICENSE_ID] = @pLICENCIA_ID
 			AND [IL].[QTY] > 0
-		GROUP BY
-			[L].[LICENSE_ID];
+			GROUP BY [L].[LICENSE_ID],IL.BATCH,IL.DATE_EXPIRATION,SML.STATUS_CODE,IL.PROJECT_ID;
 
 			-- ------------------------------------------------------------------------------------
 		-- si estamos ubicando en una ubicacion con la propiedad ALLOW_FAST_PICKING = TRUE
